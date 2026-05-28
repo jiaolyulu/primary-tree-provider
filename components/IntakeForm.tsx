@@ -1,15 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import {
-  FormEvent,
-  PointerEvent as ReactPointerEvent,
-  WheelEvent as ReactWheelEvent,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { ArrowRight, ChevronDown, LocateFixed, MapPin, Minus, Plus, Stethoscope } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { ArrowRight, ChevronDown, MapPin, Stethoscope } from "lucide-react";
+import { LeafletPinMap } from "@/components/LeafletPinMap";
 
 const symptomGroups = [
   {
@@ -45,12 +39,6 @@ const nycMapBounds = {
   north: 40.86,
 };
 
-const mapZoomLevels = [
-  { label: "City", latitudeSpan: nycMapBounds.north - nycMapBounds.south, longitudeSpan: nycMapBounds.east - nycMapBounds.west },
-  { label: "Area", latitudeSpan: 0.13, longitudeSpan: 0.13 },
-  { label: "Street", latitudeSpan: 0.045, longitudeSpan: 0.045 },
-];
-
 const defaultPin = {
   latitude: 40.7128,
   longitude: -74.006,
@@ -60,39 +48,6 @@ function getPinFromCoordinates(latitude: number, longitude: number) {
   return {
     latitude: Math.min(nycMapBounds.north, Math.max(nycMapBounds.south, latitude)),
     longitude: Math.min(nycMapBounds.east, Math.max(nycMapBounds.west, longitude)),
-  };
-}
-
-function getMapBounds(center: typeof defaultPin, zoomIndex: number) {
-  if (zoomIndex === 0) return nycMapBounds;
-
-  const zoom = mapZoomLevels[zoomIndex];
-  const halfLatitude = zoom.latitudeSpan / 2;
-  const halfLongitude = zoom.longitudeSpan / 2;
-  const latitudeCenter = Math.min(
-    nycMapBounds.north - halfLatitude,
-    Math.max(nycMapBounds.south + halfLatitude, center.latitude),
-  );
-  const longitudeCenter = Math.min(
-    nycMapBounds.east - halfLongitude,
-    Math.max(nycMapBounds.west + halfLongitude, center.longitude),
-  );
-
-  return {
-    west: longitudeCenter - halfLongitude,
-    south: latitudeCenter - halfLatitude,
-    east: longitudeCenter + halfLongitude,
-    north: latitudeCenter + halfLatitude,
-  };
-}
-
-function getPinPosition(pin: typeof defaultPin, bounds: typeof nycMapBounds) {
-  const xPercent = ((pin.longitude - bounds.west) / (bounds.east - bounds.west)) * 100;
-  const yPercent = ((bounds.north - pin.latitude) / (bounds.north - bounds.south)) * 100;
-
-  return {
-    xPercent: Math.min(96, Math.max(4, xPercent)),
-    yPercent: Math.min(96, Math.max(4, yPercent)),
   };
 }
 
@@ -113,7 +68,6 @@ export function IntakeForm({
 }) {
   const router = useRouter();
   const pickerRef = useRef<HTMLDivElement>(null);
-  const lastWheelZoomAtRef = useRef(0);
   const hasInitialPin = Number.isFinite(initialLat) && Number.isFinite(initialLng);
   const [zipcode, setZipcode] = useState(initialZip);
   const [symptom, setSymptom] = useState(initialSymptom);
@@ -121,13 +75,9 @@ export function IntakeForm({
   const [locationMode, setLocationMode] = useState<"zip" | "pin">(
     initialLocationMode || (hasInitialPin ? "pin" : "zip"),
   );
-  const [mapZoomIndex, setMapZoomIndex] = useState(0);
   const [pin, setPin] = useState(() =>
     hasInitialPin ? getPinFromCoordinates(initialLat as number, initialLng as number) : defaultPin,
   );
-  const activeMapBounds = getMapBounds(pin, mapZoomIndex);
-  const pinPosition = getPinPosition(pin, activeMapBounds);
-  const activeZoomLabel = mapZoomLevels[mapZoomIndex].label;
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -156,32 +106,6 @@ export function IntakeForm({
 
     router.push(`/providers?${params.toString()}`);
   }
-
-  function handleMapPointerDown(event: ReactPointerEvent<HTMLDivElement>) {
-    const rect = event.currentTarget.getBoundingClientRect();
-    const x = (event.clientX - rect.left) / rect.width;
-    const y = (event.clientY - rect.top) / rect.height;
-    const longitude = activeMapBounds.west + x * (activeMapBounds.east - activeMapBounds.west);
-    const latitude = activeMapBounds.north - y * (activeMapBounds.north - activeMapBounds.south);
-
-    setPin(getPinFromCoordinates(latitude, longitude));
-  }
-
-  function handleMapWheel(event: ReactWheelEvent<HTMLDivElement>) {
-    event.preventDefault();
-
-    const now = Date.now();
-    if (now - lastWheelZoomAtRef.current < 180) return;
-    lastWheelZoomAtRef.current = now;
-
-    setMapZoomIndex((index) => {
-      if (event.deltaY < 0) return Math.min(mapZoomLevels.length - 1, index + 1);
-      if (event.deltaY > 0) return Math.max(0, index - 1);
-      return index;
-    });
-  }
-
-  const pinMapUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${activeMapBounds.west.toFixed(5)}%2C${activeMapBounds.south.toFixed(5)}%2C${activeMapBounds.east.toFixed(5)}%2C${activeMapBounds.north.toFixed(5)}&layer=mapnik&marker=${pin.latitude}%2C${pin.longitude}`;
 
   return (
     <form className={compact ? "intake-form compact" : "intake-form"} onSubmit={handleSubmit}>
@@ -219,38 +143,10 @@ export function IntakeForm({
       ) : (
         <div className="pin-map-field">
           <span>Drop a pin in NYC</span>
-          <div className="pin-map" onPointerDown={handleMapPointerDown} onWheel={handleMapWheel}>
-            <iframe title="NYC map pin intake" src={pinMapUrl} loading="lazy" referrerPolicy="no-referrer" />
-            <span
-              className="dropped-pin"
-              style={{ left: `${pinPosition.xPercent}%`, top: `${pinPosition.yPercent}%` }}
-              aria-hidden="true"
-            >
-              <LocateFixed size={22} />
-            </span>
-            <div className="pin-zoom-controls" aria-label="Map zoom controls" onPointerDown={(event) => event.stopPropagation()}>
-              <button
-                type="button"
-                aria-label="Zoom out"
-                disabled={mapZoomIndex === 0}
-                onClick={() => setMapZoomIndex((index) => Math.max(0, index - 1))}
-              >
-                <Minus aria-hidden="true" size={16} />
-              </button>
-              <span>{activeZoomLabel}</span>
-              <button
-                type="button"
-                aria-label="Zoom in"
-                disabled={mapZoomIndex === mapZoomLevels.length - 1}
-                onClick={() => setMapZoomIndex((index) => Math.min(mapZoomLevels.length - 1, index + 1))}
-              >
-                <Plus aria-hidden="true" size={16} />
-              </button>
-            </div>
-            <div className="pin-map-hit-area" />
-          </div>
+          <LeafletPinMap pin={pin} onChange={setPin} />
           <p>
-            Scroll to zoom. Pin set at {pin.latitude.toFixed(4)}, {pin.longitude.toFixed(4)}
+            Scroll or use map controls to zoom. Click the map to move the pin. Pin set at {pin.latitude.toFixed(4)},{" "}
+            {pin.longitude.toFixed(4)}
           </p>
         </div>
       )}

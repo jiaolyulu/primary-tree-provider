@@ -404,93 +404,58 @@ input {
   text-transform: uppercase;
 }
 
-.pin-map {
+.leaflet-pin-map {
   background: var(--paper-2);
   border: 1px solid var(--green);
   cursor: crosshair;
+  height: 240px;
   min-height: 190px;
   overflow: hidden;
   position: relative;
 }
 
-.pin-map iframe {
-  border: 0;
-  display: block;
+.leaflet-pin-map .leaflet-tile {
   filter: grayscale(1) contrast(1.2) sepia(0.2) hue-rotate(72deg) saturate(1.25);
-  height: 100%;
-  min-height: 190px;
-  mix-blend-mode: multiply;
-  width: 100%;
 }
 
-.pin-map-hit-area {
-  inset: 0;
-  position: absolute;
-  z-index: 3;
-}
-
-.pin-zoom-controls {
-  align-items: center;
-  background: rgba(244, 246, 239, 0.94);
+.leaflet-pin-map .leaflet-control-zoom {
   border: 1px solid var(--green);
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.leaflet-pin-map .leaflet-control-zoom a {
+  background: rgba(244, 246, 239, 0.95);
+  border-bottom: 1px solid var(--green);
+  border-radius: 0;
   color: var(--green);
-  display: grid;
-  grid-template-columns: 34px minmax(58px, auto) 34px;
-  left: 10px;
-  min-height: 36px;
-  position: absolute;
-  top: 10px;
-  z-index: 6;
 }
 
-.pin-zoom-controls button {
-  align-items: center;
-  background: transparent;
-  border: 0;
-  color: var(--green);
-  cursor: pointer;
-  display: inline-flex;
-  height: 34px;
-  justify-content: center;
-  padding: 0;
+.leaflet-pin-map .leaflet-control-zoom a:last-child {
+  border-bottom: 0;
 }
 
-.pin-zoom-controls button + span,
-.pin-zoom-controls span + button {
-  border-left: 1px solid var(--line-dark);
-}
-
-.pin-zoom-controls button:disabled {
-  color: rgba(0, 122, 52, 0.32);
-  cursor: not-allowed;
-}
-
-.pin-zoom-controls span {
-  align-items: center;
-  display: inline-flex;
-  font-size: 11px;
-  font-weight: 700;
-  height: 34px;
-  justify-content: center;
-  letter-spacing: 0.07em;
-  padding-inline: 10px;
-  text-transform: uppercase;
-}
-
-.dropped-pin {
-  align-items: center;
+.leaflet-pin-map .leaflet-control-zoom a:hover {
   background: var(--green);
-  border: 2px solid #fff;
   color: #fff;
-  display: flex;
+}
+
+.pct-leaflet-marker {
+  align-items: center;
+  display: flex !important;
   height: 34px;
   justify-content: center;
-  left: 50%;
-  position: absolute;
-  top: 50%;
-  transform: translate(-50%, -50%);
   width: 34px;
-  z-index: 4;
+}
+
+.pct-leaflet-marker span {
+  background: var(--green);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 1px var(--green);
+  display: block;
+  height: 22px;
+  transform: rotate(45deg);
+  width: 22px;
 }
 
 .pin-map-field p {
