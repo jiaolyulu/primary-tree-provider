@@ -35,14 +35,16 @@ export default async function ProvidersPage({
     symptom,
     hasPinnedLocation ? { latitude, longitude } : undefined,
   );
+  const nearbyProviders = rankedProviders.slice(0, 100);
+  const displayedProviders = rankedProviders.slice(0, 12);
   const selectedProvider = rankedProviders[0];
   const averageWait = Math.round(
-    rankedProviders.reduce((total, provider) => total + provider.nextAvailableVisitDays, 0) / rankedProviders.length,
+    nearbyProviders.reduce((total, provider) => total + provider.nextAvailableVisitDays, 0) / nearbyProviders.length,
   );
   const averageAccess = Math.round(
-    rankedProviders.reduce((total, provider) => total + provider.careAccessibilityScore, 0) / rankedProviders.length,
+    nearbyProviders.reduce((total, provider) => total + provider.careAccessibilityScore, 0) / nearbyProviders.length,
   );
-  const starProviders = rankedProviders.filter((provider) => provider.starDoctor).length;
+  const starProviders = nearbyProviders.filter((provider) => provider.starDoctor).length;
   const providerNumber = `PCT-${String(selectedProvider.providerId).slice(-4)}`;
   const matchLabel = selectedProvider.conditionMatch
     ? `location-first / ${selectedProvider.locationMatchLabel} / symptom fit`
@@ -147,7 +149,7 @@ export default async function ProvidersPage({
           <div className="network-snapshot" aria-label="Network summary">
             <div>
               <strong>{starProviders}</strong>
-              <span>star providers</span>
+              <span>nearby star providers</span>
             </div>
             <div>
               <strong>{selectedProvider.clinicNeighborhood}</strong>
@@ -199,7 +201,7 @@ export default async function ProvidersPage({
 
         <div className="dashboard-grid">
           <div className="provider-list">
-            {rankedProviders.map((provider, index) => (
+            {displayedProviders.map((provider, index) => (
               <article
                 key={provider.providerId}
                 className={index === 0 ? "provider-card selected" : "provider-card"}

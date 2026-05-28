@@ -152,9 +152,9 @@ export default function Home() {
             We help you find the primary care tree that is right for you.
           </p>
           <div className="hero-proof-line" aria-label="Provider network details">
-            <span>96,950 providers</span>
+            <span>50,000 providers</span>
             <span>30 specialties</span>
-            <span>183 ZIP codes</span>
+            <span>179 ZIP codes</span>
           </div>
         </div>
 

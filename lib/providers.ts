@@ -1,3 +1,5 @@
+import { treeProviderRows } from "@/lib/tree-provider-rows";
+
 export type Provider = {
   providerId: number;
   speciesCommon: string;
@@ -39,279 +41,6 @@ export type Provider = {
   clinicLongitude: number;
 };
 
-export const providers: Provider[] = [
-  {
-    providerId: 239868,
-    speciesCommon: "Ginkgo",
-    speciesScientific: "Ginkgo biloba",
-    medicalSpecialty: "Neurology",
-    specialtyDescription:
-      "Ginkgo maps to neurology through its cultural association with memory, attention, and cognition.",
-    searchableConditions: ["memory changes", "migraine", "tremor", "headache", "dizziness", "brain fog"],
-    providerType: "Highly rated shade specialist",
-    treeExperienceLevel: "Seasoned canopy clinician",
-    yearsOfPractice: 22,
-    yearsAtCurrentSpot: 14,
-    careRating: 5,
-    reviewCount: 126,
-    starDoctor: true,
-    popularityBadge: "Star doctor",
-    nextAvailableVisitDays: 3,
-    weekendAvailability: true,
-    stormResponseReadiness: "High",
-    careAccessibilityScore: 96,
-    shadeSideMannerScore: 4.9,
-    carePhilosophy:
-      "The practice treats attention as something shaped by shade, tempo, and the nervous system of the street.",
-    providerBio:
-      "This Ginkgo provider turns steady seasonal attention into a Neurology profile for visitors seeking focus, balance, and quieter cognitive weather.",
-    clinicDescription:
-      "Patients find the clinic at the curb, where a fan-shaped canopy filters light across a busy sidewalk waiting room.",
-    patientReviewSummary:
-      "Visitors describe the care as composed, observant, and unusually good at making a noisy block feel briefly organized.",
-    careAudience: "Adults managing brain, nerve, and focus concerns",
-    primaryCareServices: ["Migraine shade consult", "Memory-change intake", "Brain fog screening", "Dizziness triage"],
-    signaturePrescription: "Twenty minutes under filtered light, followed by one slow block with no phone.",
-    officeVibe: "Quiet focus with old-city stamina",
-    waitingRoomFeature: "Fan-shaped leaves and a bench-adjacent pause",
-    leafPaperworkLevel: "Light intake, careful follow-up",
-    branchOfficeStatus: "Single-trunk practice",
-    clinicName: "West Village Canopy Neurology",
-    clinicAddress: "72 Grove St",
-    clinicZipcode: "10014",
-    clinicCity: "New York",
-    clinicNeighborhood: "West Village",
-    clinicState: "NY",
-    clinicLatitude: 40.7335,
-    clinicLongitude: -74.0027,
-  },
-  {
-    providerId: 203799,
-    speciesCommon: "Pin Oak",
-    speciesScientific: "Quercus palustris",
-    medicalSpecialty: "Geriatrics",
-    specialtyDescription:
-      "Oak species map to geriatrics because long-lived trees suggest elder care, continuity, and aging well.",
-    searchableConditions: ["fall risk", "mobility changes", "caregiver planning", "frailty screening", "medication management"],
-    providerType: "Elder shade practitioner",
-    treeExperienceLevel: "Ancient attending",
-    yearsOfPractice: 38,
-    yearsAtCurrentSpot: 27,
-    careRating: 4.5,
-    reviewCount: 214,
-    starDoctor: false,
-    popularityBadge: "Neighborhood regular",
-    nextAvailableVisitDays: 4,
-    weekendAvailability: false,
-    stormResponseReadiness: "High",
-    careAccessibilityScore: 91,
-    shadeSideMannerScore: 4.6,
-    carePhilosophy:
-      "Care is long-view, practical, and rooted in helping residents move through the neighborhood with less friction.",
-    providerBio:
-      "In Brooklyn, this Pin Oak offers a durable Geriatrics profile for people thinking about balance, mobility, and support systems.",
-    clinicDescription:
-      "The practice sits on a residential sidewalk with broad shade, slow crossings, and an excellent view of daily routines.",
-    patientReviewSummary:
-      "Reviews praise the reliable canopy, the patient pace, and the feeling that no one is rushed through their visit.",
-    careAudience: "Older adults and caregivers",
-    primaryCareServices: ["Mobility review", "Fall-risk check", "Caregiver planning", "Medication-list shade audit"],
-    signaturePrescription: "Two familiar routes, one new handrail noticed, and a rest stop before fatigue arrives.",
-    officeVibe: "Steady elder care with block-level memory",
-    waitingRoomFeature: "Deep shade and predictable sidewalk rhythms",
-    leafPaperworkLevel: "Moderate seasonal forms",
-    branchOfficeStatus: "Wide canopy network",
-    clinicName: "Park Slope Elder Shade Clinic",
-    clinicAddress: "418 7th Ave",
-    clinicZipcode: "11215",
-    clinicCity: "Brooklyn",
-    clinicNeighborhood: "Park Slope",
-    clinicState: "NY",
-    clinicLatitude: 40.6703,
-    clinicLongitude: -73.9817,
-  },
-  {
-    providerId: 110153,
-    speciesCommon: "Japanese Zelkova",
-    speciesScientific: "Zelkova serrata",
-    medicalSpecialty: "Dermatology",
-    specialtyDescription:
-      "Zelkova maps to dermatology through bark, surface texture, and skin-like protective layers.",
-    searchableConditions: ["skin rash", "eczema", "acne", "dry skin", "mole checks", "sun damage"],
-    providerType: "Friendly curbside generalist",
-    treeExperienceLevel: "Established neighborhood healer",
-    yearsOfPractice: 16,
-    yearsAtCurrentSpot: 10,
-    careRating: 4.1,
-    reviewCount: 53,
-    starDoctor: false,
-    popularityBadge: "Neighborhood regular",
-    nextAvailableVisitDays: 8,
-    weekendAvailability: true,
-    stormResponseReadiness: "Standard",
-    careAccessibilityScore: 88,
-    shadeSideMannerScore: 4.2,
-    carePhilosophy:
-      "Surface care begins with noticing exposure: sun, wind, dust, friction, and the block's daily abrasion.",
-    providerBio:
-      "This Japanese Zelkova uses bark-aware dermatology to help visitors read skin concerns as environmental records.",
-    clinicDescription:
-      "The clinic occupies a bright Queens sidewalk where shade arrives in sections and the bark does most of the explaining.",
-    patientReviewSummary:
-      "Patients like the practical advice, especially the reminder that exposure and recovery both happen outside.",
-    careAudience: "People with skin and surface concerns",
-    primaryCareServices: ["Rash intake", "Dry-skin consult", "Sun exposure review", "Eczema flare planning"],
-    signaturePrescription: "Find partial shade before noon and moisturize like the sidewalk has opinions.",
-    officeVibe: "Crisp, observant, bark-forward",
-    waitingRoomFeature: "Dappled light and tidy curb geometry",
-    leafPaperworkLevel: "Low-friction forms",
-    branchOfficeStatus: "Balanced branch coverage",
-    clinicName: "Astoria Bark Dermatology",
-    clinicAddress: "31-14 30th Ave",
-    clinicZipcode: "11102",
-    clinicCity: "Astoria",
-    clinicNeighborhood: "Astoria",
-    clinicState: "NY",
-    clinicLatitude: 40.7645,
-    clinicLongitude: -73.9229,
-  },
-  {
-    providerId: 186329,
-    speciesCommon: "Sophora",
-    speciesScientific: "Styphnolobium japonicum",
-    medicalSpecialty: "Allergy and Immunology",
-    specialtyDescription:
-      "Sophora maps to allergy and immunology through flowering, pollen, and immune-response associations.",
-    searchableConditions: ["seasonal allergies", "hives", "asthma triggers", "immune concerns", "sinus congestion", "eczema flares"],
-    providerType: "Popular canopy clinician",
-    treeExperienceLevel: "Established neighborhood healer",
-    yearsOfPractice: 18,
-    yearsAtCurrentSpot: 11,
-    careRating: 4.3,
-    reviewCount: 92,
-    starDoctor: true,
-    popularityBadge: "Star doctor",
-    nextAvailableVisitDays: 2,
-    weekendAvailability: true,
-    stormResponseReadiness: "Medium",
-    careAccessibilityScore: 93,
-    shadeSideMannerScore: 4.7,
-    carePhilosophy:
-      "The work is diplomatic: helping pollen, breath, skin, and the immune system negotiate a crowded city block.",
-    providerBio:
-      "This Sophora provider offers allergy-minded care for residents tracking symptoms across seasons and street conditions.",
-    clinicDescription:
-      "The practice is planted near transit, where wind patterns, flowering cycles, and human routines overlap.",
-    patientReviewSummary:
-      "Reviewers praise the fast access and the very specific advice about when a block feels different from one week to the next.",
-    careAudience: "Seasonal allergy and immune-response patients",
-    primaryCareServices: ["Pollen exposure review", "Asthma trigger mapping", "Hives consult", "Sinus congestion planning"],
-    signaturePrescription: "Check the wind, pick the shaded side, and let the first sneeze count as data.",
-    officeVibe: "Pollen-diplomatic and transit-aware",
-    waitingRoomFeature: "Flower litter, bus breeze, and fast-moving shade",
-    leafPaperworkLevel: "Star-practice intake",
-    branchOfficeStatus: "Street-corner branch coverage",
-    clinicName: "Jackson Heights Immune Canopy",
-    clinicAddress: "37-12 74th St",
-    clinicZipcode: "11372",
-    clinicCity: "Jackson Heights",
-    clinicNeighborhood: "Jackson Heights",
-    clinicState: "NY",
-    clinicLatitude: 40.7476,
-    clinicLongitude: -73.8919,
-  },
-  {
-    providerId: 499220,
-    speciesCommon: "Littleleaf Linden",
-    speciesScientific: "Tilia cordata",
-    medicalSpecialty: "Psychiatry",
-    specialtyDescription:
-      "Linden maps to psychiatry through calming cultural associations with rest, mood, and the nervous system.",
-    searchableConditions: ["anxiety", "depression", "insomnia", "stress management", "burnout", "panic symptoms"],
-    providerType: "Quiet courtyard specialist",
-    treeExperienceLevel: "Seasoned canopy clinician",
-    yearsOfPractice: 24,
-    yearsAtCurrentSpot: 16,
-    careRating: 4.4,
-    reviewCount: 76,
-    starDoctor: false,
-    popularityBadge: "Neighborhood regular",
-    nextAvailableVisitDays: 6,
-    weekendAvailability: false,
-    stormResponseReadiness: "Standard",
-    careAccessibilityScore: 86,
-    shadeSideMannerScore: 4.8,
-    carePhilosophy:
-      "Mental health care is framed as a relationship between nervous systems, street noise, rest, and repeated shelter.",
-    providerBio:
-      "This Littleleaf Linden provides calm-canopy psychiatry for symptoms that worsen when the city stops feeling porous.",
-    clinicDescription:
-      "Patients wait beneath small, heart-shaped leaves that make the sidewalk feel less like a corridor and more like a pause.",
-    patientReviewSummary:
-      "Visitors describe the experience as quiet, grounding, and best suited to people who need care without spectacle.",
-    careAudience: "People managing mood, stress, and sleep symptoms",
-    primaryCareServices: ["Anxiety intake", "Burnout check", "Sleep rhythm review", "Panic symptom planning"],
-    signaturePrescription: "Sit where the leaves break the noise into smaller pieces.",
-    officeVibe: "Calm canopy, low voice, long pause",
-    waitingRoomFeature: "Heart-shaped leaves and a reliable patch of quiet",
-    leafPaperworkLevel: "Gentle forms",
-    branchOfficeStatus: "Courtyard-adjacent practice",
-    clinicName: "Midwood Linden Psychiatry",
-    clinicAddress: "1921 Avenue K",
-    clinicZipcode: "11230",
-    clinicCity: "Brooklyn",
-    clinicNeighborhood: "Midwood",
-    clinicState: "NY",
-    clinicLatitude: 40.6221,
-    clinicLongitude: -73.9557,
-  },
-  {
-    providerId: 583615,
-    speciesCommon: "Sweetgum",
-    speciesScientific: "Liquidambar styraciflua",
-    medicalSpecialty: "Endocrinology",
-    specialtyDescription:
-      "Sweetgum maps to endocrinology through sap, sugar, seasonal energy, metabolism, and hormonal rhythm.",
-    searchableConditions: ["diabetes", "metabolic syndrome", "weight changes", "hormone imbalance", "fatigue", "prediabetes"],
-    providerType: "Preventive canopy specialist",
-    treeExperienceLevel: "Established neighborhood healer",
-    yearsOfPractice: 14,
-    yearsAtCurrentSpot: 8,
-    careRating: 4.4,
-    reviewCount: 64,
-    starDoctor: false,
-    popularityBadge: "Neighborhood regular",
-    nextAvailableVisitDays: 9,
-    weekendAvailability: true,
-    stormResponseReadiness: "Standard",
-    careAccessibilityScore: 90,
-    shadeSideMannerScore: 4.3,
-    carePhilosophy:
-      "Metabolic care follows cycles: sunlight, movement, meals, rest, and the way a block changes from season to season.",
-    providerBio:
-      "This Sweetgum offers sap-balanced endocrinology for visitors navigating energy, glucose, and seasonal fatigue.",
-    clinicDescription:
-      "The clinic is a broad-canopy sidewalk practice with enough shade to make a slow nutrition conversation plausible.",
-    patientReviewSummary:
-      "Reviews note practical guidance, steady shade, and a surprisingly persuasive argument for walking after lunch.",
-    careAudience: "People tracking metabolism, energy, and hormone concerns",
-    primaryCareServices: ["Prediabetes planning", "Fatigue review", "Weight-change intake", "Metabolic rhythm check"],
-    signaturePrescription: "A shaded walk after meals and a seasonal check-in before the next heat wave.",
-    officeVibe: "Sap-balanced and practical",
-    waitingRoomFeature: "Star-shaped leaves and rolling seed pods",
-    leafPaperworkLevel: "Moderate prevention forms",
-    branchOfficeStatus: "Canopy clinic with steady overflow",
-    clinicName: "Forest Hills Metabolic Canopy",
-    clinicAddress: "108-19 71st Ave",
-    clinicZipcode: "11375",
-    clinicCity: "Forest Hills",
-    clinicNeighborhood: "Forest Hills",
-    clinicState: "NY",
-    clinicLatitude: 40.7216,
-    clinicLongitude: -73.8448,
-  },
-];
-
 export type ProviderMatch = Provider & {
   conditionMatch: boolean;
   distance: number;
@@ -319,6 +48,177 @@ export type ProviderMatch = Provider & {
   locationMatchLabel: string;
   matchScore: number;
 };
+
+const conditionPools: Record<string, string[]> = {
+  "Allergy and Immunology": ["seasonal allergies", "food allergies", "hives", "asthma triggers", "immune concerns", "sinus congestion", "eczema flares"],
+  Cardiology: ["high blood pressure", "chest pain", "high cholesterol", "heart palpitations", "shortness of breath", "heart disease prevention"],
+  Dermatology: ["acne", "eczema", "psoriasis", "skin rash", "sun damage", "mole checks", "dry skin"],
+  Endocrinology: ["diabetes", "thyroid disorder", "weight changes", "prediabetes", "hormone imbalance", "fatigue", "metabolic syndrome"],
+  "ENT / Otolaryngology": ["sinus infection", "ear pain", "sore throat", "hearing concerns", "voice changes", "nasal congestion"],
+  "Emergency Medicine": ["urgent symptoms", "minor injuries", "sudden pain", "fever triage", "cuts and scrapes", "dizziness", "same-day assessment"],
+  "Family Medicine": ["annual physical", "cold and flu", "preventive care", "vaccinations", "minor injuries", "routine checkups"],
+  Gastroenterology: ["acid reflux", "IBS", "stomach pain", "constipation", "diarrhea", "bloating", "colon cancer screening"],
+  Geriatrics: ["memory concerns", "fall risk", "medication management", "mobility changes", "chronic disease care", "caregiver planning"],
+  Hematology: ["anemia", "easy bruising", "blood clot history", "low iron", "abnormal blood counts", "fatigue from anemia"],
+  "Infectious Disease": ["recurrent infections", "fever evaluation", "travel health", "wound infection", "antibiotic questions"],
+  "Internal Medicine": ["chronic disease care", "fatigue", "medication review", "high blood pressure", "high cholesterol", "adult wellness visits"],
+  Nephrology: ["kidney disease", "high blood pressure", "protein in urine", "electrolyte imbalance", "fluid retention", "kidney stone prevention"],
+  Neurology: ["migraine", "memory changes", "headache", "dizziness", "numbness and tingling", "brain fog", "tremor"],
+  "Nutrition and Weight Management": ["weight changes", "cholesterol nutrition", "prediabetes nutrition", "heart-healthy eating", "digestive nutrition", "meal planning"],
+  Oncology: ["cancer screening", "lump evaluation", "survivorship care", "family cancer risk", "abnormal imaging follow-up", "unexplained weight loss"],
+  Ophthalmology: ["vision changes", "dry eyes", "eye irritation", "glaucoma screening", "cataract concerns", "red eye"],
+  Orthopedics: ["joint injury", "fracture follow-up", "back pain", "hip pain", "shoulder pain", "arthritis", "mobility problems"],
+  "Pain Management": ["chronic pain", "back pain", "neck pain", "nerve pain", "joint pain", "pain flares"],
+  Pediatrics: ["childhood fever", "growth concerns", "school physicals", "routine vaccinations", "seasonal allergies", "ear infections"],
+  "Preventive Medicine": ["annual screenings", "vaccination planning", "healthy aging", "risk reduction", "lifestyle counseling", "blood pressure checks"],
+  Psychiatry: ["anxiety", "depression", "insomnia", "stress management", "burnout", "panic symptoms", "mood changes"],
+  Pulmonology: ["asthma", "chronic cough", "shortness of breath", "bronchitis", "COPD", "wheezing", "post-viral breathing symptoms"],
+  Rheumatology: ["joint pain", "arthritis", "autoimmune concerns", "inflammation", "morning stiffness", "gout"],
+  "Sleep Medicine": ["insomnia", "sleep apnea", "snoring", "daytime sleepiness", "restless sleep", "fatigue"],
+  "Sports Medicine": ["sprains", "running injuries", "knee pain", "shoulder pain", "overuse injuries", "muscle strains"],
+  Urology: ["urinary tract infection", "urinary frequency", "kidney stones", "prostate concerns", "bladder pain", "incontinence"],
+  "Vascular Medicine": ["leg swelling", "varicose veins", "poor circulation", "blood clot concerns", "cold feet", "leg pain when walking"],
+  "Women's Health": ["well-woman visit", "menstrual concerns", "menopause symptoms", "contraception counseling", "pelvic pain", "breast health"],
+};
+
+const specialtyFallbacks = Object.keys(conditionPools);
+
+function hash(value: string) {
+  let result = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    result ^= value.charCodeAt(index);
+    result = Math.imul(result, 16777619);
+  }
+  return result >>> 0;
+}
+
+function pick<T>(items: T[], seed: string, offset = 0) {
+  return items[(hash(`${seed}:${offset}`) + offset) % items.length];
+}
+
+function titleCase(value: string) {
+  return value.replace(/\b\w/g, (character) => character.toUpperCase());
+}
+
+function specialtyFor(common: string, scientific: string) {
+  const species = `${common} ${scientific}`.toLowerCase();
+  const rules: Array<[string[], string]> = [
+    [["ginkgo"], "Neurology"],
+    [["hawthorn", "crataegus"], "Cardiology"],
+    [["horse chestnut", "aesculus", "buckeye"], "Vascular Medicine"],
+    [["red maple", "red oak", "redcedar", "scarlet oak", "crimson king"], "Hematology"],
+    [["linden", "tilia"], "Psychiatry"],
+    [["hemlock", "tsuga", "douglas-fir", "pseudotsuga", "drooping", "cedar of lebanon"], "Sleep Medicine"],
+    [["oak", "quercus", "beech", "fagus", "redwood", "sequoia", "metasequoia"], "Geriatrics"],
+    [["honeylocust", "gleditsia", "planetree", "platanus", "london planetree"], "Internal Medicine"],
+    [["maple", "acer", "sweetgum", "liquidambar", "blackgum", "nyssa"], "Endocrinology"],
+    [["willow", "salix"], "Pain Management"],
+    [["ash", "fraxinus", "hornbeam", "carpinus", "ostrya", "ironwood", "parrotia"], "Orthopedics"],
+    [["black pine", "pinus nigra"], "Emergency Medicine"],
+    [["pine", "pinus", "spruce", "picea", "fir", "abies", "cedar", "juniper", "arborvitae", "cypress", "catalpa"], "Pulmonology"],
+    [["river birch"], "Urology"],
+    [["zelkova", "elm", "ulmus", "birch", "betula", "paperbark", "sycamore"], "Dermatology"],
+    [["magnolia", "tulip", "liriodendron"], "Women's Health"],
+    [["cherry", "plum", "prunus", "serviceberry", "dogwood", "cornus", "redbud", "cercis", "silverbell", "snowbell"], "Pediatrics"],
+    [["apple", "malus", "hackberry", "celtis", "coffeetree", "gymnocladus"], "Gastroenterology"],
+    [["walnut", "juglans", "chestnut", "castanea", "hazelnut", "corylus", "mulberry", "morus", "pear", "pyrus"], "Nutrition and Weight Management"],
+    [["sophora", "styphnolobium", "pagoda", "locust", "robinia", "mimosa", "albizia"], "Allergy and Immunology"],
+    [["holly", "ilex", "maackia", "katsura", "hardy rubber"], "Preventive Medicine"],
+    [["amur cork", "phellodendron", "sassafras", "ailanthus", "tree of heaven"], "Infectious Disease"],
+    [["alder", "alnus", "cottonwood", "populus deltoides"], "Nephrology"],
+    [["lilac", "syringa", "fringetree", "chionanthus"], "ENT / Otolaryngology"],
+    [["empress", "paulownia", "golden rain", "koelreuteria"], "Ophthalmology"],
+    [["eucommia", "rubber tree", "yellowwood", "cladrastis"], "Rheumatology"],
+    [["smoketree", "cotinus"], "Oncology"],
+    [["aspen", "populus tremuloides", "larch", "larix"], "Sports Medicine"],
+    [["crepe myrtle", "lagerstroemia", "goldenrain"], "Family Medicine"],
+  ];
+
+  return rules.find(([needles]) => needles.some((needle) => species.includes(needle)))?.[1] || pick(specialtyFallbacks, species);
+}
+
+function experienceLevel(years: number) {
+  if (years >= 32) return "Ancient attending";
+  if (years >= 20) return "Seasoned canopy clinician";
+  if (years >= 8) return "Established neighborhood healer";
+  return "Newly rooted resident";
+}
+
+function buildProvider(row: (typeof treeProviderRows)[number]): Provider {
+  const [providerId, speciesCommon, speciesScientific, clinicAddress, clinicZipcode, clinicCity, clinicNeighborhood, clinicLatitude, clinicLongitude, treeDbh, health, steward, guards, sidewalk, problems] = row;
+  const seed = String(providerId);
+  const medicalSpecialty = specialtyFor(speciesCommon, speciesScientific);
+  const conditions = conditionPools[medicalSpecialty] || conditionPools["Internal Medicine"];
+  const searchableConditions = Array.from({ length: Math.min(5, conditions.length) }, (_, index) => pick(conditions, seed, index)).filter(
+    (condition, index, list) => list.indexOf(condition) === index,
+  );
+  const yearsOfPractice = Math.min(45, Math.max(1, Math.round(treeDbh * 1.7 + (hash(seed) % 7))));
+  const yearsAtCurrentSpot = Math.max(1, Math.round(yearsOfPractice * 0.62));
+  const problemPenalty = problems === "None" ? 0 : Math.min(0.8, problems.split(",").length * 0.18);
+  const healthBoost = health === "Good" ? 0.35 : health === "Fair" ? 0.1 : -0.25;
+  const starDoctor = hash(`${seed}:star`) % 10 === 0;
+  const careRating = Math.max(2.2, Math.min(5, 3.9 + healthBoost + (starDoctor ? 0.35 : 0) - problemPenalty + (hash(`${seed}:rating`) % 9) / 20));
+  const careAccessibilityScore = Math.max(35, Math.min(100, 92 + (sidewalk === "NoDamage" ? 6 : -8) + (guards === "None" ? 0 : 4) - problemPenalty * 14));
+  const shadeSideMannerScore = Math.max(2, Math.min(5, careRating + (steward === "None" ? -0.05 : 0.18)));
+  const nextAvailableVisitDays = Math.max(0, Math.min(19, Math.round(8 - (starDoctor ? 2 : 0) - (careRating - 4) + (hash(`${seed}:wait`) % 7))));
+  const weekendAvailability = hash(`${seed}:weekend`) % 3 === 0;
+  const stormResponseReadiness = problems === "None" ? "Standard" : careAccessibilityScore > 85 ? "High" : "Medium";
+  const providerType = starDoctor
+    ? pick(["Star tree doctor", "Popular canopy clinician", "Highly rated shade specialist"], seed)
+    : pick(["Neighborhood care tree", "Friendly curbside generalist", "Community-rooted care tree", "Curbside shade provider"], seed);
+  const audience = searchableConditions.slice(0, 2).join(" and ");
+
+  return {
+    providerId,
+    speciesCommon,
+    speciesScientific,
+    medicalSpecialty,
+    specialtyDescription: `${medicalSpecialty} is assigned from the ${speciesCommon} species profile, following PCT's species-to-specialty mapping rules.`,
+    searchableConditions,
+    providerType,
+    treeExperienceLevel: experienceLevel(yearsOfPractice),
+    yearsOfPractice,
+    yearsAtCurrentSpot,
+    careRating: Number(careRating.toFixed(1)),
+    reviewCount: Math.max(1, Math.round(yearsOfPractice * 3.4 + (starDoctor ? 46 : 8) + (hash(`${seed}:reviews`) % 35))),
+    starDoctor,
+    popularityBadge: starDoctor ? "Star doctor" : "Neighborhood regular",
+    nextAvailableVisitDays,
+    weekendAvailability,
+    stormResponseReadiness,
+    careAccessibilityScore: Math.round(careAccessibilityScore),
+    shadeSideMannerScore: Number(shadeSideMannerScore.toFixed(1)),
+    carePhilosophy: `Care begins with proximity: this ${speciesCommon} turns a real ${clinicNeighborhood} sidewalk into a place for ${medicalSpecialty.toLowerCase()}-minded attention.`,
+    providerBio: `At ${clinicAddress}, this ${speciesCommon} uses shade, street rhythm, and species memory to support ${audience || "general care"} concerns.`,
+    clinicDescription: `Patients find this practice at a documented NYC street-tree location in ${clinicNeighborhood}, where the waiting room is sidewalk, canopy, and weather.`,
+    patientReviewSummary: `Visitors describe the care as local, specific, and rooted in the reality of the block rather than a remote provider network.`,
+    careAudience: `People seeking ${medicalSpecialty.toLowerCase()} support near ${clinicNeighborhood}`,
+    primaryCareServices: searchableConditions.slice(0, 4).map((condition) => `${titleCase(condition)} consult`),
+    signaturePrescription: pick(
+      [
+        "Start with the nearest shade, then let the block tell you what your body already noticed.",
+        "Spend ten minutes under the canopy before deciding whether the symptom is urgent or environmental.",
+        "Walk one slower block, record the air, and return to this provider when the street changes.",
+        "Hydrate, pause, and let the closest tree become the first part of the care plan.",
+      ],
+      seed,
+    ),
+    officeVibe: pick(["Local, practical, and shade-forward", "Quiet curbside care", "Block-level attention", "Canopy-first and unhurried"], seed),
+    waitingRoomFeature: sidewalk === "NoDamage" ? "A usable sidewalk pause" : "A real sidewalk with some urban friction",
+    leafPaperworkLevel: problems === "None" ? "Light intake" : "Moderate environmental notes",
+    branchOfficeStatus: treeDbh > 22 ? "Wide canopy practice" : "Single-tree curbside practice",
+    clinicName: `${clinicNeighborhood} ${speciesCommon} ${medicalSpecialty}`,
+    clinicAddress,
+    clinicZipcode,
+    clinicCity,
+    clinicNeighborhood,
+    clinicState: "NY",
+    clinicLatitude,
+    clinicLongitude,
+  };
+}
+
+export const providers: Provider[] = treeProviderRows.map(buildProvider);
 
 export function zipDistance(a: string, b: string) {
   const left = Number(a);
@@ -377,13 +277,15 @@ export function rankProviders(
         ...provider,
         conditionMatch,
         distance,
-        distanceLabel: coordinates ? `${distance.toFixed(1)} mi` : `${distance} ZIP units`,
+        distanceLabel: coordinates ? `${distance.toFixed(2)} mi` : `${distance} ZIP units`,
         locationMatchLabel: coordinates
-          ? distance < 0.5
-            ? "same walking area"
-            : distance < 2
-              ? "near your pin"
-              : "closest available"
+          ? distance < 0.15
+            ? "on this block"
+            : distance < 0.5
+              ? "same walking area"
+              : distance < 2
+                ? "near your pin"
+                : "closest available"
           : distance === 0
             ? "same ZIP"
             : distance < 25
