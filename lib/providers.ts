@@ -350,28 +350,28 @@ export function rankProviders(
   coordinates?: { latitude: number; longitude: number },
 ): ProviderMatch[] {
   const normalizedSymptom = symptom.trim().toLowerCase();
+  const hasSymptom = normalizedSymptom.length > 0;
 
   return providers
     .map((provider) => {
-      const conditionMatch = provider.searchableConditions.some((condition) =>
-        condition.toLowerCase().includes(normalizedSymptom),
-      );
-      const specialtyMatch = provider.medicalSpecialty.toLowerCase().includes(normalizedSymptom);
+      const conditionMatch =
+        hasSymptom &&
+        provider.searchableConditions.some((condition) => condition.toLowerCase().includes(normalizedSymptom));
+      const specialtyMatch = hasSymptom && provider.medicalSpecialty.toLowerCase().includes(normalizedSymptom);
       const distance = coordinates
         ? coordinateDistanceMiles(coordinates, {
             latitude: provider.clinicLatitude,
             longitude: provider.clinicLongitude,
           })
         : zipDistance(provider.clinicZipcode, zipcode);
-      const proximityScore = coordinates ? Math.max(0, 120 - distance * 13) : Math.max(0, 92 - distance);
+      const proximityScore = coordinates ? Math.max(0, 180 - distance * 24) : Math.max(0, 140 - distance * 2);
       const matchScore =
-        (conditionMatch ? 22 : 0) +
-        (specialtyMatch ? 8 : 0) +
+        (conditionMatch ? 12 : 0) +
+        (specialtyMatch ? 4 : 0) +
         proximityScore +
-        provider.careAccessibilityScore * 0.18 +
-        provider.careRating * 2 +
-        (provider.starDoctor ? 3 : 0) -
-        provider.nextAvailableVisitDays * 0.5;
+        provider.careAccessibilityScore * 0.08 +
+        provider.careRating -
+        provider.nextAvailableVisitDays * 0.25;
 
       return {
         ...provider,
@@ -392,5 +392,10 @@ export function rankProviders(
         matchScore,
       };
     })
-    .sort((a, b) => b.matchScore - a.matchScore);
+    .sort((a, b) => {
+      const locationDifference = a.distance - b.distance;
+      const meaningfulLocationGap = coordinates ? 0.1 : 0;
+      if (Math.abs(locationDifference) > meaningfulLocationGap) return locationDifference;
+      return b.matchScore - a.matchScore;
+    });
 }

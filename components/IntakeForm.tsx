@@ -78,6 +78,8 @@ export function IntakeForm({
   const [pin, setPin] = useState(() =>
     hasInitialPin ? getPinFromCoordinates(initialLat as number, initialLng as number) : defaultPin,
   );
+  const [hasChosenPin, setHasChosenPin] = useState(hasInitialPin);
+  const hasLocation = locationMode === "pin" ? hasChosenPin : zipcode.trim().length === 5;
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -92,16 +94,19 @@ export function IntakeForm({
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    const params = new URLSearchParams({ symptom: symptom || "anxiety" });
+    if (!hasLocation) return;
+
+    const params = new URLSearchParams();
+    if (symptom.trim()) params.set("symptom", symptom.trim());
 
     if (locationMode === "pin") {
       params.set("location", "pin");
       params.set("lat", pin.latitude.toFixed(5));
       params.set("lng", pin.longitude.toFixed(5));
-      params.set("zip", zipcode || "10014");
+      params.set("zip", zipcode.trim() || "10014");
     } else {
       params.set("location", "zip");
-      params.set("zip", zipcode || "10014");
+      params.set("zip", zipcode.trim());
     }
 
     router.push(`/providers?${params.toString()}`);
@@ -135,6 +140,7 @@ export function IntakeForm({
               inputMode="numeric"
               maxLength={5}
               placeholder="11215"
+              required={locationMode === "zip"}
               value={zipcode}
               onChange={(event) => setZipcode(event.target.value)}
             />
@@ -143,10 +149,16 @@ export function IntakeForm({
       ) : (
         <div className="pin-map-field">
           <span>Drop a pin in NYC</span>
-          <LeafletPinMap pin={pin} onChange={setPin} />
+          <LeafletPinMap
+            pin={pin}
+            onChange={(nextPin) => {
+              setPin(nextPin);
+              setHasChosenPin(true);
+            }}
+          />
           <p>
-            Scroll or use map controls to zoom. Click the map to move the pin. Pin set at {pin.latitude.toFixed(4)},{" "}
-            {pin.longitude.toFixed(4)}
+            Scroll or use map controls to zoom. Click the map to set the required location.
+            {hasChosenPin ? ` Pin set at ${pin.latitude.toFixed(4)}, ${pin.longitude.toFixed(4)}` : ""}
           </p>
         </div>
       )}
@@ -162,11 +174,27 @@ export function IntakeForm({
             onClick={() => setIsPickerOpen((open) => !open)}
           >
             <Stethoscope aria-hidden="true" size={18} />
-            <span className={symptom ? "" : "placeholder"}>{symptom || "Select a symptom"}</span>
+            <span className={symptom ? "" : "placeholder"}>{symptom || "Optional symptom"}</span>
             <ChevronDown aria-hidden="true" size={17} />
           </button>
           {isPickerOpen ? (
             <div className="symptom-menu" role="listbox" aria-label="Symptom">
+              <div className="symptom-group">
+                <span>Optional</span>
+                <div>
+                  <button
+                    type="button"
+                    role="option"
+                    aria-selected={!symptom}
+                    onClick={() => {
+                      setSymptom("");
+                      setIsPickerOpen(false);
+                    }}
+                  >
+                    No symptom, closest tree
+                  </button>
+                </div>
+              </div>
               {symptomGroups.map((group) => (
                 <div className="symptom-group" key={group.label}>
                   <span>{group.label}</span>
@@ -192,7 +220,7 @@ export function IntakeForm({
           ) : null}
         </div>
       </label>
-      <button type="submit" className="primary-button">
+      <button type="submit" className="primary-button" disabled={!hasLocation}>
         <span>Find a PCT</span>
         <ArrowRight aria-hidden="true" size={18} />
       </button>

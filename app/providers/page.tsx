@@ -24,7 +24,9 @@ export default async function ProvidersPage({
 }) {
   const params = await searchParams;
   const zipcode = params.zip || "11215";
-  const symptom = params.symptom || "fall risk";
+  const symptom = params.symptom?.trim() || "";
+  const symptomLabel = symptom || "general care";
+  const hasSymptom = symptom.length > 0;
   const latitude = Number(params.lat);
   const longitude = Number(params.lng);
   const hasPinnedLocation = params.location === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
@@ -91,7 +93,7 @@ export default async function ProvidersPage({
             </div>
             <div>
               <dt>Symptom</dt>
-              <dd>{symptom}</dd>
+              <dd>{hasSymptom ? symptom : "Optional"}</dd>
             </div>
             <div>
               <dt>Assigned PCT</dt>
@@ -134,7 +136,7 @@ export default async function ProvidersPage({
           <div>
             <div className="eyebrow dark">
               <Search aria-hidden="true" size={15} />
-              {symptom} near {originLabel}
+              {symptomLabel} near {originLabel}
             </div>
             <h2>Ranked care canopy</h2>
             <p>
@@ -178,9 +180,9 @@ export default async function ProvidersPage({
               {selectedProvider.clinicCity}, {selectedProvider.clinicState} {selectedProvider.clinicZipcode}
             </address>
             <p>
-              This location-first match starts from {originLabel}, then checks {symptom} against nearby tree-provider
-              specialties. The map pin is centered on the provider&apos;s NYC coordinates in{" "}
-              {selectedProvider.clinicNeighborhood}.
+              This location-first match starts from {originLabel}
+              {hasSymptom ? `, then checks ${symptom} against nearby tree-provider specialties` : ""}. The map pin is
+              centered on the provider&apos;s NYC coordinates in {selectedProvider.clinicNeighborhood}.
             </p>
             <div className="map-actions">
               <a href={openStreetMapUrl} target="_blank" rel="noreferrer">
@@ -297,7 +299,9 @@ export default async function ProvidersPage({
               <div>
                 <h3>Condition fit</h3>
                 <p>
-                  The intake matched {symptom} against this provider&apos;s searchable conditions and care service list.
+                  {hasSymptom
+                    ? `The intake matched ${symptom} against this provider's searchable conditions and care service list.`
+                    : "No symptom was entered, so the system prioritized the closest available provider trees first."}
                 </p>
               </div>
               <div className="service-tags">
@@ -313,7 +317,8 @@ export default async function ProvidersPage({
                 <li>
                   <FileText aria-hidden="true" size={18} />
                   <span>
-                    Intake reviews your ZIP, stated symptom, sidewalk access, and whether the tree has weekend shade.
+                    Intake reviews your location, optional symptom, sidewalk access, and whether the tree has weekend
+                    shade.
                   </span>
                 </li>
                 <li>
@@ -333,7 +338,7 @@ export default async function ProvidersPage({
             </div>
 
             <div className="detail-section services-section">
-              <h3>Services for {symptom}</h3>
+              <h3>{hasSymptom ? `Services for ${symptom}` : "Primary care services"}</h3>
               <div className="service-tags">
                 {selectedProvider.primaryCareServices.map((service) => (
                   <span key={service}>{service}</span>

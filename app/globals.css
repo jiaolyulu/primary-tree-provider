@@ -578,6 +578,12 @@ input {
   grid-column: 1 / -1;
 }
 
+.primary-button:disabled {
+  background: transparent;
+  color: rgba(0, 122, 52, 0.42);
+  cursor: not-allowed;
+}
+
 .secondary-button {
   background: transparent;
   color: var(--green);
