@@ -15,7 +15,7 @@ import {
   Trees,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
-import { rankProviders } from "@/lib/providers";
+import { providerNetworkStats, rankProviders } from "@/lib/providers";
 
 export default async function ProvidersPage({
   searchParams,
@@ -30,7 +30,7 @@ export default async function ProvidersPage({
   const latitude = Number(params.lat);
   const longitude = Number(params.lng);
   const hasPinnedLocation = params.location === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
-  const rankedProviders = rankProviders(
+  const rankedProviders = await rankProviders(
     zipcode,
     symptom,
     hasPinnedLocation ? { latitude, longitude } : undefined,
@@ -111,7 +111,7 @@ export default async function ProvidersPage({
         <div className="dashboard-metrics" aria-label="Dashboard metrics">
           <div>
             <strong>{rankedProviders.length}</strong>
-            <span>eligible trees</span>
+            <span>nearby trees</span>
           </div>
           <div>
             <strong>{selectedProvider.distanceLabel}</strong>
@@ -147,6 +147,10 @@ export default async function ProvidersPage({
             </p>
           </div>
           <div className="network-snapshot" aria-label="Network summary">
+            <div>
+              <strong>{providerNetworkStats.totalProviders.toLocaleString()}</strong>
+              <span>NYC providers</span>
+            </div>
             <div>
               <strong>{starProviders}</strong>
               <span>nearby star providers</span>

@@ -1,4 +1,24 @@
-import { treeProviderRows } from "@/lib/tree-provider-rows";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
+import manifest from "@/data/provider-index/manifest.json";
+
+export type TreeProviderRow = [
+  number,
+  string,
+  string,
+  string,
+  string,
+  string,
+  string,
+  number,
+  number,
+  number,
+  string,
+  string,
+  string,
+  string,
+  string,
+];
 
 export type Provider = {
   providerId: number;
@@ -49,6 +69,11 @@ export type ProviderMatch = Provider & {
   matchScore: number;
 };
 
+const dataRoot = join(process.cwd(), "data", "provider-index");
+const gridCells = new Set<string>(manifest.gridCells);
+const zipcodes = manifest.zipcodes;
+const shardCache = new Map<string, Promise<TreeProviderRow[]>>();
+
 const conditionPools: Record<string, string[]> = {
   "Allergy and Immunology": ["seasonal allergies", "food allergies", "hives", "asthma triggers", "immune concerns", "sinus congestion", "eczema flares"],
   Cardiology: ["high blood pressure", "chest pain", "high cholesterol", "heart palpitations", "shortness of breath", "heart disease prevention"],
@@ -79,6 +104,12 @@ const conditionPools: Record<string, string[]> = {
   Urology: ["urinary tract infection", "urinary frequency", "kidney stones", "prostate concerns", "bladder pain", "incontinence"],
   "Vascular Medicine": ["leg swelling", "varicose veins", "poor circulation", "blood clot concerns", "cold feet", "leg pain when walking"],
   "Women's Health": ["well-woman visit", "menstrual concerns", "menopause symptoms", "contraception counseling", "pelvic pain", "breast health"],
+};
+
+export const providerNetworkStats = {
+  totalProviders: manifest.totalProviders,
+  zipCount: manifest.zipcodes.length,
+  specialtyCount: Object.keys(conditionPools).length,
 };
 
 const specialtyFallbacks = Object.keys(conditionPools);
@@ -144,7 +175,100 @@ function experienceLevel(years: number) {
   return "Newly rooted resident";
 }
 
-function buildProvider(row: (typeof treeProviderRows)[number]): Provider {
+function safeShardKey(value: string) {
+  return value.replace(/[^-\w]/g, "");
+}
+
+async function readShard(kind: "grid" | "zip", key: string) {
+  const safeKey = safeShardKey(key);
+  const cacheKey = `${kind}/${safeKey}`;
+  const existing = shardCache.get(cacheKey);
+  if (existing) return existing;
+
+  const pending = readFile(join(dataRoot, kind, `${safeKey}.json`), "utf8")
+    .then((content) => JSON.parse(content) as TreeProviderRow[])
+    .catch(() => []);
+  shardCache.set(cacheKey, pending);
+  return pending;
+}
+
+function dedupeRows(rows: TreeProviderRow[]) {
+  const seen = new Set<number>();
+  const deduped: TreeProviderRow[] = [];
+  for (const row of rows) {
+    if (seen.has(row[0])) continue;
+    seen.add(row[0]);
+    deduped.push(row);
+  }
+  return deduped;
+}
+
+function gridKey(latitude: number, longitude: number) {
+  const scale = manifest.cellSizeDegrees;
+  return `${Math.floor(latitude / scale)}_${Math.floor(longitude / scale)}`;
+}
+
+function nearbyGridKeys(latitude: number, longitude: number, ring: number) {
+  const scale = manifest.cellSizeDegrees;
+  const baseLatitude = Math.floor(latitude / scale);
+  const baseLongitude = Math.floor(longitude / scale);
+  const keys: string[] = [];
+
+  for (let latitudeOffset = -ring; latitudeOffset <= ring; latitudeOffset += 1) {
+    for (let longitudeOffset = -ring; longitudeOffset <= ring; longitudeOffset += 1) {
+      if (ring > 0 && Math.abs(latitudeOffset) !== ring && Math.abs(longitudeOffset) !== ring) continue;
+      const key = `${baseLatitude + latitudeOffset}_${baseLongitude + longitudeOffset}`;
+      if (gridCells.has(key)) keys.push(key);
+    }
+  }
+
+  return keys;
+}
+
+async function rowsForZip(zipcode: string) {
+  const normalizedZipcode = safeShardKey(zipcode);
+  if (zipcodes.includes(normalizedZipcode)) {
+    return readShard("zip", normalizedZipcode);
+  }
+
+  const nearestZipcodes = zipcodes
+    .map((candidate) => ({ candidate, distance: zipDistance(candidate, normalizedZipcode) }))
+    .sort((a, b) => a.distance - b.distance)
+    .slice(0, 5)
+    .map(({ candidate }) => candidate);
+  return dedupeRows((await Promise.all(nearestZipcodes.map((candidate) => readShard("zip", candidate)))).flat());
+}
+
+async function rowsForCoordinates(
+  zipcode: string,
+  coordinates: { latitude: number; longitude: number },
+) {
+  const loadedKeys = new Set<string>();
+  const rows: TreeProviderRow[] = [];
+
+  for (let ring = 0; ring <= 8; ring += 1) {
+    const keys = nearbyGridKeys(coordinates.latitude, coordinates.longitude, ring).filter((key) => !loadedKeys.has(key));
+    keys.forEach((key) => loadedKeys.add(key));
+    rows.push(...(await Promise.all(keys.map((key) => readShard("grid", key)))).flat());
+    if (rows.length >= 300) break;
+  }
+
+  if (rows.length < 24 && zipcode) {
+    rows.push(...(await rowsForZip(zipcode)));
+  }
+
+  return dedupeRows(rows);
+}
+
+async function candidateRows(
+  zipcode: string,
+  coordinates?: { latitude: number; longitude: number },
+) {
+  if (coordinates) return rowsForCoordinates(zipcode, coordinates);
+  return rowsForZip(zipcode);
+}
+
+function buildProvider(row: TreeProviderRow): Provider {
   const [providerId, speciesCommon, speciesScientific, clinicAddress, clinicZipcode, clinicCity, clinicNeighborhood, clinicLatitude, clinicLongitude, treeDbh, health, steward, guards, sidewalk, problems] = row;
   const seed = String(providerId);
   const medicalSpecialty = specialtyFor(speciesCommon, speciesScientific);
@@ -218,8 +342,6 @@ function buildProvider(row: (typeof treeProviderRows)[number]): Provider {
   };
 }
 
-export const providers: Provider[] = treeProviderRows.map(buildProvider);
-
 export function zipDistance(a: string, b: string) {
   const left = Number(a);
   const right = Number(b);
@@ -244,15 +366,17 @@ export function coordinateDistanceMiles(
   return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
 }
 
-export function rankProviders(
+export async function rankProviders(
   zipcode: string,
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
-): ProviderMatch[] {
+): Promise<ProviderMatch[]> {
   const normalizedSymptom = symptom.trim().toLowerCase();
   const hasSymptom = normalizedSymptom.length > 0;
+  const rows = await candidateRows(zipcode, coordinates);
 
-  return providers
+  return rows
+    .map(buildProvider)
     .map((provider) => {
       const conditionMatch =
         hasSymptom &&
