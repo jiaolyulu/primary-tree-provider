@@ -316,6 +316,7 @@ export type ProviderMatch = Provider & {
   conditionMatch: boolean;
   distance: number;
   distanceLabel: string;
+  locationMatchLabel: string;
   matchScore: number;
 };
 
@@ -362,20 +363,32 @@ export function rankProviders(
             longitude: provider.clinicLongitude,
           })
         : zipDistance(provider.clinicZipcode, zipcode);
-      const proximityScore = coordinates ? Math.max(0, 72 - distance * 7.5) : Math.max(0, 54 - distance / 2);
+      const proximityScore = coordinates ? Math.max(0, 120 - distance * 13) : Math.max(0, 92 - distance);
       const matchScore =
-        (conditionMatch ? 34 : 0) +
-        (specialtyMatch ? 14 : 0) +
+        (conditionMatch ? 22 : 0) +
+        (specialtyMatch ? 8 : 0) +
         proximityScore +
-        provider.careRating * 4 +
-        (provider.starDoctor ? 7 : 0) -
-        provider.nextAvailableVisitDays;
+        provider.careAccessibilityScore * 0.18 +
+        provider.careRating * 2 +
+        (provider.starDoctor ? 3 : 0) -
+        provider.nextAvailableVisitDays * 0.5;
 
       return {
         ...provider,
         conditionMatch,
         distance,
         distanceLabel: coordinates ? `${distance.toFixed(1)} mi` : `${distance} ZIP units`,
+        locationMatchLabel: coordinates
+          ? distance < 0.5
+            ? "same walking area"
+            : distance < 2
+              ? "near your pin"
+              : "closest available"
+          : distance === 0
+            ? "same ZIP"
+            : distance < 25
+              ? "nearby ZIP"
+              : "closest available",
         matchScore,
       };
     })

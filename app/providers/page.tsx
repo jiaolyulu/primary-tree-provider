@@ -42,7 +42,9 @@ export default async function ProvidersPage({
   );
   const starProviders = rankedProviders.filter((provider) => provider.starDoctor).length;
   const providerNumber = `PCT-${String(selectedProvider.providerId).slice(-4)}`;
-  const matchLabel = selectedProvider.conditionMatch ? "direct symptom match" : "specialty-adjacent match";
+  const matchLabel = selectedProvider.conditionMatch
+    ? `location-first / ${selectedProvider.locationMatchLabel} / symptom fit`
+    : `location-first / ${selectedProvider.locationMatchLabel}`;
   const topConditionTags = selectedProvider.searchableConditions.slice(0, 5);
   const selectedLatitude = selectedProvider.clinicLatitude;
   const selectedLongitude = selectedProvider.clinicLongitude;
@@ -122,9 +124,8 @@ export default async function ProvidersPage({
         </div>
 
         <p className="sidebar-note">
-          Ranking combines symptom relevance, ZIP proximity, access, availability, shade-side manner, and star-provider
-          status. The interface is shaped from PCT fields used for tree IDs, species, clinic location, care services, and
-          patient-facing recommendations.
+          Ranking is location-first: the closest provider trees receive the strongest priority, then symptom relevance,
+          access, availability, shade-side manner, and star-provider status refine the order.
         </p>
       </aside>
 
@@ -177,8 +178,9 @@ export default async function ProvidersPage({
               {selectedProvider.clinicCity}, {selectedProvider.clinicState} {selectedProvider.clinicZipcode}
             </address>
             <p>
-              This match is tuned for {symptom} and nearby sidewalk access from {originLabel}. The map pin is centered
-              on the provider&apos;s NYC coordinates in {selectedProvider.clinicNeighborhood}.
+              This location-first match starts from {originLabel}, then checks {symptom} against nearby tree-provider
+              specialties. The map pin is centered on the provider&apos;s NYC coordinates in{" "}
+              {selectedProvider.clinicNeighborhood}.
             </p>
             <div className="map-actions">
               <a href={openStreetMapUrl} target="_blank" rel="noreferrer">
@@ -216,7 +218,7 @@ export default async function ProvidersPage({
                   ) : null}
                 </div>
                 <div className="match-row">
-                  <strong>{provider.conditionMatch ? "Symptom fit" : "Nearby specialty"}</strong>
+                  <strong>{provider.locationMatchLabel}</strong>
                   <span>{provider.distanceLabel}</span>
                 </div>
                 <div className="card-stats">
