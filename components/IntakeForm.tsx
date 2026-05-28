@@ -1,8 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
-import { ArrowRight, MapPin, Stethoscope } from "lucide-react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { ArrowRight, ChevronDown, MapPin, Stethoscope } from "lucide-react";
 
 const symptomGroups = [
   {
@@ -41,8 +41,21 @@ export function IntakeForm({
   initialSymptom?: string;
 }) {
   const router = useRouter();
+  const pickerRef = useRef<HTMLDivElement>(null);
   const [zipcode, setZipcode] = useState(initialZip);
   const [symptom, setSymptom] = useState(initialSymptom);
+  const [isPickerOpen, setIsPickerOpen] = useState(false);
+
+  useEffect(() => {
+    function handlePointerDown(event: PointerEvent) {
+      if (!pickerRef.current?.contains(event.target as Node)) {
+        setIsPickerOpen(false);
+      }
+    }
+
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => document.removeEventListener("pointerdown", handlePointerDown);
+  }, []);
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -70,24 +83,43 @@ export function IntakeForm({
       </label>
       <label>
         <span>Symptom</span>
-        <div className="field-wrap">
-          <Stethoscope aria-hidden="true" size={18} />
-          <select
-            aria-label="Symptom"
-            value={symptom}
-            onChange={(event) => setSymptom(event.target.value)}
+        <div className="symptom-picker" ref={pickerRef}>
+          <button
+            type="button"
+            className="field-wrap symptom-trigger"
+            aria-expanded={isPickerOpen}
+            aria-haspopup="listbox"
+            onClick={() => setIsPickerOpen((open) => !open)}
           >
-            <option value="">Select a symptom</option>
-            {symptomGroups.map((group) => (
-              <optgroup key={group.label} label={group.label}>
-                {group.options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ))}
-              </optgroup>
-            ))}
-          </select>
+            <Stethoscope aria-hidden="true" size={18} />
+            <span className={symptom ? "" : "placeholder"}>{symptom || "Select a symptom"}</span>
+            <ChevronDown aria-hidden="true" size={17} />
+          </button>
+          {isPickerOpen ? (
+            <div className="symptom-menu" role="listbox" aria-label="Symptom">
+              {symptomGroups.map((group) => (
+                <div className="symptom-group" key={group.label}>
+                  <span>{group.label}</span>
+                  <div>
+                    {group.options.map((option) => (
+                      <button
+                        key={option}
+                        type="button"
+                        role="option"
+                        aria-selected={symptom === option}
+                        onClick={() => {
+                          setSymptom(option);
+                          setIsPickerOpen(false);
+                        }}
+                      >
+                        {option}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
       </label>
       <button type="submit" className="primary-button">
