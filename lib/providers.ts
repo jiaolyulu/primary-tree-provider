@@ -1,6 +1,4 @@
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
-import manifest from "@/data/provider-index/manifest.json";
+import manifest from "@/lib/provider-index-manifest.json";
 
 export type TreeProviderRow = [
   number,
@@ -69,7 +67,6 @@ export type ProviderMatch = Provider & {
   matchScore: number;
 };
 
-const dataRoot = join(process.cwd(), "data", "provider-index");
 const gridCells = new Set<string>(manifest.gridCells);
 const zipcodes = manifest.zipcodes;
 const shardCache = new Map<string, Promise<TreeProviderRow[]>>();
@@ -185,8 +182,9 @@ async function readShard(kind: "grid" | "zip", key: string) {
   const existing = shardCache.get(cacheKey);
   if (existing) return existing;
 
-  const pending = readFile(join(dataRoot, kind, `${safeKey}.json`), "utf8")
-    .then((content) => JSON.parse(content) as TreeProviderRow[])
+  const pending = fetch(`/provider-index/${kind}/${safeKey}.json`, { cache: "force-cache" })
+    .then((response) => (response.ok ? response.json() : []))
+    .then((rows) => rows as TreeProviderRow[])
     .catch(() => []);
   shardCache.set(cacheKey, pending);
   return pending;
@@ -250,7 +248,7 @@ async function rowsForCoordinates(
     const keys = nearbyGridKeys(coordinates.latitude, coordinates.longitude, ring).filter((key) => !loadedKeys.has(key));
     keys.forEach((key) => loadedKeys.add(key));
     rows.push(...(await Promise.all(keys.map((key) => readShard("grid", key)))).flat());
-    if (rows.length >= 300) break;
+    if (rows.length >= 120) break;
   }
 
   if (rows.length < 24 && zipcode) {

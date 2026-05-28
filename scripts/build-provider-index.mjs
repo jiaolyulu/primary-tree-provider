@@ -1,13 +1,14 @@
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const sourcePath = join(root, "lib", "tree-provider-rows.ts");
-const outputRoot = join(root, "data", "provider-index");
+const outputRoot = join(root, "public", "provider-index");
 const gridRoot = join(outputRoot, "grid");
 const zipRoot = join(outputRoot, "zip");
-const cellSizeDegrees = 0.01;
+const manifestPath = join(root, "lib", "provider-index-manifest.json");
+const cellSizeDegrees = 0.02;
 
 async function loadRows() {
   try {
@@ -26,6 +27,17 @@ async function loadRows() {
 
     return JSON.parse(source.slice(jsonStart, jsonEnd));
   } catch {
+    try {
+      const zipPath = join(outputRoot, "zip");
+      const files = await readdir(zipPath);
+      const buckets = await Promise.all(
+        files.filter((file) => file.endsWith(".json")).map((file) => readFile(join(zipPath, file), "utf8")),
+      );
+      return buckets.flatMap((content) => JSON.parse(content));
+    } catch {
+      // Fall through to NYC Open Data when neither the source TS fixture nor an existing index is present.
+    }
+
     const endpoint = new URL("https://data.cityofnewyork.us/resource/uvpi-gqnh.json");
     endpoint.searchParams.set("$limit", "50000");
     endpoint.searchParams.set(
@@ -106,13 +118,16 @@ for (const [zipcode, bucket] of zipBuckets) {
   await writeJson(join(zipRoot, `${zipcode}.json`), bucket);
 }
 
-await writeJson(join(outputRoot, "manifest.json"), {
+const manifest = {
   cellSizeDegrees,
   gridCells: [...gridBuckets.keys()].sort(),
   speciesCount: species.size,
   totalProviders: rows.length,
   neighborhoods: neighborhoods.size,
   zipcodes: [...zipBuckets.keys()].sort(),
-});
+};
+
+await writeJson(join(outputRoot, "manifest.json"), manifest);
+await writeJson(manifestPath, manifest);
 
 console.log(`Indexed ${rows.length} providers into ${gridBuckets.size} grid cells and ${zipBuckets.size} ZIP shards.`);
