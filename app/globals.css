@@ -429,6 +429,54 @@ input {
   z-index: 3;
 }
 
+.pin-zoom-controls {
+  align-items: center;
+  background: rgba(244, 246, 239, 0.94);
+  border: 1px solid var(--green);
+  color: var(--green);
+  display: grid;
+  grid-template-columns: 34px minmax(58px, auto) 34px;
+  left: 10px;
+  min-height: 36px;
+  position: absolute;
+  top: 10px;
+  z-index: 6;
+}
+
+.pin-zoom-controls button {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  color: var(--green);
+  cursor: pointer;
+  display: inline-flex;
+  height: 34px;
+  justify-content: center;
+  padding: 0;
+}
+
+.pin-zoom-controls button + span,
+.pin-zoom-controls span + button {
+  border-left: 1px solid var(--line-dark);
+}
+
+.pin-zoom-controls button:disabled {
+  color: rgba(0, 122, 52, 0.32);
+  cursor: not-allowed;
+}
+
+.pin-zoom-controls span {
+  align-items: center;
+  display: inline-flex;
+  font-size: 11px;
+  font-weight: 700;
+  height: 34px;
+  justify-content: center;
+  letter-spacing: 0.07em;
+  padding-inline: 10px;
+  text-transform: uppercase;
+}
+
 .dropped-pin {
   align-items: center;
   background: var(--green);
