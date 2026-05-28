@@ -74,6 +74,11 @@ export function ProviderDashboard() {
             <span>Searching local canopy</span>
             <strong>{providerNetworkStats.totalProviders.toLocaleString()}</strong>
             <p>Loading the nearest indexed tree-provider shards from the CDN.</p>
+            <ol>
+              <li>Locating your curbside search area</li>
+              <li>Reading nearby NYC Open Data tree records</li>
+              <li>Preparing your provider profile</li>
+            </ol>
           </div>
         </aside>
         <section className="provider-results provider-results-loading">
@@ -82,9 +87,22 @@ export function ProviderDashboard() {
             {symptomLabel} near {hasPinnedLocation ? "your dropped pin" : zipcode}
           </div>
           <div className="dashboard-skeleton" aria-label="Loading provider dashboard">
-            <span />
-            <span />
-            <span />
+            <div className="loading-map-preview">
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="loading-provider-preview">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <div className="loading-provider-preview small">
+              <span />
+              <span />
+              <span />
+            </div>
           </div>
         </section>
       </main>

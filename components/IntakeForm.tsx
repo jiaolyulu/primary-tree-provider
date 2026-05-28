@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { ArrowRight, ChevronDown, MapPin, Stethoscope } from "lucide-react";
+import { ArrowRight, ChevronDown, LoaderCircle, MapPin, Stethoscope } from "lucide-react";
 import { LeafletPinMap } from "@/components/LeafletPinMap";
 
 const symptomGroups = [
@@ -72,6 +72,7 @@ export function IntakeForm({
   const [zipcode, setZipcode] = useState(initialZip);
   const [symptom, setSymptom] = useState(initialSymptom);
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationMode, setLocationMode] = useState<"zip" | "pin">(
     initialLocationMode || (hasInitialPin ? "pin" : "zip"),
   );
@@ -92,6 +93,15 @@ export function IntakeForm({
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
 
+  useEffect(() => {
+    setZipcode(initialZip);
+    setSymptom(initialSymptom);
+    setLocationMode(initialLocationMode || (hasInitialPin ? "pin" : "zip"));
+    setPin(hasInitialPin ? getPinFromCoordinates(initialLat as number, initialLng as number) : defaultPin);
+    setHasChosenPin(hasInitialPin);
+    setIsSubmitting(false);
+  }, [initialZip, initialSymptom, initialLat, initialLng, initialLocationMode, hasInitialPin]);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!hasLocation) return;
@@ -109,11 +119,18 @@ export function IntakeForm({
       params.set("zip", zipcode.trim());
     }
 
-    router.push(`/providers?${params.toString()}`);
+    const targetUrl = `/providers?${params.toString()}`;
+    if (typeof window !== "undefined" && `${window.location.pathname}${window.location.search}` === targetUrl) {
+      return;
+    }
+
+    setIsPickerOpen(false);
+    setIsSubmitting(true);
+    router.push(targetUrl);
   }
 
   return (
-    <form className={compact ? "intake-form compact" : "intake-form"} onSubmit={handleSubmit}>
+    <form className={compact ? "intake-form compact" : "intake-form"} onSubmit={handleSubmit} aria-busy={isSubmitting}>
       <div className="location-mode-toggle" aria-label="Location input mode">
         <button
           type="button"
@@ -220,9 +237,13 @@ export function IntakeForm({
           ) : null}
         </div>
       </label>
-      <button type="submit" className="primary-button" disabled={!hasLocation}>
-        <span>Find a PCT</span>
-        <ArrowRight aria-hidden="true" size={18} />
+      <button type="submit" className="primary-button" disabled={!hasLocation || isSubmitting}>
+        <span>{isSubmitting ? "Finding PCT" : "Find a PCT"}</span>
+        {isSubmitting ? (
+          <LoaderCircle className="button-spinner" aria-hidden="true" size={18} />
+        ) : (
+          <ArrowRight aria-hidden="true" size={18} />
+        )}
       </button>
     </form>
   );
