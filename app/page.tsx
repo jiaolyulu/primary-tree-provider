@@ -6,7 +6,7 @@ const steps = [
   {
     number: "01",
     title: "Describe what is happening",
-    text: "Enter a ZIP code and symptom. The system reads the symptom as a care concern, not a diagnosis.",
+    text: "Enter a ZIP code or drop a pin, then choose a symptom. The system reads the symptom as a care concern, not a diagnosis.",
   },
   {
     number: "02",
@@ -162,7 +162,7 @@ export default function Home() {
           <div className="demo-header">
             <span>Primary intake</span>
             <h2>Care intake</h2>
-            <p>Enter a ZIP code and symptom to receive a nearby tree provider.</p>
+            <p>Enter a ZIP code or drop a pin, then choose a symptom to receive a nearby tree provider.</p>
           </div>
           <div className="demo-body">
             <IntakeForm />

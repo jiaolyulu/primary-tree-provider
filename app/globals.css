@@ -361,6 +361,97 @@ input {
   color: rgba(0, 122, 52, 0.58);
 }
 
+.location-mode-toggle {
+  border: 1px solid var(--green);
+  display: grid;
+  grid-column: 1 / -1;
+  grid-template-columns: 1fr 1fr;
+}
+
+.location-mode-toggle button {
+  background: transparent;
+  border: 0;
+  color: var(--green);
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  min-height: 42px;
+  text-transform: uppercase;
+}
+
+.location-mode-toggle button + button {
+  border-left: 1px solid var(--green);
+}
+
+.location-mode-toggle button[aria-pressed="true"] {
+  background: var(--green);
+  color: #fff;
+}
+
+.pin-map-field {
+  display: grid;
+  gap: 7px;
+  grid-column: 1 / -1;
+}
+
+.pin-map-field > span {
+  color: var(--green);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pin-map {
+  background: var(--paper-2);
+  border: 1px solid var(--green);
+  cursor: crosshair;
+  min-height: 190px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pin-map iframe {
+  border: 0;
+  display: block;
+  filter: grayscale(1) contrast(1.2) sepia(0.2) hue-rotate(72deg) saturate(1.25);
+  height: 100%;
+  min-height: 190px;
+  mix-blend-mode: multiply;
+  width: 100%;
+}
+
+.pin-map-hit-area {
+  inset: 0;
+  position: absolute;
+  z-index: 3;
+}
+
+.dropped-pin {
+  align-items: center;
+  background: var(--green);
+  border: 2px solid #fff;
+  color: #fff;
+  display: flex;
+  height: 34px;
+  justify-content: center;
+  left: 50%;
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  z-index: 4;
+}
+
+.pin-map-field p {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.35;
+  margin: 0;
+}
+
 .symptom-picker {
   position: relative;
 }

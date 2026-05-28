@@ -20,12 +20,19 @@ import { rankProviders } from "@/lib/providers";
 export default async function ProvidersPage({
   searchParams,
 }: {
-  searchParams: Promise<{ zip?: string; symptom?: string }>;
+  searchParams: Promise<{ zip?: string; symptom?: string; location?: string; lat?: string; lng?: string }>;
 }) {
   const params = await searchParams;
   const zipcode = params.zip || "11215";
   const symptom = params.symptom || "fall risk";
-  const rankedProviders = rankProviders(zipcode, symptom);
+  const latitude = Number(params.lat);
+  const longitude = Number(params.lng);
+  const hasPinnedLocation = params.location === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
+  const rankedProviders = rankProviders(
+    zipcode,
+    symptom,
+    hasPinnedLocation ? { latitude, longitude } : undefined,
+  );
   const selectedProvider = rankedProviders[0];
   const averageWait = Math.round(
     rankedProviders.reduce((total, provider) => total + provider.nextAvailableVisitDays, 0) / rankedProviders.length,
@@ -37,17 +44,18 @@ export default async function ProvidersPage({
   const providerNumber = `PCT-${String(selectedProvider.providerId).slice(-4)}`;
   const matchLabel = selectedProvider.conditionMatch ? "direct symptom match" : "specialty-adjacent match";
   const topConditionTags = selectedProvider.searchableConditions.slice(0, 5);
-  const latitude = selectedProvider.clinicLatitude;
-  const longitude = selectedProvider.clinicLongitude;
+  const selectedLatitude = selectedProvider.clinicLatitude;
+  const selectedLongitude = selectedProvider.clinicLongitude;
+  const originLabel = hasPinnedLocation ? "your dropped pin" : zipcode;
   const mapBBox = [
-    (longitude - 0.006).toFixed(5),
-    (latitude - 0.004).toFixed(5),
-    (longitude + 0.006).toFixed(5),
-    (latitude + 0.004).toFixed(5),
+    (selectedLongitude - 0.006).toFixed(5),
+    (selectedLatitude - 0.004).toFixed(5),
+    (selectedLongitude + 0.006).toFixed(5),
+    (selectedLatitude + 0.004).toFixed(5),
   ].join("%2C");
-  const openStreetMapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${mapBBox}&layer=mapnik&marker=${latitude}%2C${longitude}`;
-  const openStreetMapUrl = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=18/${latitude}/${longitude}`;
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude}%2C${longitude}`;
+  const openStreetMapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${mapBBox}&layer=mapnik&marker=${selectedLatitude}%2C${selectedLongitude}`;
+  const openStreetMapUrl = `https://www.openstreetmap.org/?mlat=${selectedLatitude}&mlon=${selectedLongitude}#map=18/${selectedLatitude}/${selectedLongitude}`;
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedLatitude}%2C${selectedLongitude}`;
 
   return (
     <main className="dashboard-page">
@@ -63,14 +71,21 @@ export default async function ProvidersPage({
             <h1>Find a nearby provider tree</h1>
           </div>
         </div>
-        <IntakeForm compact initialZip={zipcode} initialSymptom={symptom} />
+        <IntakeForm
+          compact
+          initialZip={zipcode}
+          initialSymptom={symptom}
+          initialLat={hasPinnedLocation ? latitude : undefined}
+          initialLng={hasPinnedLocation ? longitude : undefined}
+          initialLocationMode={hasPinnedLocation ? "pin" : "zip"}
+        />
 
         <div className="care-summary" aria-label="Current care search">
           <span>Current intake</span>
           <dl>
             <div>
-              <dt>ZIP</dt>
-              <dd>{zipcode}</dd>
+              <dt>Location</dt>
+              <dd>{hasPinnedLocation ? "Map pin" : zipcode}</dd>
             </div>
             <div>
               <dt>Symptom</dt>
@@ -93,8 +108,8 @@ export default async function ProvidersPage({
             <span>eligible trees</span>
           </div>
           <div>
-            <strong>{Math.round(selectedProvider.matchScore)}</strong>
-            <span>match score</span>
+            <strong>{selectedProvider.distanceLabel}</strong>
+            <span>top distance</span>
           </div>
           <div>
             <strong>{averageWait}d</strong>
@@ -118,7 +133,7 @@ export default async function ProvidersPage({
           <div>
             <div className="eyebrow dark">
               <Search aria-hidden="true" size={15} />
-              {symptom} near {zipcode}
+              {symptom} near {originLabel}
             </div>
             <h2>Ranked care canopy</h2>
             <p>
@@ -149,7 +164,7 @@ export default async function ProvidersPage({
             <div className="map-coordinate-card">
               <MapPin aria-hidden="true" size={16} />
               <span>
-                {latitude.toFixed(4)}, {longitude.toFixed(4)}
+                {selectedLatitude.toFixed(4)}, {selectedLongitude.toFixed(4)}
               </span>
             </div>
           </div>
@@ -162,8 +177,8 @@ export default async function ProvidersPage({
               {selectedProvider.clinicCity}, {selectedProvider.clinicState} {selectedProvider.clinicZipcode}
             </address>
             <p>
-              This match is tuned for {symptom} and nearby sidewalk access from {zipcode}. The map pin is centered on
-              the provider&apos;s NYC coordinates in {selectedProvider.clinicNeighborhood}.
+              This match is tuned for {symptom} and nearby sidewalk access from {originLabel}. The map pin is centered
+              on the provider&apos;s NYC coordinates in {selectedProvider.clinicNeighborhood}.
             </p>
             <div className="map-actions">
               <a href={openStreetMapUrl} target="_blank" rel="noreferrer">
@@ -201,14 +216,14 @@ export default async function ProvidersPage({
                   ) : null}
                 </div>
                 <div className="match-row">
-                  <strong>{Math.round(provider.matchScore)} match</strong>
-                  <span>{provider.conditionMatch ? "symptom fit" : "nearby specialty"}</span>
+                  <strong>{provider.conditionMatch ? "Symptom fit" : "Nearby specialty"}</strong>
+                  <span>{provider.distanceLabel}</span>
                 </div>
                 <div className="card-stats">
                   <span>{provider.careRating.toFixed(1)} rating</span>
                   <span>{provider.nextAvailableVisitDays}d wait</span>
                   <span>{provider.careAccessibilityScore} access</span>
-                  <span>{provider.distance} ZIP units</span>
+                  <span>{provider.distanceLabel}</span>
                 </div>
                 <p>{provider.providerBio}</p>
                 <div className="condition-chips">
@@ -350,7 +365,7 @@ export default async function ProvidersPage({
               <div className="location-meta">
                 <span>{selectedProvider.clinicNeighborhood}</span>
                 <span>
-                  {latitude.toFixed(5)}, {longitude.toFixed(5)}
+                  {selectedLatitude.toFixed(5)}, {selectedLongitude.toFixed(5)}
                 </span>
               </div>
             </div>

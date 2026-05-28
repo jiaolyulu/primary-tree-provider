@@ -312,6 +312,13 @@ export const providers: Provider[] = [
   },
 ];
 
+export type ProviderMatch = Provider & {
+  conditionMatch: boolean;
+  distance: number;
+  distanceLabel: string;
+  matchScore: number;
+};
+
 export function zipDistance(a: string, b: string) {
   const left = Number(a);
   const right = Number(b);
@@ -319,7 +326,28 @@ export function zipDistance(a: string, b: string) {
   return Math.abs(left - right);
 }
 
-export function rankProviders(zipcode: string, symptom: string) {
+export function coordinateDistanceMiles(
+  origin: { latitude: number; longitude: number },
+  destination: { latitude: number; longitude: number },
+) {
+  const earthRadiusMiles = 3958.8;
+  const toRadians = (degrees: number) => (degrees * Math.PI) / 180;
+  const latitudeDelta = toRadians(destination.latitude - origin.latitude);
+  const longitudeDelta = toRadians(destination.longitude - origin.longitude);
+  const originLatitude = toRadians(origin.latitude);
+  const destinationLatitude = toRadians(destination.latitude);
+  const haversine =
+    Math.sin(latitudeDelta / 2) ** 2 +
+    Math.cos(originLatitude) * Math.cos(destinationLatitude) * Math.sin(longitudeDelta / 2) ** 2;
+
+  return earthRadiusMiles * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine));
+}
+
+export function rankProviders(
+  zipcode: string,
+  symptom: string,
+  coordinates?: { latitude: number; longitude: number },
+): ProviderMatch[] {
   const normalizedSymptom = symptom.trim().toLowerCase();
 
   return providers
@@ -328,11 +356,17 @@ export function rankProviders(zipcode: string, symptom: string) {
         condition.toLowerCase().includes(normalizedSymptom),
       );
       const specialtyMatch = provider.medicalSpecialty.toLowerCase().includes(normalizedSymptom);
-      const distance = zipDistance(provider.clinicZipcode, zipcode);
+      const distance = coordinates
+        ? coordinateDistanceMiles(coordinates, {
+            latitude: provider.clinicLatitude,
+            longitude: provider.clinicLongitude,
+          })
+        : zipDistance(provider.clinicZipcode, zipcode);
+      const proximityScore = coordinates ? Math.max(0, 72 - distance * 7.5) : Math.max(0, 54 - distance / 2);
       const matchScore =
-        (conditionMatch ? 42 : 0) +
-        (specialtyMatch ? 20 : 0) +
-        Math.max(0, 28 - distance / 4) +
+        (conditionMatch ? 34 : 0) +
+        (specialtyMatch ? 14 : 0) +
+        proximityScore +
         provider.careRating * 4 +
         (provider.starDoctor ? 7 : 0) -
         provider.nextAvailableVisitDays;
@@ -341,6 +375,7 @@ export function rankProviders(zipcode: string, symptom: string) {
         ...provider,
         conditionMatch,
         distance,
+        distanceLabel: coordinates ? `${distance.toFixed(1)} mi` : `${distance} ZIP units`,
         matchScore,
       };
     })
