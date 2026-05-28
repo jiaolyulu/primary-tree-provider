@@ -1092,41 +1092,42 @@ details p {
 }
 
 .locator-map {
-  background:
-    linear-gradient(32deg, transparent 0 45%, rgba(0, 122, 52, 0.25) 45.2% 46.2%, transparent 46.4%),
-    linear-gradient(112deg, transparent 0 54%, rgba(0, 122, 52, 0.18) 54.2% 55%, transparent 55.2%),
-    linear-gradient(90deg, rgba(0, 122, 52, 0.2) 1px, transparent 1px),
-    linear-gradient(rgba(0, 122, 52, 0.2) 1px, transparent 1px),
-    rgba(244, 246, 239, 0.92);
-  background-size: 22px 22px;
   border-right: 1px solid var(--line-dark);
   min-height: 220px;
   position: relative;
 }
 
-.map-node {
-  background: var(--green);
-  border-radius: 999px;
-  height: 13px;
-  left: var(--x);
-  position: absolute;
-  top: var(--y);
-  transform: translate(-50%, -50%);
-  width: 13px;
+.real-map {
+  background: var(--paper-2);
+  overflow: hidden;
 }
 
-.map-node.selected {
-  background: #fff;
-  border: 5px solid var(--green);
-  height: 28px;
-  width: 28px;
+.real-map iframe {
+  border: 0;
+  display: block;
+  filter: grayscale(1) contrast(1.22) sepia(0.18) hue-rotate(72deg) saturate(1.25);
+  height: 100%;
+  min-height: 300px;
+  mix-blend-mode: multiply;
+  width: 100%;
 }
 
-.locator-map svg {
-  bottom: 22px;
+.map-coordinate-card {
+  align-items: center;
+  background: rgba(244, 246, 239, 0.92);
+  border: 1px solid var(--line-dark);
+  bottom: 16px;
   color: var(--green);
+  display: flex;
+  font-size: 13px;
+  gap: 8px;
+  left: 16px;
+  padding: 9px 11px;
   position: absolute;
-  right: 24px;
+}
+
+.map-coordinate-card svg {
+  flex: 0 0 auto;
 }
 
 .locator-copy {
@@ -1143,11 +1144,46 @@ details p {
   margin: 12px 0;
 }
 
+.locator-copy address {
+  border-left: 1px solid var(--line-dark);
+  color: var(--green);
+  font-size: 19px;
+  font-style: normal;
+  line-height: 1.32;
+  margin: 0 0 16px;
+  padding-left: 14px;
+}
+
 .locator-copy p {
   color: var(--muted);
   font-size: 19px;
   line-height: 1.35;
   margin: 0;
+}
+
+.map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.map-actions a {
+  align-items: center;
+  border: 1px solid var(--line-dark);
+  color: var(--green);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 700;
+  gap: 7px;
+  letter-spacing: 0.05em;
+  padding: 10px 12px;
+  text-transform: uppercase;
+}
+
+.map-actions a:hover {
+  background: var(--green);
+  color: #fff;
 }
 
 .dashboard-grid {
@@ -1481,6 +1517,20 @@ details p {
   font-size: 18px;
   line-height: 1.35;
   margin: 10px 0 0;
+}
+
+.location-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.location-meta span {
+  border: 1px solid var(--line);
+  color: var(--green);
+  font-size: 13px;
+  padding: 7px 9px;
 }
 
 .review-box {

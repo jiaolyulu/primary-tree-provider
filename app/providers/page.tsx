@@ -1,8 +1,8 @@
 import Link from "next/link";
-import type { CSSProperties } from "react";
 import {
   ArrowLeft,
   CalendarDays,
+  ExternalLink,
   FileText,
   HeartPulse,
   Leaf,
@@ -37,20 +37,17 @@ export default async function ProvidersPage({
   const providerNumber = `PCT-${String(selectedProvider.providerId).slice(-4)}`;
   const matchLabel = selectedProvider.conditionMatch ? "direct symptom match" : "specialty-adjacent match";
   const topConditionTags = selectedProvider.searchableConditions.slice(0, 5);
-  const latitudeRange = {
-    min: Math.min(...rankedProviders.map((provider) => provider.clinicLatitude)),
-    max: Math.max(...rankedProviders.map((provider) => provider.clinicLatitude)),
-  };
-  const longitudeRange = {
-    min: Math.min(...rankedProviders.map((provider) => provider.clinicLongitude)),
-    max: Math.max(...rankedProviders.map((provider) => provider.clinicLongitude)),
-  };
-
-  const mapPosition = (latitude: number, longitude: number) =>
-    ({
-      "--x": `${18 + ((longitude - longitudeRange.min) / (longitudeRange.max - longitudeRange.min || 1)) * 64}%`,
-      "--y": `${82 - ((latitude - latitudeRange.min) / (latitudeRange.max - latitudeRange.min || 1)) * 64}%`,
-    }) as CSSProperties;
+  const latitude = selectedProvider.clinicLatitude;
+  const longitude = selectedProvider.clinicLongitude;
+  const mapBBox = [
+    (longitude - 0.006).toFixed(5),
+    (latitude - 0.004).toFixed(5),
+    (longitude + 0.006).toFixed(5),
+    (latitude + 0.004).toFixed(5),
+  ].join("%2C");
+  const openStreetMapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${mapBBox}&layer=mapnik&marker=${latitude}%2C${longitude}`;
+  const openStreetMapUrl = `https://www.openstreetmap.org/?mlat=${latitude}&mlon=${longitude}#map=18/${latitude}/${longitude}`;
+  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${latitude}%2C${longitude}`;
 
   return (
     <main className="dashboard-page">
@@ -142,24 +139,42 @@ export default async function ProvidersPage({
         </header>
 
         <div className="locator-panel" aria-label="Provider locator">
-          <div className="locator-map">
-            {rankedProviders.map((provider, index) => (
-              <span
-                key={provider.providerId}
-                className={index === 0 ? "map-node selected" : "map-node"}
-                style={mapPosition(provider.clinicLatitude, provider.clinicLongitude)}
-                title={`${provider.speciesCommon}, ${provider.clinicNeighborhood}`}
-              />
-            ))}
-            <MapPin aria-hidden="true" size={22} />
+          <div className="locator-map real-map">
+            <iframe
+              title={`Map showing ${selectedProvider.clinicName}`}
+              src={openStreetMapEmbedUrl}
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            />
+            <div className="map-coordinate-card">
+              <MapPin aria-hidden="true" size={16} />
+              <span>
+                {latitude.toFixed(4)}, {longitude.toFixed(4)}
+              </span>
+            </div>
           </div>
           <div className="locator-copy">
             <span>Selected provider</span>
             <h3>{selectedProvider.clinicName}</h3>
+            <address>
+              {selectedProvider.clinicAddress}
+              <br />
+              {selectedProvider.clinicCity}, {selectedProvider.clinicState} {selectedProvider.clinicZipcode}
+            </address>
             <p>
-              {selectedProvider.clinicAddress}, {selectedProvider.clinicNeighborhood}. This match is tuned for{" "}
-              {symptom} and nearby sidewalk access from {zipcode}.
+              This match is tuned for {symptom} and nearby sidewalk access from {zipcode}. The map pin is centered on
+              the provider&apos;s NYC coordinates in {selectedProvider.clinicNeighborhood}.
             </p>
+            <div className="map-actions">
+              <a href={openStreetMapUrl} target="_blank" rel="noreferrer">
+                OpenStreetMap
+                <ExternalLink aria-hidden="true" size={15} />
+              </a>
+              <a href={googleMapsUrl} target="_blank" rel="noreferrer">
+                Google Maps
+                <ExternalLink aria-hidden="true" size={15} />
+              </a>
+            </div>
           </div>
         </div>
 
@@ -332,6 +347,12 @@ export default async function ProvidersPage({
                 {selectedProvider.clinicZipcode}
               </p>
               <p>{selectedProvider.clinicDescription}</p>
+              <div className="location-meta">
+                <span>{selectedProvider.clinicNeighborhood}</span>
+                <span>
+                  {latitude.toFixed(5)}, {longitude.toFixed(5)}
+                </span>
+              </div>
             </div>
 
             <div className="visit-rules">
