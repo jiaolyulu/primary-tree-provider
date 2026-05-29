@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from "react";
 import {
   ArrowLeft,
   CalendarDays,
+  CreditCard,
   ExternalLink,
   FileText,
   HeartPulse,
@@ -19,6 +20,7 @@ import {
   Trees,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
+import { ProviderResultsMap } from "@/components/ProviderResultsMap";
 import { ProviderMatch, providerNetworkStats, rankProviders } from "@/lib/providers";
 
 export function ProviderDashboard() {
@@ -33,13 +35,16 @@ export function ProviderDashboard() {
   const longitude = Number(params.get("lng"));
   const hasPinnedLocation = params.get("location") === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
   const [rankedProviders, setRankedProviders] = useState<ProviderMatch[] | null>(null);
+  const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
 
   useEffect(() => {
     let isCurrent = true;
     setRankedProviders(null);
 
     rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined).then((matches) => {
-      if (isCurrent) setRankedProviders(matches);
+      if (!isCurrent) return;
+      setRankedProviders(matches);
+      setSelectedProviderId(matches[0]?.providerId ?? null);
     });
 
     return () => {
@@ -110,8 +115,13 @@ export function ProviderDashboard() {
   }
 
   const nearbyProviders = rankedProviders.slice(0, 100);
-  const displayedProviders = rankedProviders.slice(0, 12);
-  const selectedProvider = rankedProviders[0];
+  const displayedProviders = rankedProviders.slice(0, 5);
+  const selectedProvider =
+    rankedProviders.find((provider) => provider.providerId === selectedProviderId) || rankedProviders[0];
+  const selectedRank = Math.max(
+    0,
+    displayedProviders.findIndex((provider) => provider.providerId === selectedProvider.providerId),
+  );
   const averageWait = Math.round(
     nearbyProviders.reduce((total, provider) => total + provider.nextAvailableVisitDays, 0) / nearbyProviders.length,
   );
@@ -127,15 +137,20 @@ export function ProviderDashboard() {
   const selectedLatitude = selectedProvider.clinicLatitude;
   const selectedLongitude = selectedProvider.clinicLongitude;
   const originLabel = hasPinnedLocation ? "your dropped pin" : zipcode;
-  const mapBBox = [
-    (selectedLongitude - 0.006).toFixed(5),
-    (selectedLatitude - 0.004).toFixed(5),
-    (selectedLongitude + 0.006).toFixed(5),
-    (selectedLatitude + 0.004).toFixed(5),
-  ].join("%2C");
-  const openStreetMapEmbedUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${mapBBox}&layer=mapnik&marker=${selectedLatitude}%2C${selectedLongitude}`;
   const openStreetMapUrl = `https://www.openstreetmap.org/?mlat=${selectedLatitude}&mlon=${selectedLongitude}#map=18/${selectedLatitude}/${selectedLongitude}`;
   const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedLatitude}%2C${selectedLongitude}`;
+  const cardParams = new URLSearchParams();
+  cardParams.set("zip", zipcode);
+  cardParams.set("providerId", String(selectedProvider.providerId));
+  if (symptom) cardParams.set("symptom", symptom);
+  if (hasPinnedLocation) {
+    cardParams.set("location", "pin");
+    cardParams.set("lat", latitude.toFixed(5));
+    cardParams.set("lng", longitude.toFixed(5));
+  } else {
+    cardParams.set("location", "zip");
+  }
+  const cardUrl = `/card?${cardParams.toString()}`;
 
   return (
     <main className="dashboard-page">
@@ -238,11 +253,10 @@ export function ProviderDashboard() {
 
         <div className="locator-panel" aria-label="Provider locator">
           <div className="locator-map real-map">
-            <iframe
-              title={`Map showing ${selectedProvider.clinicName}`}
-              src={openStreetMapEmbedUrl}
-              loading="lazy"
-              referrerPolicy="no-referrer-when-downgrade"
+            <ProviderResultsMap
+              providers={displayedProviders}
+              selectedProviderId={selectedProvider.providerId}
+              onSelectProvider={setSelectedProviderId}
             />
             <div className="map-coordinate-card">
               <MapPin aria-hidden="true" size={16} />
@@ -254,6 +268,7 @@ export function ProviderDashboard() {
           <div className="locator-copy">
             <span>Selected provider</span>
             <h3>{selectedProvider.clinicName}</h3>
+            <div className="selected-rank-pill">Primary candidate #{selectedRank + 1}</div>
             <address>
               {selectedProvider.clinicAddress}
               <br />
@@ -265,6 +280,10 @@ export function ProviderDashboard() {
               centered on the provider&apos;s NYC coordinates in {selectedProvider.clinicNeighborhood}.
             </p>
             <div className="map-actions">
+              <Link href={cardUrl} className="choose-primary-link">
+                <CreditCard aria-hidden="true" size={15} />
+                Choose as Primary PCT
+              </Link>
               <a href={openStreetMapUrl} target="_blank" rel="noreferrer">
                 OpenStreetMap
                 <ExternalLink aria-hidden="true" size={15} />
@@ -282,7 +301,17 @@ export function ProviderDashboard() {
             {displayedProviders.map((provider, index) => (
               <article
                 key={provider.providerId}
-                className={index === 0 ? "provider-card selected" : "provider-card"}
+                className={provider.providerId === selectedProvider.providerId ? "provider-card selected" : "provider-card"}
+                role="button"
+                tabIndex={0}
+                aria-pressed={provider.providerId === selectedProvider.providerId}
+                onClick={() => setSelectedProviderId(provider.providerId)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    setSelectedProviderId(provider.providerId);
+                  }
+                }}
               >
                 <div className="provider-card-header">
                   <div>
