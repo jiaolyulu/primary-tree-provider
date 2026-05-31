@@ -8,8 +8,121 @@
   --line: rgba(0, 122, 52, 0.28);
   --line-dark: rgba(0, 122, 52, 0.62);
   --muted: rgba(6, 61, 34, 0.72);
-  --font-sans: "PCT Plex", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    sans-serif;
+  --font-body: "Libre Franklin", "PCT Plex", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", sans-serif;
+  --font-display: "Newsreader", Georgia, "Times New Roman", serif;
+}
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("/fonts/LibreFranklin-Regular-200.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 200;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("/fonts/LibreFranklin-Regular-300.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("/fonts/LibreFranklin-Regular-400.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("/fonts/LibreFranklin-Regular-500.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("/fonts/LibreFranklin-Regular-600.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Libre Franklin";
+  src: url("/fonts/LibreFranklin-Regular-700.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Regular-300.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Regular-400.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Regular-500.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Regular-700.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Italic-300.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Italic-400.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Italic-500.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Newsreader";
+  src: url("/fonts/Newsreader-Italic-700.ttf") format("truetype");
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
 }
 
 @font-face {
@@ -52,12 +165,49 @@ body {
     var(--paper);
   background-size: 54px 54px;
   color: var(--ink);
-  font-family: var(--font-sans);
+  font-family: var(--font-body);
 }
 
 a {
   color: inherit;
   text-decoration: none;
+}
+
+h1,
+h2,
+h3,
+.hero-copy h1,
+.demo-header h2,
+.metric-intro h2,
+.metric-card strong,
+.section h2,
+.closing-cta h2,
+.faq-intro h2,
+.results-header h2,
+.step-card h3,
+.provider-card h3,
+.detail-section h3,
+.testimonial-copy h2,
+.testimonial-card strong,
+.pricing-header h2,
+.pricing-card strong,
+summary,
+.sidebar-title h1,
+.locator-copy h3,
+.detail-hero h2,
+.card-page-header h1,
+.prescription-box p,
+.visit-rules p,
+.insurance-card-top strong,
+.card-primary-provider h2,
+.insurance-card-notes p {
+  font-family: var(--font-display);
+}
+
+h1 em,
+h2 em,
+h3 em {
+  font-style: italic;
 }
 
 button,
@@ -83,7 +233,7 @@ input {
   left: 0;
   letter-spacing: 0;
   min-height: 76px;
-  padding: 0 clamp(18px, 5vw, 82px);
+  padding: 0 24px;
   position: absolute;
   right: 0;
   top: 0;
@@ -99,20 +249,28 @@ input {
 }
 
 .hero-image {
-  background:
-    radial-gradient(circle at 72% 42%, rgba(255, 255, 255, 0.18), transparent 27%),
-    linear-gradient(90deg, rgba(0, 122, 52, 0.18), rgba(0, 122, 52, 0.05) 42%, rgba(0, 122, 52, 0.3)),
-    url("/images/pct-tree-hero.jpg") center -120px / 145% auto;
   filter: contrast(1.18) saturate(0.82);
   bottom: 0;
   left: 0;
+  overflow: hidden;
   position: absolute;
   right: 0;
   top: 76px;
 }
 
+.hero-image::before {
+  background: url("/images/pct-tree-hero.jpg") center -120px / 145% auto;
+  content: "";
+  inset: 0;
+  position: absolute;
+  transform: scaleX(-1);
+}
+
 .hero-image::after {
   background:
+    linear-gradient(180deg, rgba(0, 45, 20, 0.68) 0%, rgba(0, 72, 32, 0.42) 38%, rgba(0, 122, 52, 0.12) 72%, rgba(0, 122, 52, 0.02) 100%),
+    radial-gradient(circle at 72% 42%, rgba(255, 255, 255, 0.18), transparent 27%),
+    linear-gradient(90deg, rgba(0, 122, 52, 0.18), rgba(0, 122, 52, 0.05) 42%, rgba(0, 122, 52, 0.3)),
     linear-gradient(180deg, rgba(0, 122, 52, 0.06), rgba(0, 122, 52, 0.36)),
     rgba(0, 122, 52, 0.24);
   content: "";
@@ -154,16 +312,6 @@ input {
   width: 100%;
 }
 
-.hero-copy::after {
-  border: 1px solid rgba(255, 255, 255, 0.78);
-  content: "";
-  height: 96px;
-  position: absolute;
-  right: 0;
-  top: -58px;
-  width: 96px;
-}
-
 .hero-copy {
   position: absolute;
 }
@@ -179,7 +327,7 @@ input {
 
 .hero-copy h1 {
   font-size: clamp(60px, 7.4vw, 118px);
-  font-weight: 500;
+  font-weight: 400;
   letter-spacing: 0;
   line-height: 0.88;
   margin: 0;
@@ -187,12 +335,13 @@ input {
 }
 
 .hero-subtitle {
-  font-size: clamp(22px, 2.45vw, 38px);
-  font-style: italic;
-  font-weight: 500;
-  line-height: 1.15;
+  font-family: var(--font-body);
+  font-size: clamp(18px, 1.65vw, 27px);
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.32;
   margin: 20px 0 0;
-  max-width: 620px;
+  max-width: 560px;
 }
 
 .hero-proof-line {
@@ -296,7 +445,7 @@ input {
 
 .demo-header h2 {
   font-size: clamp(30px, 3.1vw, 48px);
-  font-weight: 400;
+  font-weight: 300;
   line-height: 1;
   margin: 5px 0 0;
 }
@@ -596,6 +745,18 @@ input {
   animation: spin-button 0.8s linear infinite;
 }
 
+.form-info {
+  background: rgba(0, 122, 52, 0.08);
+  border: 1px solid var(--line-dark);
+  color: var(--green);
+  font-size: 13px;
+  font-weight: 600;
+  grid-column: 1 / -1;
+  line-height: 1.35;
+  margin: 0;
+  padding: 9px 11px;
+}
+
 @keyframes spin-button {
   to {
     transform: rotate(360deg);
@@ -605,12 +766,6 @@ input {
 .secondary-button {
   background: transparent;
   color: var(--green);
-}
-
-.demo-note {
-  color: var(--green);
-  font-size: 13px;
-  margin: 0;
 }
 
 .metric-strip {
@@ -669,7 +824,7 @@ input {
 
 .metric-card p {
   color: var(--muted);
-  font-size: 17px;
+  font-size: 14px;
   line-height: 1.42;
   margin: 0;
 }
@@ -704,8 +859,8 @@ input {
 
 .body-stack {
   color: var(--ink);
-  font-size: clamp(19px, 2.1vw, 30px);
-  line-height: 1.25;
+  font-size: 16px;
+  line-height: 1.45;
 }
 
 .body-stack p:first-child {
@@ -804,6 +959,7 @@ input {
 
 .testimonial-copy p {
   color: var(--green);
+  font-weight: 300;
   margin: 0;
   max-width: 720px;
 }
@@ -817,42 +973,162 @@ input {
 }
 
 .testimonial-card {
-  background: rgba(244, 246, 239, 0.82);
-  border: 1px solid var(--line-dark);
   color: var(--green);
+  display: block;
+  min-height: 310px;
+  perspective: 1200px;
+  position: relative;
+}
+
+.testimonial-card:focus {
+  outline: none;
+}
+
+.testimonial-card:focus-visible {
+  outline: 1px solid var(--green);
+  outline-offset: 5px;
+}
+
+.testimonial-card-inner {
+  display: grid;
+  min-height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.testimonial-card:hover .testimonial-card-inner,
+.testimonial-card:focus .testimonial-card-inner,
+.testimonial-card:focus-within .testimonial-card-inner {
+  transform: rotateY(180deg);
+}
+
+.testimonial-card-face {
+  backface-visibility: hidden;
+  border: 1px solid var(--line-dark);
+  grid-area: 1 / 1;
+  min-height: 310px;
+}
+
+.testimonial-card-front {
+  background: rgba(244, 246, 239, 0.82);
   display: grid;
   gap: 28px;
-  min-height: 310px;
   padding: 22px;
 }
 
-.testimonial-card div {
+.testimonial-card-meta {
   display: grid;
   gap: 6px;
 }
 
-.testimonial-card span,
-.testimonial-card small {
+.testimonial-card-meta > span {
   color: var(--muted);
-  font-size: 13px;
-  font-weight: 700;
+  font-size: 11px;
+  font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-.testimonial-card strong {
+.testimonial-card-meta > small {
+  align-items: center;
+  color: var(--green);
+  display: inline-flex;
+  font-size: 13px;
+  font-weight: 400;
+  gap: 5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.testimonial-card-meta > small svg {
+  flex: 0 0 auto;
+}
+
+.testimonial-card-meta > strong {
   font-size: clamp(28px, 2.6vw, 42px);
   font-weight: 400;
   line-height: 1;
 }
 
-.testimonial-card p {
+.testimonial-card-front p {
   align-self: end;
   color: var(--green);
-  font-size: clamp(19px, 1.8vw, 25px);
-  font-style: italic;
-  line-height: 1.18;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.45;
   margin: 0;
+}
+
+.testimonial-card-back {
+  background: var(--green);
+  color: var(--paper);
+  overflow: hidden;
+  position: relative;
+  transform: rotateY(180deg);
+}
+
+.testimonial-card-back img {
+  display: block;
+  height: 100%;
+  min-height: 310px;
+  object-fit: cover;
+  width: 100%;
+}
+
+.testimonial-card-back::after {
+  background: linear-gradient(
+    180deg,
+    rgba(0, 71, 31, 0.08) 0%,
+    rgba(0, 71, 31, 0.24) 38%,
+    rgba(0, 71, 31, 0.86) 100%
+  );
+  content: "";
+  inset: 0;
+  position: absolute;
+}
+
+.testimonial-image-label {
+  bottom: 18px;
+  color: var(--paper);
+  display: grid;
+  gap: 6px;
+  left: 22px;
+  position: absolute;
+  right: 22px;
+  z-index: 1;
+}
+
+.testimonial-image-label span {
+  color: rgba(244, 246, 239, 0.76);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.testimonial-image-label strong {
+  color: var(--paper);
+  font-size: clamp(28px, 2.45vw, 40px);
+  font-weight: 400;
+  line-height: 1;
+}
+
+.testimonial-image-label p {
+  color: rgba(244, 246, 239, 0.9);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.35;
+  margin: 4px 0 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-card-inner {
+    transition: none;
+  }
 }
 
 .faq-section {
@@ -873,8 +1149,9 @@ details {
 
 summary {
   cursor: pointer;
-  font-size: clamp(20px, 2vw, 30px);
-  font-weight: 500;
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 400;
   list-style: none;
 }
 
@@ -890,9 +1167,13 @@ summary span {
 
 details p {
   color: var(--muted);
-  font-size: 18px;
+  font-size: 16px;
   line-height: 1.5;
   margin: 18px 0 0 58px;
+}
+
+.closing-cta h2 {
+  font-weight: 400;
 }
 
 .closing-cta {
@@ -906,11 +1187,7 @@ details p {
 }
 
 .pricing-section {
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px),
-    var(--green);
-  background-size: 44px 44px;
+  background: #00471f;
   color: #fff;
   padding: 86px clamp(18px, 5vw, 82px);
 }
@@ -937,8 +1214,9 @@ details p {
 
 .pricing-header p {
   color: rgba(255, 255, 255, 0.82);
-  font-size: clamp(18px, 2vw, 26px);
-  line-height: 1.25;
+  font-size: 16px;
+  font-weight: 200;
+  line-height: 1.45;
   margin: 0;
   max-width: 760px;
 }
@@ -954,7 +1232,7 @@ details p {
   border: 1px solid rgba(255, 255, 255, 0.68);
   display: grid;
   gap: 24px;
-  min-height: 260px;
+  min-height: 340px;
   padding: 22px;
 }
 
@@ -968,7 +1246,7 @@ details p {
 
 .pricing-card strong {
   font-size: clamp(32px, 3.4vw, 56px);
-  font-weight: 400;
+  font-weight: 300;
   line-height: 0.95;
 }
 
@@ -2296,10 +2574,6 @@ details p {
     top: auto;
     transform: none;
     width: auto;
-  }
-
-  .hero-copy::after {
-    display: none;
   }
 
   .hero-demo {

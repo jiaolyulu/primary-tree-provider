@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, MapPin } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
 
 const steps = [
@@ -81,6 +81,9 @@ const testimonials = [
     symptom: "Burnout + insomnia",
     tree: "Littleleaf Linden",
     neighborhood: "Midwood",
+    image:
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Tilia%20cordata%20-%20%27Greenspire%27%20littleleaf%20linden.jpg?width=900",
+    imageAlt: "Littleleaf Linden tree canopy",
     quote:
       "The linden did not cure my calendar, but twenty minutes under its small heart-shaped leaves made sleep feel possible again.",
   },
@@ -88,6 +91,9 @@ const testimonials = [
     symptom: "Migraine pressure",
     tree: "Ginkgo",
     neighborhood: "West Village",
+    image:
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Ginkgo-biloba-tree-in-fall.jpg?width=900",
+    imageAlt: "Ginkgo biloba tree in fall",
     quote:
       "My assigned ginkgo gave me a shaded route home and a quieter place to wait out the aura before it became the whole day.",
   },
@@ -95,6 +101,9 @@ const testimonials = [
     symptom: "Seasonal allergies",
     tree: "Sophora",
     neighborhood: "Jackson Heights",
+    image:
+      "https://commons.wikimedia.org/wiki/Special:FilePath/20120905Styphnolobium%20japonicum.jpg?width=900",
+    imageAlt: "Sophora tree in leaf",
     quote:
       "The Sophora visit turned pollen into a map. I started crossing on the breezier side of the block and stopped treating sneezing as random.",
   },
@@ -102,6 +111,9 @@ const testimonials = [
     symptom: "Fall risk",
     tree: "Pin Oak",
     neighborhood: "Park Slope",
+    image:
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Pin%20oak%20quercus%20palustris.jpg?width=900",
+    imageAlt: "Pin Oak tree",
     quote:
       "The Pin Oak prescribed the slowest route to the grocery store: two benches, three shaded pauses, and no pretending I was not tired.",
   },
@@ -109,6 +121,9 @@ const testimonials = [
     symptom: "Skin rash",
     tree: "Japanese Zelkova",
     neighborhood: "Astoria",
+    image:
+      "https://commons.wikimedia.org/wiki/Special:FilePath/Zelkova%20serrata%20entire.jpg?width=900",
+    imageAlt: "Japanese Zelkova tree",
     quote:
       "The zelkova made exposure visible. Sun, dust, wind, construction grit: my skin had been keeping notes before I had words for them.",
   },
@@ -116,6 +131,9 @@ const testimonials = [
     symptom: "Afternoon fatigue",
     tree: "Sweetgum",
     neighborhood: "Forest Hills",
+    image:
+      "https://commons.wikimedia.org/wiki/Special:FilePath/E20151113-0001%E2%80%94Liquidambar%20styraciflua%E2%80%94Berkelely%20%2822378349813%29.jpg?width=900",
+    imageAlt: "Sweetgum tree",
     quote:
       "The Sweetgum care plan was simple: shade after lunch, one extra block, and paying attention to when the heat changed my energy.",
   },
@@ -147,7 +165,9 @@ export default function Home() {
 
         <div className="hero-copy">
           <p className="hero-index">2026 / NYC ECOLOGICAL CARE NETWORK</p>
-          <h1>Primary Care Trees</h1>
+          <h1>
+            Primary Care <em>Trees</em>
+          </h1>
           <p className="hero-subtitle">
             We help you find the primary care tree that is right for you.
           </p>
@@ -162,14 +182,9 @@ export default function Home() {
           <div className="demo-header">
             <span>Primary intake</span>
             <h2>Care intake</h2>
-            <p>Enter a ZIP code or drop a pin. Symptom is optional; location is required.</p>
           </div>
           <div className="demo-body">
             <IntakeForm />
-            <p className="demo-note">
-              Try <strong>11215</strong> / <strong>fall risk</strong> or <strong>10014</strong> /{" "}
-              <strong>migraine</strong>.
-            </p>
           </div>
         </div>
       </section>
@@ -177,7 +192,9 @@ export default function Home() {
       <section className="metric-strip" aria-label="Primary Care Trees network">
         <div className="metric-intro">
           <span>Care network</span>
-          <h2>A clinic made from the city forest.</h2>
+          <h2>
+            A clinic made from the city <em>forest</em>.
+          </h2>
         </div>
         <div className="metric-card">
           <span>01</span>
@@ -199,7 +216,9 @@ export default function Home() {
       <section id="about" className="section about-section">
         <div className="section-kicker">About Us</div>
         <div className="split about-split">
-          <h2>Urban trees are already a care infrastructure.</h2>
+          <h2>
+            Urban <em>trees</em> are already a care infrastructure.
+          </h2>
           <div className="body-stack">
             <p>
               Primary Care Trees reframes the city forest as a distributed medical network. Trees cool
@@ -220,7 +239,9 @@ export default function Home() {
 
       <section id="how" className="section how-section">
         <div className="section-kicker">How it works</div>
-        <h2>Three steps from symptom to shade.</h2>
+        <h2>
+          Three steps from symptom to <em>shade</em>.
+        </h2>
         <div className="steps-grid">
           {steps.map((step) => (
             <article key={step.number} className="step-card">
@@ -235,21 +256,43 @@ export default function Home() {
       <section className="testimonial-section">
         <div className="testimonial-copy">
           <span>Patient notes</span>
-          <h2>Reported relief, by provider tree.</h2>
+          <h2>
+            Reported relief, by provider <em>tree</em>.
+          </h2>
           <p>
-            Each note is written in the speculative language of care: symptom, matched tree, neighborhood,
-            and the environmental prescription that helped.
+            Each note is written in the speculative language of care: symptom, matched tree, neighborhood, and
+            the environmental prescription that helped.
           </p>
         </div>
         <div className="testimonial-grid">
           {testimonials.map((testimonial) => (
-            <article key={`${testimonial.tree}-${testimonial.symptom}`} className="testimonial-card">
-              <div>
-                <span>{testimonial.symptom}</span>
-                <strong>{testimonial.tree}</strong>
-                <small>{testimonial.neighborhood}</small>
+            <article
+              key={`${testimonial.tree}-${testimonial.symptom}`}
+              className="testimonial-card"
+              tabIndex={0}
+              aria-label={`${testimonial.tree} patient note. Hover or focus to view the provider tree image.`}
+            >
+              <div className="testimonial-card-inner">
+                <div className="testimonial-card-face testimonial-card-front">
+                  <div className="testimonial-card-meta">
+                    <span>{testimonial.symptom}</span>
+                    <strong>{testimonial.tree}</strong>
+                    <small>
+                      <MapPin aria-hidden="true" size={12} />
+                      {testimonial.neighborhood}
+                    </small>
+                  </div>
+                  <p>"{testimonial.quote}"</p>
+                </div>
+                <div className="testimonial-card-face testimonial-card-back">
+                  <img src={testimonial.image} alt={testimonial.imageAlt} loading="lazy" />
+                  <div className="testimonial-image-label">
+                    <span>Provider tree</span>
+                    <strong>{testimonial.tree}</strong>
+                    <p>"{testimonial.quote}"</p>
+                  </div>
+                </div>
               </div>
-              <p>"{testimonial.quote}"</p>
             </article>
           ))}
         </div>
@@ -258,7 +301,9 @@ export default function Home() {
       <section id="faq" className="section faq-section">
         <div className="faq-intro">
           <div className="section-kicker">FAQ</div>
-          <h2>Questions your insurer will not answer.</h2>
+          <h2>
+            Questions your insurer will <em>not</em> answer.
+          </h2>
         </div>
         <div className="faq-list">
           {faqs.map((faq, index) => (
@@ -276,7 +321,9 @@ export default function Home() {
       <section className="pricing-section">
         <div className="pricing-header">
           <span>Pricing</span>
-          <h2>Free at point of shade.</h2>
+          <h2>
+            Free at point of <em>shade</em>.
+          </h2>
           <p>
             PCT does not bill insurance. The network runs on public soil, municipal records, photosynthesis,
             neighborly attention, and the radical affordability of standing under a living thing.
@@ -294,7 +341,9 @@ export default function Home() {
       </section>
 
       <section className="closing-cta">
-        <h2>Ready to check the network?</h2>
+        <h2>
+          Ready to check the <em>network</em>?
+        </h2>
         <Link href="/providers?zip=11215&symptom=fall+risk" className="secondary-button">
           Open dashboard
           <ArrowRight aria-hidden="true" size={18} />

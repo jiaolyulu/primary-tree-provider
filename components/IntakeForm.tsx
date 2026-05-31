@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useEffect, useRef, useState } from "react";
+import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { ArrowRight, ChevronDown, LoaderCircle, MapPin, Stethoscope } from "lucide-react";
 import { LeafletPinMap } from "@/components/LeafletPinMap";
 
@@ -67,10 +67,12 @@ export function IntakeForm({
   initialLocationMode?: "zip" | "pin";
 }) {
   const router = useRouter();
+  const messageId = useId();
   const pickerRef = useRef<HTMLDivElement>(null);
   const hasInitialPin = Number.isFinite(initialLat) && Number.isFinite(initialLng);
   const [zipcode, setZipcode] = useState(initialZip);
   const [symptom, setSymptom] = useState(initialSymptom);
+  const [formMessage, setFormMessage] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationMode, setLocationMode] = useState<"zip" | "pin">(
@@ -99,13 +101,27 @@ export function IntakeForm({
     setLocationMode(initialLocationMode || (hasInitialPin ? "pin" : "zip"));
     setPin(hasInitialPin ? getPinFromCoordinates(initialLat as number, initialLng as number) : defaultPin);
     setHasChosenPin(hasInitialPin);
+    setFormMessage("");
     setIsSubmitting(false);
   }, [initialZip, initialSymptom, initialLat, initialLng, initialLocationMode, hasInitialPin]);
 
+  useEffect(() => {
+    if (formMessage && hasLocation) {
+      setFormMessage("");
+    }
+  }, [formMessage, hasLocation]);
+
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!hasLocation) return;
+    if (!hasLocation) {
+      setIsPickerOpen(false);
+      setFormMessage(
+        locationMode === "pin" ? "Drop a pin in NYC to find your PCT." : "Enter a 5-digit ZIP code to find your PCT.",
+      );
+      return;
+    }
 
+    setFormMessage("");
     const params = new URLSearchParams();
     if (symptom.trim()) params.set("symptom", symptom.trim());
 
@@ -130,19 +146,31 @@ export function IntakeForm({
   }
 
   return (
-    <form className={compact ? "intake-form compact" : "intake-form"} onSubmit={handleSubmit} aria-busy={isSubmitting}>
+    <form
+      className={compact ? "intake-form compact" : "intake-form"}
+      onSubmit={handleSubmit}
+      aria-busy={isSubmitting}
+      aria-describedby={formMessage ? messageId : undefined}
+      noValidate
+    >
       <div className="location-mode-toggle" aria-label="Location input mode">
         <button
           type="button"
           aria-pressed={locationMode === "zip"}
-          onClick={() => setLocationMode("zip")}
+          onClick={() => {
+            setLocationMode("zip");
+            setFormMessage("");
+          }}
         >
           ZIP code
         </button>
         <button
           type="button"
           aria-pressed={locationMode === "pin"}
-          onClick={() => setLocationMode("pin")}
+          onClick={() => {
+            setLocationMode("pin");
+            setFormMessage("");
+          }}
         >
           Drop pin
         </button>
@@ -159,7 +187,12 @@ export function IntakeForm({
               placeholder="11215"
               required={locationMode === "zip"}
               value={zipcode}
-              onChange={(event) => setZipcode(event.target.value)}
+              aria-invalid={locationMode === "zip" && Boolean(formMessage) ? true : undefined}
+              aria-describedby={locationMode === "zip" && formMessage ? messageId : undefined}
+              onChange={(event) => {
+                setZipcode(event.target.value);
+                if (formMessage) setFormMessage("");
+              }}
             />
           </div>
         </label>
@@ -171,6 +204,7 @@ export function IntakeForm({
             onChange={(nextPin) => {
               setPin(nextPin);
               setHasChosenPin(true);
+              setFormMessage("");
             }}
           />
           <p>
@@ -237,7 +271,7 @@ export function IntakeForm({
           ) : null}
         </div>
       </label>
-      <button type="submit" className="primary-button" disabled={!hasLocation || isSubmitting}>
+      <button type="submit" className="primary-button" disabled={isSubmitting}>
         <span>{isSubmitting ? "Finding PCT" : "Find a PCT"}</span>
         {isSubmitting ? (
           <LoaderCircle className="button-spinner" aria-hidden="true" size={18} />
@@ -245,6 +279,11 @@ export function IntakeForm({
           <ArrowRight aria-hidden="true" size={18} />
         )}
       </button>
+      {formMessage ? (
+        <p className="form-info" id={messageId} role="status" aria-live="polite">
+          {formMessage}
+        </p>
+      ) : null}
     </form>
   );
 }
