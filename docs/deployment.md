@@ -51,28 +51,20 @@ curl "http://127.0.0.1:8000/api/providers/search?zip=11205&symptom=stress%20mana
 
 ## Vercel Auto-Deploy Plan
 
-Use two Git-connected Vercel projects or services from the same GitHub repository:
+The repository is connected to a Vercel Services project:
 
-1. Frontend project
-   - Repository: `jiaolyulu/primary-tree-provider`
-   - Root directory: repository root
-   - Framework preset: Next.js
-   - Build command: `npm run build`
-   - Production branch: `main`
-   - Environment variable: `NEXT_PUBLIC_PROVIDER_API_BASE_URL=<django-service-url>`
+Production URL:
 
-2. Backend service
-   - Repository: `jiaolyulu/primary-tree-provider`
-   - Root directory: `backend`
-   - Runtime: Python/Django
-   - Install command: `pip install -r requirements.txt`
-   - Production branch: `main`
-   - Environment variables:
-     - `DJANGO_SECRET_KEY`
-     - `DJANGO_ALLOWED_HOSTS=<django-service-host>`
-     - `DJANGO_DEBUG=false`
+- `https://primary-tree-provider.vercel.app`
 
-After both Vercel projects are imported from GitHub, Vercel automatically creates preview deployments for branch pushes and production deployments for pushes or merges to the production branch.
+Configured services:
+
+- Frontend: Next.js at `/`.
+- Backend: Django at `/_/backend`, with `backend/wsgi.py` as the entrypoint.
+- Production branch: `main`.
+- Production environment variable: `NEXT_PUBLIC_PROVIDER_API_BASE_URL=/_/backend`.
+
+After the project is connected to GitHub, Vercel automatically creates production deployments for pushes to `main`.
 
 ## Netlify Status
 
