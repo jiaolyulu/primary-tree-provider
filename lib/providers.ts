@@ -271,7 +271,11 @@ async function rankProvidersFromApi(
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
 ) {
-  const apiBaseUrl = process.env.NEXT_PUBLIC_PROVIDER_API_BASE_URL?.replace(/\/$/, "");
+  const configuredApiBaseUrl = process.env.NEXT_PUBLIC_PROVIDER_API_BASE_URL?.replace(/\/$/, "");
+  const apiBaseUrl =
+    configuredApiBaseUrl?.startsWith("/") && typeof window !== "undefined"
+      ? `${window.location.origin}${configuredApiBaseUrl}`
+      : configuredApiBaseUrl;
   if (!apiBaseUrl) return null;
 
   try {

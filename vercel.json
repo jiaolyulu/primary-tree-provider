@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "experimentalServices": {
+    "frontend": {
+      "routePrefix": "/",
+      "framework": "nextjs"
+    },
+    "backend": {
+      "entrypoint": "backend/wsgi.py",
+      "routePrefix": "/_/backend",
+      "framework": "django",
+      "includeFiles": "backend/data/provider_index.sqlite"
+    }
+  }
+}
