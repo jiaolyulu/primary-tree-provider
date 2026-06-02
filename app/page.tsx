@@ -172,9 +172,9 @@ export default function Home() {
             We help you find the primary care tree that is right for you.
           </p>
           <div className="hero-proof-line" aria-label="Provider network details">
-            <span>50,000 providers</span>
+            <span>96,950 providers</span>
             <span>30 specialties</span>
-            <span>179 ZIP codes</span>
+            <span>183 ZIP codes</span>
           </div>
         </div>
 
@@ -217,17 +217,17 @@ export default function Home() {
         <div className="section-kicker">About Us</div>
         <div className="split about-split">
           <h2>
-            Urban <em>trees</em> are already a care infrastructure.
+            Find care closer to <em>you</em>.
           </h2>
           <div className="body-stack">
             <p>
-              Primary Care Trees reframes the city forest as a distributed medical network. Trees cool
-              streets, filter air, absorb stormwater, reduce stress, and create conditions that materially
-              shape public health.
+              Primary Care Trees is a distributed medical network where trees serve as care providers.
+              Using NYC Open Data, we connect New Yorkers with nearby Primary Tree providers through localized
+              care matching and ecological specialties.
             </p>
             <p>
-              The project is part clinic, part ritual, and part data visualization. Each assigned provider
-              corresponds to an actual tree documented in NYC urban forestry datasets.
+              Our network is coordinated by Arbocurists — care specialists who facilitate relationships between
+              people and tree providers.
             </p>
           </div>
         </div>
