@@ -6,10 +6,28 @@ Primary Care Trees now supports a Django backend for provider search while keepi
 
 - Frontend: Next.js app at the repository root.
 - Backend: Django API in `backend/`.
-- Provider data: generated static shards in `public/provider-index/`.
+- Provider data: compact SQLite index at `backend/data/provider_index.sqlite`, generated from `trees_map.json`.
 - Runtime switch: set `NEXT_PUBLIC_PROVIDER_API_BASE_URL` on the frontend to make the dashboard call Django.
 
 If `NEXT_PUBLIC_PROVIDER_API_BASE_URL` is unset or the API is unavailable, the frontend falls back to matching providers from the static client-side shards.
+
+## Provider Index
+
+The Django API reads from `backend/data/provider_index.sqlite`. The SQLite file keeps the source dataset's dictionary encoding so it stays deployable while still supporting indexed queries.
+
+Indexed lookup paths:
+
+- `clinic_zipcode_id` for ZIP searches.
+- `(lat, lng)` and `(lng, lat)` for map pin bounding-box searches.
+- `medical_specialty_id` and `(clinic_zipcode_id, medical_specialty_id)` for specialty refinement.
+- `provider_conditions(condition_key, provider_id)` for exact symptom matching from the dropdown-style condition set.
+- `(star_doctor, care_rating)` for quality tie-breaks.
+
+Rebuild the index after replacing the source JSON:
+
+```bash
+python backend/manage.py import_tree_map /path/to/trees_map.json --output backend/data/provider_index.sqlite
+```
 
 ## Local Development
 
