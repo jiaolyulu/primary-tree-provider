@@ -266,6 +266,32 @@ async function candidateRows(
   return rowsForZip(zipcode);
 }
 
+async function rankProvidersFromApi(
+  zipcode: string,
+  symptom: string,
+  coordinates?: { latitude: number; longitude: number },
+) {
+  const apiBaseUrl = process.env.NEXT_PUBLIC_PROVIDER_API_BASE_URL?.replace(/\/$/, "");
+  if (!apiBaseUrl) return null;
+
+  try {
+    const url = new URL("/api/providers/search", apiBaseUrl);
+    url.searchParams.set("zip", zipcode);
+    if (symptom.trim()) url.searchParams.set("symptom", symptom.trim());
+    if (coordinates) {
+      url.searchParams.set("lat", coordinates.latitude.toFixed(5));
+      url.searchParams.set("lng", coordinates.longitude.toFixed(5));
+    }
+
+    const response = await fetch(url.toString(), { cache: "force-cache" });
+    if (!response.ok) return null;
+    const payload = (await response.json()) as { providers?: ProviderMatch[] };
+    return Array.isArray(payload.providers) ? payload.providers : null;
+  } catch {
+    return null;
+  }
+}
+
 function buildProvider(row: TreeProviderRow): Provider {
   const [providerId, speciesCommon, speciesScientific, clinicAddress, clinicZipcode, clinicCity, clinicNeighborhood, clinicLatitude, clinicLongitude, treeDbh, health, steward, guards, sidewalk, problems] = row;
   const seed = String(providerId);
@@ -369,6 +395,9 @@ export async function rankProviders(
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
 ): Promise<ProviderMatch[]> {
+  const apiMatches = await rankProvidersFromApi(zipcode, symptom, coordinates);
+  if (apiMatches?.length) return apiMatches;
+
   const normalizedSymptom = symptom.trim().toLowerCase();
   const hasSymptom = normalizedSymptom.length > 0;
   const rows = await candidateRows(zipcode, coordinates);

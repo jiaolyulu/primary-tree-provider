@@ -6,6 +6,9 @@ dist
 *.log
 .DS_Store
 tsconfig.tsbuildinfo
+__pycache__/
+*.py[cod]
+db.sqlite3
 
 # Local Netlify folder
 .netlify
