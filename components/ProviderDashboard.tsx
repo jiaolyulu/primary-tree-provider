@@ -32,6 +32,7 @@ import {
   Thermometer,
   Utensils,
   Wind,
+  X,
   Zap,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
@@ -108,6 +109,100 @@ function conditionIcon(condition: string): LucideIcon {
   return ClipboardCheck;
 }
 
+function seededHash(value: string) {
+  let result = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    result ^= value.charCodeAt(index);
+    result = Math.imul(result, 16777619);
+  }
+  return result >>> 0;
+}
+
+function seededPick<T>(items: T[], seed: string, offset = 0): T {
+  return items[seededHash(`${seed}:${offset}`) % items.length];
+}
+
+const reviewerNames = [
+  "Marisol P.",
+  "A regular on the B61",
+  "Stoop neighbor, two doors down",
+  "Dog-walker, 7am shift",
+  "Biscuit the corgi (via owner)",
+  "Crossing guard at the corner",
+  "Someone subletting upstairs",
+  "Tuesday farmers-market vendor",
+  "Night-shift nurse heading home",
+  "Kid on a scooter (parent typing)",
+  "Retired super, 30 yrs on the block",
+  "The bench across the street",
+];
+
+const reviewDates = [
+  "last spring",
+  "after the first heat wave",
+  "during a string of bad meetings",
+  "two weeks ago",
+  "the week the AC broke",
+  "mid-pollen season",
+  "right before the time change",
+  "on a humid Thursday",
+  "the day the forecast lied",
+];
+
+const reviewTemplates = [
+  "Came in for {condition}. The {species} didn't rush me — just offered shade and let the {hood} block slow down until I could think.",
+  "Five stars. Prescribed 'one slower block' and somehow that worked better than the last three apps on my phone.",
+  "I keep coming back. This {species} treats the sidewalk like a waiting room and it actually helps.",
+  "Skeptical at first, but the canopy runs on time. {hood} is lucky to have it.",
+  "Best {specialty} on the block. No paperwork, just shade, weather, and a little patience.",
+  "The {species} made my {condition} feel less like a mystery and more like something the street had been tracking all along.",
+  "Quiet, steady, a little drippy after rain. Would shelter under again.",
+  "Came for the shade, stayed for the perspective. Would reroute my commute past it.",
+  "Gave me a bench, a breeze, and zero judgment. The {hood} regulars know.",
+  "Not the flashiest tree, but it remembers the block better than I do.",
+];
+
+function generateReviews(provider: ProviderMatch) {
+  const seed = String(provider.providerId);
+  const count = 3 + (seededHash(`${seed}:count`) % 2);
+  const condition = provider.searchableConditions[0] ?? "general care";
+  // Rotate through each pool from a seeded start so names and templates stay
+  // distinct within a single tree's review list.
+  const nameStart = seededHash(`${seed}:name`) % reviewerNames.length;
+  const dateStart = seededHash(`${seed}:date`) % reviewDates.length;
+  const templateStart = seededHash(`${seed}:tpl`) % reviewTemplates.length;
+  return Array.from({ length: count }, (_, index) => {
+    const text = reviewTemplates[(templateStart + index) % reviewTemplates.length]
+      .split("{species}").join(provider.speciesCommon)
+      .split("{hood}").join(provider.clinicNeighborhood)
+      .split("{condition}").join(condition)
+      .split("{specialty}").join(provider.medicalSpecialty.toLowerCase());
+    return {
+      id: index,
+      name: reviewerNames[(nameStart + index) % reviewerNames.length],
+      when: reviewDates[(dateStart + index * 2) % reviewDates.length],
+      stars: seededPick([5, 5, 5, 4, 4, 3], seed, index * 7 + 1),
+      text,
+    };
+  });
+}
+
+function ratingBreakdown(provider: ProviderMatch) {
+  const seed = String(provider.providerId);
+  const weights = [
+    55 + (seededHash(`${seed}:5`) % 25),
+    12 + (seededHash(`${seed}:4`) % 18),
+    4 + (seededHash(`${seed}:3`) % 8),
+    seededHash(`${seed}:2`) % 5,
+    seededHash(`${seed}:1`) % 4,
+  ];
+  const total = weights.reduce((sum, value) => sum + value, 0);
+  return [5, 4, 3, 2, 1].map((star, index) => ({
+    star,
+    pct: Math.round((weights[index] / total) * 100),
+  }));
+}
+
 export function ProviderDashboard() {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
@@ -122,6 +217,21 @@ export function ProviderDashboard() {
   const originLabel = hasPinnedLocation ? "your dropped pin" : zipcode;
   const [rankedProviders, setRankedProviders] = useState<ProviderMatch[] | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
+  const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
+
+  useEffect(() => {
+    if (!detailProvider) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDetailProvider(null);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [detailProvider]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -324,6 +434,13 @@ export function ProviderDashboard() {
                   ) : null}
 
                   <div className="provider-card-foot">
+                    <button
+                      type="button"
+                      className="tree-learn-more"
+                      onClick={() => setDetailProvider(provider)}
+                    >
+                      Learn more
+                    </button>
                     <Link href={buildCardUrl(provider.providerId)} className="provider-choose-btn">
                       Choose as Primary PCT
                       <ArrowRight aria-hidden="true" size={16} />
@@ -335,6 +452,130 @@ export function ProviderDashboard() {
           </div>
         </section>
       </section>
+
+      {detailProvider
+        ? (() => {
+            const reviews = generateReviews(detailProvider);
+            const breakdown = ratingBreakdown(detailProvider);
+            const waitLabel =
+              detailProvider.nextAvailableVisitDays === 0
+                ? "Same-day shade"
+                : `${detailProvider.nextAvailableVisitDays}-day wait`;
+            const tiles = [
+              { label: "On the block", value: `${detailProvider.yearsOfPractice} yrs` },
+              { label: "Access score", value: `${detailProvider.careAccessibilityScore}/100` },
+              { label: "Next opening", value: waitLabel },
+              {
+                label: "Weekends",
+                value: detailProvider.weekendAvailability ? "Open" : "Weekdays only",
+              },
+            ];
+            return (
+              <div
+                className="tree-detail-overlay"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${detailProvider.speciesCommon} details`}
+                onClick={() => setDetailProvider(null)}
+              >
+                <div className="tree-detail-modal" onClick={(event) => event.stopPropagation()}>
+                  <button
+                    type="button"
+                    className="tree-detail-close"
+                    onClick={() => setDetailProvider(null)}
+                    aria-label="Close"
+                  >
+                    <X aria-hidden="true" size={18} />
+                  </button>
+
+                  <div className="tree-detail-head">
+                    <img
+                      className="tree-detail-photo"
+                      src={providerTreeImage(detailProvider)}
+                      alt={`${detailProvider.speciesCommon} tree`}
+                    />
+                    <div>
+                      <span className="provider-card-eyebrow">
+                        {detailProvider.medicalSpecialty} · {detailProvider.clinicNeighborhood}
+                      </span>
+                      <h2>{detailProvider.speciesCommon}</h2>
+                      <div className="provider-rating">
+                        <Star aria-hidden="true" size={15} />
+                        <strong>{detailProvider.careRating.toFixed(1)}</strong>
+                        <span>({detailProvider.reviewCount} reviews)</span>
+                      </div>
+                      <p className="tree-detail-address">
+                        {titleCaseAddress(detailProvider.clinicAddress)}, {detailProvider.clinicCity},{" "}
+                        {detailProvider.clinicState} {detailProvider.clinicZipcode}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="tree-detail-tiles">
+                    {tiles.map((tile) => (
+                      <div key={tile.label} className="tree-detail-tile">
+                        <strong>{tile.value}</strong>
+                        <span>{tile.label}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  <blockquote className="tree-detail-prescription">
+                    {detailProvider.signaturePrescription}
+                  </blockquote>
+
+                  <p className="tree-detail-philosophy">{detailProvider.carePhilosophy}</p>
+
+                  <div className="tree-detail-ratings">
+                    <div className="tree-detail-score">
+                      <strong>{detailProvider.careRating.toFixed(1)}</strong>
+                      <span>out of 5</span>
+                    </div>
+                    <div className="tree-detail-bars">
+                      {breakdown.map((row) => (
+                        <div key={row.star} className="tree-detail-bar-row">
+                          <span className="tree-detail-bar-label">{row.star}★</span>
+                          <span className="tree-detail-bar-track">
+                            <span className="tree-detail-bar-fill" style={{ width: `${row.pct}%` }} />
+                          </span>
+                          <span className="tree-detail-bar-pct">{row.pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="tree-detail-reviews">
+                    <h3>What the block says</h3>
+                    {reviews.map((review) => (
+                      <div key={review.id} className="tree-review">
+                        <div className="tree-review-head">
+                          <strong>{review.name}</strong>
+                          <span className="tree-review-stars" aria-label={`${review.stars} out of 5 stars`}>
+                            {"★".repeat(review.stars)}
+                            <span className="tree-review-stars-empty">{"★".repeat(5 - review.stars)}</span>
+                          </span>
+                          <span className="tree-review-when">{review.when}</span>
+                        </div>
+                        <p>{review.text}</p>
+                      </div>
+                    ))}
+                    <p className="tree-detail-caption">
+                      Notes are written in PCT&rsquo;s speculative language of care — imagined, not clinical.
+                    </p>
+                  </div>
+
+                  <Link
+                    href={buildCardUrl(detailProvider.providerId)}
+                    className="provider-choose-btn tree-detail-choose"
+                  >
+                    Choose as Primary PCT
+                    <ArrowRight aria-hidden="true" size={16} />
+                  </Link>
+                </div>
+              </div>
+            );
+          })()
+        : null}
     </main>
   );
 }
