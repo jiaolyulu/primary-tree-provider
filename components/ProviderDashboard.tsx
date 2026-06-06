@@ -4,18 +4,35 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Activity,
+  Apple,
   ArrowLeft,
   ArrowRight,
+  Baby,
+  Bone,
+  Brain,
   CalendarDays,
-  CreditCard,
-  ExternalLink,
+  ClipboardCheck,
+  Droplet,
+  Ear,
+  Eye,
+  Flower2,
   HeartPulse,
-  Leaf,
+  type LucideIcon,
   MapPin,
+  Microscope,
+  Moon,
   Navigation,
   Search,
   ShieldCheck,
+  Smile,
+  Sparkles,
   Star,
+  Syringe,
+  Thermometer,
+  Utensils,
+  Wind,
+  Zap,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
@@ -53,6 +70,42 @@ function providerTreeImage(provider: ProviderMatch) {
 
 function providerCardBio(provider: ProviderMatch) {
   return provider.providerBio.replace(/^At [^,]+, /, "");
+}
+
+function titleCaseAddress(value: string) {
+  return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+const conditionIconRules: Array<[RegExp, LucideIcon]> = [
+  [/vaccinat|immuniz/, Syringe],
+  [/blood pressure|cholesterol|chest pain|heart|palpitation|circulation|clot|vein|vascular|cold feet/, HeartPulse],
+  [/anxiety|depression|stress|burnout|mood|panic/, Smile],
+  [/insomnia|sleep|snor|apnea|drowsi|restless/, Moon],
+  [/memory|migraine|headache|brain|dizz|numb|tingl|tremor|fog/, Brain],
+  [/asthma|cough|breath|copd|bronch|wheez|lung|respir/, Wind],
+  [/cancer|lump|tumor|survivorship|imaging|weight loss/, Microscope],
+  [/joint|arthritis|back|hip|shoulder|knee|bone|fracture|sprain|strain|mobility|stiffness|gout|muscle|overuse|running/, Bone],
+  [/nerve|pain/, Zap],
+  [/eye|vision|glaucoma|cataract/, Eye],
+  [/ear|hearing|sinus|throat|voice|nasal|congestion/, Ear],
+  [/reflux|stomach|ibs|constip|diarrhea|bloat|colon|digest|acid/, Utensils],
+  [/skin|acne|eczema|psoriasis|rash|sun|mole|hives/, Sparkles],
+  [/weight|nutrition|eating|meal|diet|diabet|thyroid|hormone|metabolic/, Apple],
+  [/allerg|immune/, Flower2],
+  [/fever|infection|flu|wound|antibiotic|travel/, Thermometer],
+  [/kidney|urinary|bladder|prostate|incontinen|urine|stone|electrolyte|fluid/, Droplet],
+  [/anemia|iron|blood count|bruis|bleed/, Droplet],
+  [/fall|caregiver|aging|growth/, Activity],
+  [/woman|menstr|menopause|pelvic|breast|contracept/, Flower2],
+  [/childhood|pediatr|school/, Baby],
+];
+
+function conditionIcon(condition: string): LucideIcon {
+  const value = condition.toLowerCase();
+  for (const [pattern, Icon] of conditionIconRules) {
+    if (pattern.test(value)) return Icon;
+  }
+  return ClipboardCheck;
 }
 
 export function ProviderDashboard() {
@@ -119,13 +172,6 @@ export function ProviderDashboard() {
             <ArrowLeft aria-hidden="true" size={16} />
             Landing page
           </Link>
-          <div className="provider-search-heading">
-            <Leaf aria-hidden="true" size={23} />
-            <div>
-              <span>PCT dashboard</span>
-              <h1>Find a nearby provider tree</h1>
-            </div>
-          </div>
           <div className="provider-search-form">{searchForm}</div>
         </header>
 
@@ -156,10 +202,6 @@ export function ProviderDashboard() {
   const displayedProviders = rankedProviders.slice(0, 8);
   const selectedProvider =
     displayedProviders.find((provider) => provider.providerId === selectedProviderId) || displayedProviders[0];
-  const selectedRank = Math.max(
-    0,
-    displayedProviders.findIndex((provider) => provider.providerId === selectedProvider.providerId),
-  );
   const averageWait = Math.round(
     nearbyProviders.reduce((total, provider) => total + provider.nextAvailableVisitDays, 0) / nearbyProviders.length,
   );
@@ -169,7 +211,6 @@ export function ProviderDashboard() {
   const starProviders = nearbyProviders.filter((provider) => provider.starDoctor).length;
   const selectedLatitude = selectedProvider.clinicLatitude;
   const selectedLongitude = selectedProvider.clinicLongitude;
-  const openStreetMapUrl = `https://www.openstreetmap.org/?mlat=${selectedLatitude}&mlon=${selectedLongitude}#map=18/${selectedLatitude}/${selectedLongitude}`;
 
   return (
     <main className="provider-search-page">
@@ -178,13 +219,6 @@ export function ProviderDashboard() {
           <ArrowLeft aria-hidden="true" size={16} />
           Landing page
         </Link>
-        <div className="provider-search-heading">
-          <Leaf aria-hidden="true" size={23} />
-          <div>
-            <span>PCT dashboard</span>
-            <h1>Find a nearby provider tree</h1>
-          </div>
-        </div>
         <div className="provider-search-form">{searchForm}</div>
       </header>
 
@@ -208,13 +242,6 @@ export function ProviderDashboard() {
 
       <section className="provider-search-layout" aria-label="Provider search results">
         <aside className="provider-map-panel" aria-label="Provider map">
-          <div className="provider-map-header">
-            <div>
-              <span>Map view</span>
-              <h2>{selectedProvider.clinicNeighborhood}</h2>
-            </div>
-            <div className="selected-rank-pill">#{selectedRank + 1}</div>
-          </div>
           <div className="provider-map-canvas">
             <ProviderResultsMap
               providers={displayedProviders}
@@ -226,24 +253,6 @@ export function ProviderDashboard() {
               <span>
                 {selectedLatitude.toFixed(4)}, {selectedLongitude.toFixed(4)}
               </span>
-            </div>
-          </div>
-          <div className="provider-map-selected">
-            <span>Selected care provider</span>
-            <h3>{selectedProvider.speciesCommon}</h3>
-            <p>
-              {selectedProvider.clinicAddress}, {selectedProvider.clinicCity}, {selectedProvider.clinicState}{" "}
-              {selectedProvider.clinicZipcode}
-            </p>
-            <div className="map-actions">
-              <Link href={buildCardUrl(selectedProvider.providerId)} className="choose-primary-link">
-                <CreditCard aria-hidden="true" size={15} />
-                Choose PCT
-              </Link>
-              <a href={openStreetMapUrl} target="_blank" rel="noreferrer">
-                Open map
-                <ExternalLink aria-hidden="true" size={15} />
-              </a>
             </div>
           </div>
         </aside>
@@ -262,49 +271,50 @@ export function ProviderDashboard() {
                     aria-pressed={isSelected}
                     onClick={() => setSelectedProviderId(provider.providerId)}
                   >
-                    <div className="provider-card-main">
-                      <div className="provider-card-header">
-                        <div className="provider-card-media">
-                          <span className="provider-card-rank">{index + 1}</span>
-                          <img
-                            className="provider-tree-avatar"
-                            src={providerTreeImage(provider)}
-                            alt={`${provider.speciesCommon} tree`}
-                            loading="lazy"
-                          />
-                        </div>
-                        <div>
-                          <span className="rank">Care provider</span>
-                          <h3>{provider.speciesCommon}</h3>
-                          <div className="provider-rating">
-                            <Star aria-hidden="true" size={15} />
-                            <strong>{provider.careRating.toFixed(1)}</strong>
-                            <span>({provider.reviewCount} reviews)</span>
-                          </div>
-                          <p>
-                            {provider.medicalSpecialty} / {provider.clinicNeighborhood}
-                          </p>
-                        </div>
-                        {provider.starDoctor ? (
-                          <div className="star-pill">
-                            <Star aria-hidden="true" size={14} />
-                            Star
-                          </div>
-                        ) : null}
+                    <div className="provider-card-media">
+                      <img
+                        className="provider-tree-avatar"
+                        src={providerTreeImage(provider)}
+                        alt={`${provider.speciesCommon} tree`}
+                        loading="lazy"
+                      />
+                      <span className="provider-card-rank">{index + 1}</span>
+                    </div>
+
+                    <div className="provider-card-body">
+                      <span className="provider-card-eyebrow">
+                        {provider.medicalSpecialty} · {provider.clinicNeighborhood}
+                      </span>
+                      <h3>{provider.speciesCommon}</h3>
+                      <div className="provider-rating">
+                        <Star aria-hidden="true" size={14} />
+                        <strong>{provider.careRating.toFixed(1)}</strong>
+                        <span>({provider.reviewCount} reviews)</span>
                       </div>
-
                       <address>
-                        {provider.clinicAddress}, {provider.clinicCity}, {provider.clinicState} {provider.clinicZipcode}
+                        {titleCaseAddress(provider.clinicAddress)}, {provider.clinicCity}, {provider.clinicState}{" "}
+                        {provider.clinicZipcode}
                       </address>
-
-                      <p>{providerCardBio(provider)}</p>
-
-                      <div className="condition-chips provider-card-symptoms" aria-label={`${provider.speciesCommon} symptoms`}>
-                        {conditionTags.map((condition) => (
-                          <span key={condition}>{condition}</span>
-                        ))}
+                      <p className="provider-card-bio">{providerCardBio(provider)}</p>
+                      <div className="condition-chips" aria-label={`${provider.speciesCommon} symptoms`}>
+                        {conditionTags.map((condition) => {
+                          const ConditionIcon = conditionIcon(condition);
+                          return (
+                            <span key={condition}>
+                              <ConditionIcon aria-hidden="true" size={13} />
+                              {condition}
+                            </span>
+                          );
+                        })}
                       </div>
                     </div>
+
+                    {provider.starDoctor ? (
+                      <span className="star-pill">
+                        <Star aria-hidden="true" size={13} />
+                        Star
+                      </span>
+                    ) : null}
                   </button>
 
                   {isSelected ? (
@@ -313,13 +323,11 @@ export function ProviderDashboard() {
                     </div>
                   ) : null}
 
-                  <div className="provider-card-bottom">
-                    <div className="provider-card-actions">
-                      <Link href={buildCardUrl(provider.providerId)}>
-                        Choose as Primary PCT
-                        <ArrowRight aria-hidden="true" size={15} />
-                      </Link>
-                    </div>
+                  <div className="provider-card-foot">
+                    <Link href={buildCardUrl(provider.providerId)} className="provider-choose-btn">
+                      Choose as Primary PCT
+                      <ArrowRight aria-hidden="true" size={16} />
+                    </Link>
                   </div>
                 </article>
               );
