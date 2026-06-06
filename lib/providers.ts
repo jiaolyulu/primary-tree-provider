@@ -57,6 +57,10 @@ export type Provider = {
   clinicState: "NY";
   clinicLatitude: number;
   clinicLongitude: number;
+  treeDbh: number;
+  treeHealth: string;
+  sidewalkCondition: string;
+  stewardship: string;
 };
 
 export type ProviderMatch = Provider & {
@@ -367,6 +371,10 @@ function buildProvider(row: TreeProviderRow): Provider {
     clinicState: "NY",
     clinicLatitude,
     clinicLongitude,
+    treeDbh,
+    treeHealth: health,
+    sidewalkCondition: sidewalk,
+    stewardship: steward,
   };
 }
 

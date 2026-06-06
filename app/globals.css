@@ -2781,7 +2781,14 @@ details p {
   display: grid;
   gap: 8px;
   grid-template-columns: repeat(4, 1fr);
-  margin: 22px 0;
+  margin: 22px 0 8px;
+}
+
+.tree-detail-tiles-note {
+  color: var(--muted);
+  font-size: 11px;
+  font-style: italic;
+  margin: 0 0 22px;
 }
 
 .tree-detail-tile {

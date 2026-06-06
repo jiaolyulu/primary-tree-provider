@@ -11,7 +11,6 @@ import {
   Baby,
   Bone,
   Brain,
-  CalendarDays,
   ClipboardCheck,
   Droplet,
   Ear,
@@ -22,7 +21,6 @@ import {
   MapPin,
   Microscope,
   Moon,
-  Navigation,
   Search,
   ShieldCheck,
   Smile,
@@ -38,10 +36,6 @@ import {
 import { IntakeForm } from "@/components/IntakeForm";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
 import { ProviderMatch, providerNetworkStats, rankProviders } from "@/lib/providers";
-
-function providerMapsUrl(provider: ProviderMatch) {
-  return `https://www.google.com/maps/search/?api=1&query=${provider.clinicLatitude}%2C${provider.clinicLongitude}`;
-}
 
 function providerTreeImage(provider: ProviderMatch) {
   const species = provider.speciesCommon.toLowerCase();
@@ -76,6 +70,53 @@ function providerCardBio(provider: ProviderMatch) {
 function titleCaseAddress(value: string) {
   return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
+
+// Cache resolved species photos so we fetch Wikipedia once per scientific name.
+const speciesImageCache = new Map<string, string>();
+
+function TreeImage({ provider, className }: { provider: ProviderMatch; className: string }) {
+  const fallback = providerTreeImage(provider);
+  const scientific = provider.speciesScientific?.trim() ?? "";
+  const [src, setSrc] = useState(() => speciesImageCache.get(scientific) ?? fallback);
+
+  useEffect(() => {
+    if (!scientific) return;
+    const cached = speciesImageCache.get(scientific);
+    if (cached) {
+      setSrc(cached);
+      return;
+    }
+    setSrc(fallback);
+    let active = true;
+    const title = encodeURIComponent(scientific.replace(/\s+/g, "_"));
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const url: string | undefined = data?.thumbnail?.source ?? data?.originalimage?.source;
+        if (!url) return;
+        speciesImageCache.set(scientific, url);
+        if (active) setSrc(url);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [scientific, fallback]);
+
+  return <img className={className} src={src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
+}
+
+function estimatedTreeAge(provider: ProviderMatch) {
+  // Rough arborist-style estimate: trunk diameter (real census data) x growth factor.
+  return Math.max(3, Math.round(provider.treeDbh * 2.5));
+}
+
+const openHoursOptions = [
+  "Dawn–dusk",
+  "Sunup to sundown",
+  "Always (it's a tree)",
+  "Whenever you need shade",
+];
 
 const conditionIconRules: Array<[RegExp, LucideIcon]> = [
   [/vaccinat|immuniz/, Syringe],
@@ -382,12 +423,7 @@ export function ProviderDashboard() {
                     onClick={() => setSelectedProviderId(provider.providerId)}
                   >
                     <div className="provider-card-media">
-                      <img
-                        className="provider-tree-avatar"
-                        src={providerTreeImage(provider)}
-                        alt={`${provider.speciesCommon} tree`}
-                        loading="lazy"
-                      />
+                      <TreeImage provider={provider} className="provider-tree-avatar" />
                       <span className="provider-card-rank">{index + 1}</span>
                     </div>
 
@@ -457,17 +493,13 @@ export function ProviderDashboard() {
         ? (() => {
             const reviews = generateReviews(detailProvider);
             const breakdown = ratingBreakdown(detailProvider);
-            const waitLabel =
-              detailProvider.nextAvailableVisitDays === 0
-                ? "Same-day shade"
-                : `${detailProvider.nextAvailableVisitDays}-day wait`;
             const tiles = [
-              { label: "On the block", value: `${detailProvider.yearsOfPractice} yrs` },
-              { label: "Access score", value: `${detailProvider.careAccessibilityScore}/100` },
-              { label: "Next opening", value: waitLabel },
+              { label: "On the block", value: `~${estimatedTreeAge(detailProvider)} yrs` },
+              { label: "Trunk width", value: `${detailProvider.treeDbh}″` },
+              { label: "Tree health", value: detailProvider.treeHealth || "Unlogged" },
               {
-                label: "Weekends",
-                value: detailProvider.weekendAvailability ? "Open" : "Weekdays only",
+                label: "Open hours",
+                value: seededPick(openHoursOptions, String(detailProvider.providerId), 99),
               },
             ];
             return (
@@ -489,11 +521,7 @@ export function ProviderDashboard() {
                   </button>
 
                   <div className="tree-detail-head">
-                    <img
-                      className="tree-detail-photo"
-                      src={providerTreeImage(detailProvider)}
-                      alt={`${detailProvider.speciesCommon} tree`}
-                    />
+                    <TreeImage provider={detailProvider} className="tree-detail-photo" />
                     <div>
                       <span className="provider-card-eyebrow">
                         {detailProvider.medicalSpecialty} · {detailProvider.clinicNeighborhood}
@@ -519,6 +547,10 @@ export function ProviderDashboard() {
                       </div>
                     ))}
                   </div>
+                  <p className="tree-detail-tiles-note">
+                    Trunk width and health are real NYC street-tree census data; age is estimated from trunk
+                    width.
+                  </p>
 
                   <blockquote className="tree-detail-prescription">
                     {detailProvider.signaturePrescription}
