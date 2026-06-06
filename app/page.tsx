@@ -282,14 +282,14 @@ export default function Home() {
                       {testimonial.neighborhood}
                     </small>
                   </div>
-                  <p>"{testimonial.quote}"</p>
+                  <p>&ldquo;{testimonial.quote}&rdquo;</p>
                 </div>
                 <div className="testimonial-card-face testimonial-card-back">
                   <img src={testimonial.image} alt={testimonial.imageAlt} loading="lazy" />
                   <div className="testimonial-image-label">
                     <span>Provider tree</span>
                     <strong>{testimonial.tree}</strong>
-                    <p>"{testimonial.quote}"</p>
+                    <p>&ldquo;{testimonial.quote}&rdquo;</p>
                   </div>
                 </div>
               </div>

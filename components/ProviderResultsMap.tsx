@@ -58,6 +58,9 @@ export function ProviderResultsMap({
       mapRef.current = null;
       markersRef.current = [];
     };
+    // Mount-only: the map is created once and `providers` is read solely for the
+    // initial center. Marker updates are handled by the effect below.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
