@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Apple,
-  ArrowLeft,
   ArrowRight,
   Baby,
   Bone,
@@ -35,7 +34,7 @@ import {
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
-import { ProviderMatch, providerNetworkStats, rankProviders } from "@/lib/providers";
+import { ProviderMatch, rankProviders } from "@/lib/providers";
 
 function providerTreeImage(provider: ProviderMatch) {
   const species = provider.speciesCommon.toLowerCase();
@@ -259,6 +258,7 @@ export function ProviderDashboard() {
   const [rankedProviders, setRankedProviders] = useState<ProviderMatch[] | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
   const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
+  const [sortBy, setSortBy] = useState("match");
 
   useEffect(() => {
     if (!detailProvider) return;
@@ -319,9 +319,8 @@ export function ProviderDashboard() {
     return (
       <main className="provider-search-page">
         <header className="provider-search-topbar">
-          <Link href="/" className="back-link provider-back-link">
-            <ArrowLeft aria-hidden="true" size={16} />
-            Landing page
+          <Link href="/" className="provider-logo" aria-label="Primary Care Tree — home">
+            <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
           </Link>
           <div className="provider-search-form">{searchForm}</div>
         </header>
@@ -349,26 +348,40 @@ export function ProviderDashboard() {
     );
   }
 
-  const nearbyProviders = rankedProviders.slice(0, 100);
-  const displayedProviders = rankedProviders.slice(0, 8);
+  const sortedProviders = (() => {
+    const copy = [...rankedProviders];
+    switch (sortBy) {
+      case "rating":
+        copy.sort((a, b) => b.careRating - a.careRating);
+        break;
+      case "manner":
+        copy.sort((a, b) => b.shadeSideMannerScore - a.shadeSideMannerScore);
+        break;
+      case "experience":
+        copy.sort((a, b) => b.treeDbh - a.treeDbh);
+        break;
+      case "reviews":
+        copy.sort((a, b) => b.reviewCount - a.reviewCount);
+        break;
+      case "distance":
+        copy.sort((a, b) => a.distance - b.distance);
+        break;
+      default:
+        break;
+    }
+    return copy;
+  })();
+  const displayedProviders = sortedProviders.slice(0, 8);
   const selectedProvider =
     displayedProviders.find((provider) => provider.providerId === selectedProviderId) || displayedProviders[0];
-  const averageWait = Math.round(
-    nearbyProviders.reduce((total, provider) => total + provider.nextAvailableVisitDays, 0) / nearbyProviders.length,
-  );
-  const averageAccess = Math.round(
-    nearbyProviders.reduce((total, provider) => total + provider.careAccessibilityScore, 0) / nearbyProviders.length,
-  );
-  const starProviders = nearbyProviders.filter((provider) => provider.starDoctor).length;
   const selectedLatitude = selectedProvider.clinicLatitude;
   const selectedLongitude = selectedProvider.clinicLongitude;
 
   return (
     <main className="provider-search-page">
       <header className="provider-search-topbar">
-        <Link href="/" className="back-link provider-back-link">
-          <ArrowLeft aria-hidden="true" size={16} />
-          Landing page
+        <Link href="/" className="provider-logo" aria-label="Primary Care Tree — home">
+          <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
         </Link>
         <div className="provider-search-form">{searchForm}</div>
       </header>
@@ -383,11 +396,20 @@ export function ProviderDashboard() {
             </span>
           </div>
         </div>
-        <div className="provider-summary-stats">
-          <span>{providerNetworkStats.totalProviders.toLocaleString()} NYC providers</span>
-          <span>{starProviders} nearby stars</span>
-          <span>{averageWait}d avg wait</span>
-          <span>{averageAccess} avg access</span>
+        <div className="provider-sort">
+          <label htmlFor="provider-sort-select">Sort by</label>
+          <select
+            id="provider-sort-select"
+            value={sortBy}
+            onChange={(event) => setSortBy(event.target.value)}
+          >
+            <option value="match">Best match</option>
+            <option value="rating">Rating</option>
+            <option value="manner">Shade-side manner</option>
+            <option value="experience">Years of experience</option>
+            <option value="reviews">Most reviewed</option>
+            <option value="distance">Nearest</option>
+          </select>
         </div>
       </section>
 
@@ -494,9 +516,17 @@ export function ProviderDashboard() {
             const reviews = generateReviews(detailProvider);
             const breakdown = ratingBreakdown(detailProvider);
             const tiles = [
-              { label: "On the block", value: `~${estimatedTreeAge(detailProvider)} yrs` },
-              { label: "Trunk width", value: `${detailProvider.treeDbh}″` },
-              { label: "Tree health", value: detailProvider.treeHealth || "Unlogged" },
+              { label: "Years of experience", value: `~${estimatedTreeAge(detailProvider)} yrs` },
+              {
+                label: "Clinic environment",
+                value:
+                  detailProvider.sidewalkCondition === "NoDamage"
+                    ? "Smooth"
+                    : detailProvider.sidewalkCondition === "Damage"
+                      ? "Gritty"
+                      : "Mixed",
+              },
+              { label: "Shade-side manner", value: detailProvider.treeHealth || "Unlogged" },
               {
                 label: "Open hours",
                 value: seededPick(openHoursOptions, String(detailProvider.providerId), 99),
@@ -548,8 +578,8 @@ export function ProviderDashboard() {
                     ))}
                   </div>
                   <p className="tree-detail-tiles-note">
-                    Trunk width and health are real NYC street-tree census data; age is estimated from trunk
-                    width.
+                    Clinic environment (sidewalk) and shade-side manner (health) are real NYC street-tree
+                    census data; years of experience is estimated from trunk size.
                   </p>
 
                   <blockquote className="tree-detail-prescription">

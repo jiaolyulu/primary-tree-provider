@@ -58,21 +58,25 @@ const pricingItems = [
     name: "First visit",
     price: "$0",
     detail: "Covered by the existing municipal canopy.",
+    fx: "heart",
   },
   {
     name: "Follow-up care",
     price: "Rainwater",
     detail: "Accepted in storms, mist, and patient watering rituals.",
+    fx: "rain",
   },
   {
     name: "Annual membership",
     price: "Oxygen exchange",
     detail: "Breathe in, breathe out, try not to waste the shade.",
+    fx: "breath",
   },
   {
     name: "Premium network access",
     price: "Compost + attention",
     detail: "Look closely. Notice stress. Advocate for the root zone.",
+    fx: "compost",
   },
 ];
 
@@ -339,7 +343,12 @@ export default function Home() {
         </div>
         <div className="pricing-grid">
           {pricingItems.map((item) => (
-            <article key={item.name} className="pricing-card">
+            <article key={item.name} className="pricing-card" data-fx={item.fx}>
+              <div className="pricing-fx" aria-hidden="true">
+                {Array.from({ length: 9 }).map((_, index) => (
+                  <i key={index} />
+                ))}
+              </div>
               <span>{item.name}</span>
               <strong>{item.price}</strong>
               <p>{item.detail}</p>
