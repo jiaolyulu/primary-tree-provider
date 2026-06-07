@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Primary Care Trees",
   description:
     "A speculative medical network that matches New Yorkers with nearby tree providers.",
+  icons: {
+    icon: "/images/favicon.svg",
+  },
 };
 
 export default function RootLayout({
