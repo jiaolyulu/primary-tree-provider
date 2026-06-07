@@ -204,7 +204,7 @@ export default function Home() {
         <div className="metric-intro">
           <span>Care network</span>
           <h2>
-            A clinic made from the city <em>forest</em>.
+            A health system from the city <em>forest</em>.
           </h2>
         </div>
         <div className="metric-card">
@@ -243,8 +243,23 @@ export default function Home() {
           </div>
         </div>
         <figure className="poster-reference">
-          <img src="/images/pct-arbocurists.png" alt="Primary Care Trees arbocurists poster" />
-          <figcaption>ARB0CURISTS / CARE SPECIALISTS FACILITATING PEOPLE-TREE RELATIONSHIPS</figcaption>
+          <div className="poster-header">
+          </div>
+          <img src="/images/arbocurists.png" alt="Arbocurists illustration — five people rendered as tree rings" />
+          <div className="poster-definition">
+            <div className="poster-definition-entry">
+              <strong>Arbocurists (n.)</strong>
+              <em className="poster-phonetic">/ˈar.boʊkjʊr.ɪst/</em>
+              <p>A team of care specialists facilitating relationships between people and tree providers.</p>
+              <p className="poster-see-also">See also: Lu Lyu, Yan Chen, shuang cai, Fanyi Pan, Ruichao Jiang</p>
+            </div>
+          </div>
+          <div className="poster-disciplines">
+            <span>SPECULATIVE DESIGN</span>
+            <span>INTERACTION DESIGN</span>
+            <span>CREATIVE TECH</span>
+            <span>DATA-DRIVEN STORYTELLING</span>
+          </div>
         </figure>
       </section>
 

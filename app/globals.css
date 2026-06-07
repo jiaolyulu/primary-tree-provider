@@ -925,12 +925,78 @@ input {
   width: 100%;
 }
 
+.poster-header {
+  align-items: flex-start;
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 8px 0;
+}
+
+.poster-definition {
+  border-top: 1px solid var(--line-dark);
+  margin-top: 0;
+  padding: 20px 12px 16px;
+}
+
+.poster-definition-entry strong {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.poster-phonetic {
+  color: var(--green);
+  display: block;
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-style: italic;
+  margin-top: 2px;
+}
+
+.poster-definition-entry p {
+  font-family: var(--font-body);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.55;
+  margin: 10px 0 0;
+}
+
+.poster-see-also {
+  font-style: italic;
+  opacity: 0.75;
+}
+
+.poster-disciplines {
+  border-top: 1px solid var(--line-dark);
+  background: var(--green);
+  color: white;
+  display: flex;
+  flex-wrap: wrap;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 600;
+  gap: 0 20px;
+  letter-spacing: 0.1em;
+  padding: 10px 12px;
+}
+
+.poster-disciplines span::after {
+  content: " \\";
+  opacity: 0.5;
+}
+
+.poster-disciplines span:last-child::after {
+  content: "";
+}
+
 .poster-reference figcaption {
   border-top: 1px solid var(--line-dark);
   font-size: 14px;
   letter-spacing: 0.05em;
-  margin-top: 12px;
-  padding-top: 10px;
+  margin-top: 0;
+  padding: 10px 12px;
 }
 
 .steps-grid {
