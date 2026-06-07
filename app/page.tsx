@@ -144,9 +144,20 @@ export default function Home() {
     <main>
       <section className="hero-section">
         <nav className="nav">
-          <a href="#about">Individualized Care</a>
-          <a href="#how">Local Providers</a>
-          <a href="#faq">Rooted Support</a>
+          <Link href="/" className="nav-logo" aria-label="Primary Care Tree — home">
+            <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
+          </Link>
+          <div className="nav-right">
+            <div className="nav-links">
+              <a href="#about">About</a>
+              <a href="#pricing">Pricing</a>
+              <a href="#testimonials">Testimonials</a>
+              <a href="#faq">Q&amp;A</a>
+            </div>
+            <Link href="/providers?zip=11215" className="nav-cta">
+              Browse all PCTs
+            </Link>
+          </div>
         </nav>
 
         <div className="hero-image" aria-hidden="true" />
@@ -253,7 +264,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="testimonial-section">
+      <section id="testimonials" className="testimonial-section">
         <div className="testimonial-copy">
           <span>Patient notes</span>
           <h2>
@@ -282,14 +293,14 @@ export default function Home() {
                       {testimonial.neighborhood}
                     </small>
                   </div>
-                  <p>"{testimonial.quote}"</p>
+                  <p>&ldquo;{testimonial.quote}&rdquo;</p>
                 </div>
                 <div className="testimonial-card-face testimonial-card-back">
                   <img src={testimonial.image} alt={testimonial.imageAlt} loading="lazy" />
                   <div className="testimonial-image-label">
                     <span>Provider tree</span>
                     <strong>{testimonial.tree}</strong>
-                    <p>"{testimonial.quote}"</p>
+                    <p>&ldquo;{testimonial.quote}&rdquo;</p>
                   </div>
                 </div>
               </div>
@@ -318,12 +329,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="pricing-section">
+      <section id="pricing" className="pricing-section">
         <div className="pricing-header">
-          <span>Pricing</span>
-          <h2>
-            Free at point of <em>shade</em>.
-          </h2>
+          <h2>Pricing</h2>
           <p>
             PCT does not bill insurance. The network runs on public soil, municipal records, photosynthesis,
             neighborly attention, and the radical affordability of standing under a living thing.

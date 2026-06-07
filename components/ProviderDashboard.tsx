@@ -4,24 +4,245 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import {
+  Activity,
+  Apple,
   ArrowLeft,
-  CalendarDays,
-  CreditCard,
-  ExternalLink,
-  FileText,
+  ArrowRight,
+  Baby,
+  Bone,
+  Brain,
+  ClipboardCheck,
+  Droplet,
+  Ear,
+  Eye,
+  Flower2,
   HeartPulse,
-  Leaf,
+  type LucideIcon,
   MapPin,
-  Navigation,
+  Microscope,
+  Moon,
   Search,
   ShieldCheck,
+  Smile,
   Sparkles,
   Star,
-  Trees,
+  Syringe,
+  Thermometer,
+  Utensils,
+  Wind,
+  X,
+  Zap,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
 import { ProviderMatch, providerNetworkStats, rankProviders } from "@/lib/providers";
+
+function providerTreeImage(provider: ProviderMatch) {
+  const species = provider.speciesCommon.toLowerCase();
+  if (species.includes("linden")) {
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/Tilia%20cordata%20-%20%27Greenspire%27%20littleleaf%20linden.jpg?width=500";
+  }
+  if (species.includes("ginkgo")) {
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/Ginkgo-biloba-tree-in-fall.jpg?width=500";
+  }
+  if (species.includes("sophora") || species.includes("pagoda")) {
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/20120905Styphnolobium%20japonicum.jpg?width=500";
+  }
+  if (species.includes("oak")) {
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/Pin%20oak%20quercus%20palustris.jpg?width=500";
+  }
+  if (species.includes("zelkova")) {
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/Zelkova%20serrata%20entire.jpg?width=500";
+  }
+  if (species.includes("sweetgum")) {
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/E20151113-0001%E2%80%94Liquidambar%20styraciflua%E2%80%94Berkelely%20%2822378349813%29.jpg?width=500";
+  }
+  if (species.includes("lilac")) {
+    return "https://commons.wikimedia.org/wiki/Special:FilePath/Syringa%20reticulata%20tree.jpg?width=500";
+  }
+  return "/images/pct-tree-hero.jpg";
+}
+
+function providerCardBio(provider: ProviderMatch) {
+  return provider.providerBio.replace(/^At [^,]+, /, "");
+}
+
+function titleCaseAddress(value: string) {
+  return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+// Cache resolved species photos so we fetch Wikipedia once per scientific name.
+const speciesImageCache = new Map<string, string>();
+
+function TreeImage({ provider, className }: { provider: ProviderMatch; className: string }) {
+  const fallback = providerTreeImage(provider);
+  const scientific = provider.speciesScientific?.trim() ?? "";
+  const [src, setSrc] = useState(() => speciesImageCache.get(scientific) ?? fallback);
+
+  useEffect(() => {
+    if (!scientific) return;
+    const cached = speciesImageCache.get(scientific);
+    if (cached) {
+      setSrc(cached);
+      return;
+    }
+    setSrc(fallback);
+    let active = true;
+    const title = encodeURIComponent(scientific.replace(/\s+/g, "_"));
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${title}`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((data) => {
+        const url: string | undefined = data?.thumbnail?.source ?? data?.originalimage?.source;
+        if (!url) return;
+        speciesImageCache.set(scientific, url);
+        if (active) setSrc(url);
+      })
+      .catch(() => {});
+    return () => {
+      active = false;
+    };
+  }, [scientific, fallback]);
+
+  return <img className={className} src={src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
+}
+
+function estimatedTreeAge(provider: ProviderMatch) {
+  // Rough arborist-style estimate: trunk diameter (real census data) x growth factor.
+  return Math.max(3, Math.round(provider.treeDbh * 2.5));
+}
+
+const openHoursOptions = [
+  "Dawn–dusk",
+  "Sunup to sundown",
+  "Always (it's a tree)",
+  "Whenever you need shade",
+];
+
+const conditionIconRules: Array<[RegExp, LucideIcon]> = [
+  [/vaccinat|immuniz/, Syringe],
+  [/blood pressure|cholesterol|chest pain|heart|palpitation|circulation|clot|vein|vascular|cold feet/, HeartPulse],
+  [/anxiety|depression|stress|burnout|mood|panic/, Smile],
+  [/insomnia|sleep|snor|apnea|drowsi|restless/, Moon],
+  [/memory|migraine|headache|brain|dizz|numb|tingl|tremor|fog/, Brain],
+  [/asthma|cough|breath|copd|bronch|wheez|lung|respir/, Wind],
+  [/cancer|lump|tumor|survivorship|imaging|weight loss/, Microscope],
+  [/joint|arthritis|back|hip|shoulder|knee|bone|fracture|sprain|strain|mobility|stiffness|gout|muscle|overuse|running/, Bone],
+  [/nerve|pain/, Zap],
+  [/eye|vision|glaucoma|cataract/, Eye],
+  [/ear|hearing|sinus|throat|voice|nasal|congestion/, Ear],
+  [/reflux|stomach|ibs|constip|diarrhea|bloat|colon|digest|acid/, Utensils],
+  [/skin|acne|eczema|psoriasis|rash|sun|mole|hives/, Sparkles],
+  [/weight|nutrition|eating|meal|diet|diabet|thyroid|hormone|metabolic/, Apple],
+  [/allerg|immune/, Flower2],
+  [/fever|infection|flu|wound|antibiotic|travel/, Thermometer],
+  [/kidney|urinary|bladder|prostate|incontinen|urine|stone|electrolyte|fluid/, Droplet],
+  [/anemia|iron|blood count|bruis|bleed/, Droplet],
+  [/fall|caregiver|aging|growth/, Activity],
+  [/woman|menstr|menopause|pelvic|breast|contracept/, Flower2],
+  [/childhood|pediatr|school/, Baby],
+];
+
+function conditionIcon(condition: string): LucideIcon {
+  const value = condition.toLowerCase();
+  for (const [pattern, Icon] of conditionIconRules) {
+    if (pattern.test(value)) return Icon;
+  }
+  return ClipboardCheck;
+}
+
+function seededHash(value: string) {
+  let result = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    result ^= value.charCodeAt(index);
+    result = Math.imul(result, 16777619);
+  }
+  return result >>> 0;
+}
+
+function seededPick<T>(items: T[], seed: string, offset = 0): T {
+  return items[seededHash(`${seed}:${offset}`) % items.length];
+}
+
+const reviewerNames = [
+  "Marisol P.",
+  "A regular on the B61",
+  "Stoop neighbor, two doors down",
+  "Dog-walker, 7am shift",
+  "Biscuit the corgi (via owner)",
+  "Crossing guard at the corner",
+  "Someone subletting upstairs",
+  "Tuesday farmers-market vendor",
+  "Night-shift nurse heading home",
+  "Kid on a scooter (parent typing)",
+  "Retired super, 30 yrs on the block",
+  "The bench across the street",
+];
+
+const reviewDates = [
+  "last spring",
+  "after the first heat wave",
+  "during a string of bad meetings",
+  "two weeks ago",
+  "the week the AC broke",
+  "mid-pollen season",
+  "right before the time change",
+  "on a humid Thursday",
+  "the day the forecast lied",
+];
+
+const reviewTemplates = [
+  "Came in for {condition}. The {species} didn't rush me — just offered shade and let the {hood} block slow down until I could think.",
+  "Five stars. Prescribed 'one slower block' and somehow that worked better than the last three apps on my phone.",
+  "I keep coming back. This {species} treats the sidewalk like a waiting room and it actually helps.",
+  "Skeptical at first, but the canopy runs on time. {hood} is lucky to have it.",
+  "Best {specialty} on the block. No paperwork, just shade, weather, and a little patience.",
+  "The {species} made my {condition} feel less like a mystery and more like something the street had been tracking all along.",
+  "Quiet, steady, a little drippy after rain. Would shelter under again.",
+  "Came for the shade, stayed for the perspective. Would reroute my commute past it.",
+  "Gave me a bench, a breeze, and zero judgment. The {hood} regulars know.",
+  "Not the flashiest tree, but it remembers the block better than I do.",
+];
+
+function generateReviews(provider: ProviderMatch) {
+  const seed = String(provider.providerId);
+  const count = 3 + (seededHash(`${seed}:count`) % 2);
+  const condition = provider.searchableConditions[0] ?? "general care";
+  // Rotate through each pool from a seeded start so names and templates stay
+  // distinct within a single tree's review list.
+  const nameStart = seededHash(`${seed}:name`) % reviewerNames.length;
+  const dateStart = seededHash(`${seed}:date`) % reviewDates.length;
+  const templateStart = seededHash(`${seed}:tpl`) % reviewTemplates.length;
+  return Array.from({ length: count }, (_, index) => {
+    const text = reviewTemplates[(templateStart + index) % reviewTemplates.length]
+      .split("{species}").join(provider.speciesCommon)
+      .split("{hood}").join(provider.clinicNeighborhood)
+      .split("{condition}").join(condition)
+      .split("{specialty}").join(provider.medicalSpecialty.toLowerCase());
+    return {
+      id: index,
+      name: reviewerNames[(nameStart + index) % reviewerNames.length],
+      when: reviewDates[(dateStart + index * 2) % reviewDates.length],
+      stars: seededPick([5, 5, 5, 4, 4, 3], seed, index * 7 + 1),
+      text,
+    };
+  });
+}
+
+function ratingBreakdown(provider: ProviderMatch) {
+  const seed = String(provider.providerId);
+  const weights = [
+    55 + (seededHash(`${seed}:5`) % 25),
+    12 + (seededHash(`${seed}:4`) % 18),
+    4 + (seededHash(`${seed}:3`) % 8),
+    seededHash(`${seed}:2`) % 5,
+    seededHash(`${seed}:1`) % 4,
+  ];
+  const total = weights.reduce((sum, value) => sum + value, 0);
+  return [5, 4, 3, 2, 1].map((star, index) => ({
+    star,
+    pct: Math.round((weights[index] / total) * 100),
+  }));
+}
 
 export function ProviderDashboard() {
   const searchParams = useSearchParams();
@@ -34,8 +255,24 @@ export function ProviderDashboard() {
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lng"));
   const hasPinnedLocation = params.get("location") === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
+  const originLabel = hasPinnedLocation ? "your dropped pin" : zipcode;
   const [rankedProviders, setRankedProviders] = useState<ProviderMatch[] | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
+  const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
+
+  useEffect(() => {
+    if (!detailProvider) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setDetailProvider(null);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [detailProvider]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -52,46 +289,49 @@ export function ProviderDashboard() {
     };
   }, [zipcode, symptom, hasPinnedLocation, latitude, longitude]);
 
+  const searchForm = (
+    <IntakeForm
+      compact
+      initialZip={zipcode}
+      initialSymptom={symptom}
+      initialLat={hasPinnedLocation ? latitude : undefined}
+      initialLng={hasPinnedLocation ? longitude : undefined}
+      initialLocationMode={hasPinnedLocation ? "pin" : "zip"}
+    />
+  );
+
+  const buildCardUrl = (providerId: number) => {
+    const cardParams = new URLSearchParams();
+    cardParams.set("zip", zipcode);
+    cardParams.set("providerId", String(providerId));
+    if (symptom) cardParams.set("symptom", symptom);
+    if (hasPinnedLocation) {
+      cardParams.set("location", "pin");
+      cardParams.set("lat", latitude.toFixed(5));
+      cardParams.set("lng", longitude.toFixed(5));
+    } else {
+      cardParams.set("location", "zip");
+    }
+    return `/card?${cardParams.toString()}`;
+  };
+
   if (!rankedProviders?.length) {
     return (
-      <main className="dashboard-page">
-        <aside className="dashboard-sidebar">
-          <Link href="/" className="back-link">
+      <main className="provider-search-page">
+        <header className="provider-search-topbar">
+          <Link href="/" className="back-link provider-back-link">
             <ArrowLeft aria-hidden="true" size={16} />
             Landing page
           </Link>
-          <div className="sidebar-title">
-            <Leaf aria-hidden="true" size={24} />
-            <div>
-              <span>PCT dashboard</span>
-              <h1>Find a nearby provider tree</h1>
-            </div>
-          </div>
-          <IntakeForm
-            compact
-            initialZip={zipcode}
-            initialSymptom={symptom}
-            initialLat={hasPinnedLocation ? latitude : undefined}
-            initialLng={hasPinnedLocation ? longitude : undefined}
-            initialLocationMode={hasPinnedLocation ? "pin" : "zip"}
-          />
-          <div className="dashboard-loading-panel">
-            <span>Searching local canopy</span>
-            <strong>{providerNetworkStats.totalProviders.toLocaleString()}</strong>
-            <p>Loading the nearest indexed tree-provider shards from the CDN.</p>
-            <ol>
-              <li>Locating your curbside search area</li>
-              <li>Reading nearby NYC Open Data tree records</li>
-              <li>Preparing your provider profile</li>
-            </ol>
-          </div>
-        </aside>
-        <section className="provider-results provider-results-loading">
+          <div className="provider-search-form">{searchForm}</div>
+        </header>
+
+        <section className="provider-search-loading" aria-label="Loading provider dashboard">
           <div className="eyebrow dark">
             <Search aria-hidden="true" size={15} />
-            {symptomLabel} near {hasPinnedLocation ? "your dropped pin" : zipcode}
+            {symptomLabel} near {originLabel}
           </div>
-          <div className="dashboard-skeleton" aria-label="Loading provider dashboard">
+          <div className="provider-search-skeleton">
             <div className="loading-map-preview">
               <span />
               <span />
@@ -103,11 +343,6 @@ export function ProviderDashboard() {
               <span />
               <span />
             </div>
-            <div className="loading-provider-preview small">
-              <span />
-              <span />
-              <span />
-            </div>
           </div>
         </section>
       </main>
@@ -115,13 +350,9 @@ export function ProviderDashboard() {
   }
 
   const nearbyProviders = rankedProviders.slice(0, 100);
-  const displayedProviders = rankedProviders.slice(0, 5);
+  const displayedProviders = rankedProviders.slice(0, 8);
   const selectedProvider =
-    rankedProviders.find((provider) => provider.providerId === selectedProviderId) || rankedProviders[0];
-  const selectedRank = Math.max(
-    0,
-    displayedProviders.findIndex((provider) => provider.providerId === selectedProvider.providerId),
-  );
+    displayedProviders.find((provider) => provider.providerId === selectedProviderId) || displayedProviders[0];
   const averageWait = Math.round(
     nearbyProviders.reduce((total, provider) => total + provider.nextAvailableVisitDays, 0) / nearbyProviders.length,
   );
@@ -129,130 +360,40 @@ export function ProviderDashboard() {
     nearbyProviders.reduce((total, provider) => total + provider.careAccessibilityScore, 0) / nearbyProviders.length,
   );
   const starProviders = nearbyProviders.filter((provider) => provider.starDoctor).length;
-  const providerNumber = `PCT-${String(selectedProvider.providerId).slice(-4)}`;
-  const matchLabel = selectedProvider.conditionMatch
-    ? `location-first / ${selectedProvider.locationMatchLabel} / symptom fit`
-    : `location-first / ${selectedProvider.locationMatchLabel}`;
-  const topConditionTags = selectedProvider.searchableConditions.slice(0, 5);
   const selectedLatitude = selectedProvider.clinicLatitude;
   const selectedLongitude = selectedProvider.clinicLongitude;
-  const originLabel = hasPinnedLocation ? "your dropped pin" : zipcode;
-  const openStreetMapUrl = `https://www.openstreetmap.org/?mlat=${selectedLatitude}&mlon=${selectedLongitude}#map=18/${selectedLatitude}/${selectedLongitude}`;
-  const googleMapsUrl = `https://www.google.com/maps/search/?api=1&query=${selectedLatitude}%2C${selectedLongitude}`;
-  const cardParams = new URLSearchParams();
-  cardParams.set("zip", zipcode);
-  cardParams.set("providerId", String(selectedProvider.providerId));
-  if (symptom) cardParams.set("symptom", symptom);
-  if (hasPinnedLocation) {
-    cardParams.set("location", "pin");
-    cardParams.set("lat", latitude.toFixed(5));
-    cardParams.set("lng", longitude.toFixed(5));
-  } else {
-    cardParams.set("location", "zip");
-  }
-  const cardUrl = `/card?${cardParams.toString()}`;
 
   return (
-    <main className="dashboard-page">
-      <aside className="dashboard-sidebar">
-        <Link href="/" className="back-link">
+    <main className="provider-search-page">
+      <header className="provider-search-topbar">
+        <Link href="/" className="back-link provider-back-link">
           <ArrowLeft aria-hidden="true" size={16} />
           Landing page
         </Link>
-        <div className="sidebar-title">
-          <Leaf aria-hidden="true" size={24} />
-          <div>
-            <span>PCT dashboard</span>
-            <h1>Find a nearby provider tree</h1>
-          </div>
-        </div>
-        <IntakeForm
-          compact
-          initialZip={zipcode}
-          initialSymptom={symptom}
-          initialLat={hasPinnedLocation ? latitude : undefined}
-          initialLng={hasPinnedLocation ? longitude : undefined}
-          initialLocationMode={hasPinnedLocation ? "pin" : "zip"}
-        />
+        <div className="provider-search-form">{searchForm}</div>
+      </header>
 
-        <div className="care-summary" aria-label="Current care search">
-          <span>Current intake</span>
-          <dl>
-            <div>
-              <dt>Location</dt>
-              <dd>{hasPinnedLocation ? "Map pin" : zipcode}</dd>
-            </div>
-            <div>
-              <dt>Symptom</dt>
-              <dd>{hasSymptom ? symptom : "Optional"}</dd>
-            </div>
-            <div>
-              <dt>Assigned PCT</dt>
-              <dd>{selectedProvider.speciesCommon}</dd>
-            </div>
-            <div>
-              <dt>Match</dt>
-              <dd>{matchLabel}</dd>
-            </div>
-          </dl>
-        </div>
-
-        <div className="dashboard-metrics" aria-label="Dashboard metrics">
+      <section className="provider-search-summary" aria-label="Search summary">
+        <div className="provider-result-count">
+          <ShieldCheck aria-hidden="true" size={24} />
           <div>
-            <strong>{rankedProviders.length}</strong>
-            <span>nearby trees</span>
-          </div>
-          <div>
-            <strong>{selectedProvider.distanceLabel}</strong>
-            <span>top distance</span>
-          </div>
-          <div>
-            <strong>{averageWait}d</strong>
-            <span>avg wait</span>
-          </div>
-          <div>
-            <strong>{averageAccess}</strong>
-            <span>avg access</span>
-          </div>
-        </div>
-
-        <p className="sidebar-note">
-          Ranking is location-first: the closest provider trees receive the strongest priority, then symptom relevance,
-          access, availability, shade-side manner, and star-provider status refine the order.
-        </p>
-      </aside>
-
-      <section className="provider-results">
-        <header className="results-header">
-          <div>
-            <div className="eyebrow dark">
-              <Search aria-hidden="true" size={15} />
+            <strong>{rankedProviders.length.toLocaleString()} care providers</strong>
+            <span>
               {symptomLabel} near {originLabel}
-            </div>
-            <h2>Ranked care canopy</h2>
-            <p>
-              Primary Care Trees are sorted by practical proximity and ecological specialty, then translated into a
-              provider profile you can actually read before your visit.
-            </p>
+            </span>
           </div>
-          <div className="network-snapshot" aria-label="Network summary">
-            <div>
-              <strong>{providerNetworkStats.totalProviders.toLocaleString()}</strong>
-              <span>NYC providers</span>
-            </div>
-            <div>
-              <strong>{starProviders}</strong>
-              <span>nearby star providers</span>
-            </div>
-            <div>
-              <strong>{selectedProvider.clinicNeighborhood}</strong>
-              <span>nearest clinic</span>
-            </div>
-          </div>
-        </header>
+        </div>
+        <div className="provider-summary-stats">
+          <span>{providerNetworkStats.totalProviders.toLocaleString()} NYC providers</span>
+          <span>{starProviders} nearby stars</span>
+          <span>{averageWait}d avg wait</span>
+          <span>{averageAccess} avg access</span>
+        </div>
+      </section>
 
-        <div className="locator-panel" aria-label="Provider locator">
-          <div className="locator-map real-map">
+      <section className="provider-search-layout" aria-label="Provider search results">
+        <aside className="provider-map-panel" aria-label="Provider map">
+          <div className="provider-map-canvas">
             <ProviderResultsMap
               providers={displayedProviders}
               selectedProviderId={selectedProvider.providerId}
@@ -265,239 +406,208 @@ export function ProviderDashboard() {
               </span>
             </div>
           </div>
-          <div className="locator-copy">
-            <span>Selected provider</span>
-            <h3>{selectedProvider.clinicName}</h3>
-            <div className="selected-rank-pill">Primary candidate #{selectedRank + 1}</div>
-            <address>
-              {selectedProvider.clinicAddress}
-              <br />
-              {selectedProvider.clinicCity}, {selectedProvider.clinicState} {selectedProvider.clinicZipcode}
-            </address>
-            <p>
-              This location-first match starts from {originLabel}
-              {hasSymptom ? `, then checks ${symptom} against nearby tree-provider specialties` : ""}. The map pin is
-              centered on the provider&apos;s NYC coordinates in {selectedProvider.clinicNeighborhood}.
-            </p>
-            <div className="map-actions">
-              <Link href={cardUrl} className="choose-primary-link">
-                <CreditCard aria-hidden="true" size={15} />
-                Choose as Primary PCT
-              </Link>
-              <a href={openStreetMapUrl} target="_blank" rel="noreferrer">
-                OpenStreetMap
-                <ExternalLink aria-hidden="true" size={15} />
-              </a>
-              <a href={googleMapsUrl} target="_blank" rel="noreferrer">
-                Google Maps
-                <ExternalLink aria-hidden="true" size={15} />
-              </a>
-            </div>
-          </div>
-        </div>
+        </aside>
 
-        <div className="dashboard-grid">
-          <div className="provider-list">
-            {displayedProviders.map((provider, index) => (
-              <article
-                key={provider.providerId}
-                className={provider.providerId === selectedProvider.providerId ? "provider-card selected" : "provider-card"}
-                role="button"
-                tabIndex={0}
-                aria-pressed={provider.providerId === selectedProvider.providerId}
-                onClick={() => setSelectedProviderId(provider.providerId)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setSelectedProviderId(provider.providerId);
-                  }
-                }}
-              >
-                <div className="provider-card-header">
-                  <div>
-                    <span className="rank">#{index + 1}</span>
-                    <h3>{provider.speciesCommon}</h3>
-                    <p>
-                      {provider.medicalSpecialty} / {provider.clinicNeighborhood}
-                    </p>
-                  </div>
-                  {provider.starDoctor ? (
-                    <div className="star-pill">
-                      <Star aria-hidden="true" size={14} />
-                      Star
+        <section className="provider-doctor-panel" aria-label="Care providers">
+          <div className="provider-doctor-list">
+            {displayedProviders.map((provider, index) => {
+              const isSelected = provider.providerId === selectedProvider.providerId;
+              const conditionTags = provider.searchableConditions.slice(0, 3);
+
+              return (
+                <article key={provider.providerId} className={isSelected ? "provider-card selected" : "provider-card"}>
+                  <button
+                    type="button"
+                    className="provider-card-select"
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedProviderId(provider.providerId)}
+                  >
+                    <div className="provider-card-media">
+                      <TreeImage provider={provider} className="provider-tree-avatar" />
+                      <span className="provider-card-rank">{index + 1}</span>
+                    </div>
+
+                    <div className="provider-card-body">
+                      <span className="provider-card-eyebrow">
+                        {provider.medicalSpecialty} · {provider.clinicNeighborhood}
+                      </span>
+                      <h3>{provider.speciesCommon}</h3>
+                      <div className="provider-rating">
+                        <Star aria-hidden="true" size={14} />
+                        <strong>{provider.careRating.toFixed(1)}</strong>
+                        <span>({provider.reviewCount} reviews)</span>
+                      </div>
+                      <address>
+                        {titleCaseAddress(provider.clinicAddress)}, {provider.clinicCity}, {provider.clinicState}{" "}
+                        {provider.clinicZipcode}
+                      </address>
+                      <p className="provider-card-bio">{providerCardBio(provider)}</p>
+                      <div className="condition-chips" aria-label={`${provider.speciesCommon} symptoms`}>
+                        {conditionTags.map((condition) => {
+                          const ConditionIcon = conditionIcon(condition);
+                          return (
+                            <span key={condition}>
+                              <ConditionIcon aria-hidden="true" size={13} />
+                              {condition}
+                            </span>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {provider.starDoctor ? (
+                      <span className="star-pill">
+                        <Star aria-hidden="true" size={13} />
+                        Star
+                      </span>
+                    ) : null}
+                  </button>
+
+                  {isSelected ? (
+                    <div className="provider-card-expanded">
+                      <p>{provider.signaturePrescription}</p>
                     </div>
                   ) : null}
-                </div>
-                <div className="match-row">
-                  <strong>{provider.locationMatchLabel}</strong>
-                  <span>{provider.distanceLabel}</span>
-                </div>
-                <div className="card-stats">
-                  <span>{provider.careRating.toFixed(1)} rating</span>
-                  <span>{provider.nextAvailableVisitDays}d wait</span>
-                  <span>{provider.careAccessibilityScore} access</span>
-                  <span>{provider.distanceLabel}</span>
-                </div>
-                <p>{provider.providerBio}</p>
-                <div className="condition-chips">
-                  {provider.searchableConditions.slice(0, 3).map((condition) => (
-                    <span key={condition}>{condition}</span>
-                  ))}
-                </div>
-              </article>
-            ))}
+
+                  <div className="provider-card-foot">
+                    <button
+                      type="button"
+                      className="tree-learn-more"
+                      onClick={() => setDetailProvider(provider)}
+                    >
+                      Learn more
+                    </button>
+                    <Link href={buildCardUrl(provider.providerId)} className="provider-choose-btn">
+                      Choose as Primary PCT
+                      <ArrowRight aria-hidden="true" size={16} />
+                    </Link>
+                  </div>
+                </article>
+              );
+            })}
           </div>
-
-          <article className="provider-detail">
-            <div className="detail-hero">
-              <div className="detail-label-row">
-                <span>{providerNumber}</span>
-                <span>{selectedProvider.popularityBadge}</span>
-              </div>
-              <h2>
-                {selectedProvider.speciesCommon} primary care tree
-              </h2>
-              <p>
-                {selectedProvider.speciesScientific}. {selectedProvider.specialtyDescription}
-              </p>
-            </div>
-
-            <div className="detail-stats">
-              <div>
-                <HeartPulse aria-hidden="true" size={18} />
-                <strong>{selectedProvider.medicalSpecialty}</strong>
-                <span>{selectedProvider.providerType}</span>
-              </div>
-              <div>
-                <CalendarDays aria-hidden="true" size={18} />
-                <strong>{selectedProvider.nextAvailableVisitDays} days</strong>
-                <span>Next available visit</span>
-              </div>
-              <div>
-                <Navigation aria-hidden="true" size={18} />
-                <strong>{selectedProvider.clinicZipcode}</strong>
-                <span>{selectedProvider.clinicNeighborhood}</span>
-              </div>
-              <div>
-                <ShieldCheck aria-hidden="true" size={18} />
-                <strong>{selectedProvider.stormResponseReadiness}</strong>
-                <span>Storm readiness</span>
-              </div>
-            </div>
-
-            <div className="chart-strip" aria-label="Provider vitals">
-              <div>
-                <span>Years in practice</span>
-                <strong>{selectedProvider.yearsOfPractice}</strong>
-              </div>
-              <div>
-                <span>Years at curb</span>
-                <strong>{selectedProvider.yearsAtCurrentSpot}</strong>
-              </div>
-              <div>
-                <span>Shade-side manner</span>
-                <strong>{selectedProvider.shadeSideMannerScore.toFixed(1)}</strong>
-              </div>
-              <div>
-                <span>Reviews</span>
-                <strong>{selectedProvider.reviewCount}</strong>
-              </div>
-            </div>
-
-            <div className="detail-section condition-section">
-              <div>
-                <h3>Condition fit</h3>
-                <p>
-                  {hasSymptom
-                    ? `The intake matched ${symptom} against this provider's searchable conditions and care service list.`
-                    : "No symptom was entered, so the system prioritized the closest available provider trees first."}
-                </p>
-              </div>
-              <div className="service-tags">
-                {topConditionTags.map((condition) => (
-                  <span key={condition}>{condition}</span>
-                ))}
-              </div>
-            </div>
-
-            <div className="detail-section care-plan">
-              <h3>Visit plan</h3>
-              <ol>
-                <li>
-                  <FileText aria-hidden="true" size={18} />
-                  <span>
-                    Intake reviews your location, optional symptom, sidewalk access, and whether the tree has weekend
-                    shade.
-                  </span>
-                </li>
-                <li>
-                  <Trees aria-hidden="true" size={18} />
-                  <span>
-                    In-person care happens at the curb: sit, observe light, temperature, noise, and the provider&apos;s
-                    canopy behavior.
-                  </span>
-                </li>
-                <li>
-                  <Sparkles aria-hidden="true" size={18} />
-                  <span>
-                    Follow-up guidance turns the visit into a small ritual you can repeat before symptoms escalate.
-                  </span>
-                </li>
-              </ol>
-            </div>
-
-            <div className="detail-section services-section">
-              <h3>{hasSymptom ? `Services for ${symptom}` : "Primary care services"}</h3>
-              <div className="service-tags">
-                {selectedProvider.primaryCareServices.map((service) => (
-                  <span key={service}>{service}</span>
-                ))}
-              </div>
-            </div>
-
-            <div className="prescription-box">
-              <span>Signature prescription</span>
-              <p>{selectedProvider.signaturePrescription}</p>
-            </div>
-
-            <div className="detail-section">
-              <h3>Care profile</h3>
-              <p>{selectedProvider.carePhilosophy}</p>
-              <ul>
-                <li>{selectedProvider.treeExperienceLevel}</li>
-                <li>{selectedProvider.weekendAvailability ? "Weekend shade available" : "Weekday shade schedule"}</li>
-                <li>{selectedProvider.officeVibe}</li>
-                <li>{selectedProvider.waitingRoomFeature}</li>
-              </ul>
-            </div>
-
-            <div className="detail-section location-section">
-              <h3>Clinic location</h3>
-              <p>
-                {selectedProvider.clinicAddress}, {selectedProvider.clinicCity}, {selectedProvider.clinicState}{" "}
-                {selectedProvider.clinicZipcode}
-              </p>
-              <p>{selectedProvider.clinicDescription}</p>
-              <div className="location-meta">
-                <span>{selectedProvider.clinicNeighborhood}</span>
-                <span>
-                  {selectedLatitude.toFixed(5)}, {selectedLongitude.toFixed(5)}
-                </span>
-              </div>
-            </div>
-
-            <div className="visit-rules">
-              <span>Appointment notes</span>
-              <p>
-                Please arrive hydrated. No saws, pruning shears, or unauthorized &quot;second opinions&quot; from lumber are
-                permitted during provider visits.
-              </p>
-            </div>
-
-            <blockquote className="review-box">{selectedProvider.patientReviewSummary}</blockquote>
-          </article>
-        </div>
+        </section>
       </section>
+
+      {detailProvider
+        ? (() => {
+            const reviews = generateReviews(detailProvider);
+            const breakdown = ratingBreakdown(detailProvider);
+            const tiles = [
+              { label: "On the block", value: `~${estimatedTreeAge(detailProvider)} yrs` },
+              { label: "Trunk width", value: `${detailProvider.treeDbh}″` },
+              { label: "Tree health", value: detailProvider.treeHealth || "Unlogged" },
+              {
+                label: "Open hours",
+                value: seededPick(openHoursOptions, String(detailProvider.providerId), 99),
+              },
+            ];
+            return (
+              <div
+                className="tree-detail-overlay"
+                role="dialog"
+                aria-modal="true"
+                aria-label={`${detailProvider.speciesCommon} details`}
+                onClick={() => setDetailProvider(null)}
+              >
+                <div className="tree-detail-modal" onClick={(event) => event.stopPropagation()}>
+                  <button
+                    type="button"
+                    className="tree-detail-close"
+                    onClick={() => setDetailProvider(null)}
+                    aria-label="Close"
+                  >
+                    <X aria-hidden="true" size={18} />
+                  </button>
+
+                  <div className="tree-detail-head">
+                    <TreeImage provider={detailProvider} className="tree-detail-photo" />
+                    <div>
+                      <span className="provider-card-eyebrow">
+                        {detailProvider.medicalSpecialty} · {detailProvider.clinicNeighborhood}
+                      </span>
+                      <h2>{detailProvider.speciesCommon}</h2>
+                      <div className="provider-rating">
+                        <Star aria-hidden="true" size={15} />
+                        <strong>{detailProvider.careRating.toFixed(1)}</strong>
+                        <span>({detailProvider.reviewCount} reviews)</span>
+                      </div>
+                      <p className="tree-detail-address">
+                        {titleCaseAddress(detailProvider.clinicAddress)}, {detailProvider.clinicCity},{" "}
+                        {detailProvider.clinicState} {detailProvider.clinicZipcode}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="tree-detail-tiles">
+                    {tiles.map((tile) => (
+                      <div key={tile.label} className="tree-detail-tile">
+                        <strong>{tile.value}</strong>
+                        <span>{tile.label}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <p className="tree-detail-tiles-note">
+                    Trunk width and health are real NYC street-tree census data; age is estimated from trunk
+                    width.
+                  </p>
+
+                  <blockquote className="tree-detail-prescription">
+                    {detailProvider.signaturePrescription}
+                  </blockquote>
+
+                  <p className="tree-detail-philosophy">{detailProvider.carePhilosophy}</p>
+
+                  <div className="tree-detail-ratings">
+                    <div className="tree-detail-score">
+                      <strong>{detailProvider.careRating.toFixed(1)}</strong>
+                      <span>out of 5</span>
+                    </div>
+                    <div className="tree-detail-bars">
+                      {breakdown.map((row) => (
+                        <div key={row.star} className="tree-detail-bar-row">
+                          <span className="tree-detail-bar-label">{row.star}★</span>
+                          <span className="tree-detail-bar-track">
+                            <span className="tree-detail-bar-fill" style={{ width: `${row.pct}%` }} />
+                          </span>
+                          <span className="tree-detail-bar-pct">{row.pct}%</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="tree-detail-reviews">
+                    <h3>What the block says</h3>
+                    {reviews.map((review) => (
+                      <div key={review.id} className="tree-review">
+                        <div className="tree-review-head">
+                          <strong>{review.name}</strong>
+                          <span className="tree-review-stars" aria-label={`${review.stars} out of 5 stars`}>
+                            {"★".repeat(review.stars)}
+                            <span className="tree-review-stars-empty">{"★".repeat(5 - review.stars)}</span>
+                          </span>
+                          <span className="tree-review-when">{review.when}</span>
+                        </div>
+                        <p>{review.text}</p>
+                      </div>
+                    ))}
+                    <p className="tree-detail-caption">
+                      Notes are written in PCT&rsquo;s speculative language of care — imagined, not clinical.
+                    </p>
+                  </div>
+
+                  <Link
+                    href={buildCardUrl(detailProvider.providerId)}
+                    className="provider-choose-btn tree-detail-choose"
+                  >
+                    Choose as Primary PCT
+                    <ArrowRight aria-hidden="true" size={16} />
+                  </Link>
+                </div>
+              </div>
+            );
+          })()
+        : null}
     </main>
   );
 }
