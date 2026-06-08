@@ -285,11 +285,11 @@ export function ProviderDashboard() {
         setRankedProviders(matches);
         setSelectedProviderId(matches[0]?.providerId ?? null);
       })
-      .catch((error) => {
+      .catch(() => {
         if (!isCurrent) return;
         setRankedProviders([]);
         setSelectedProviderId(null);
-        setLoadError(error instanceof Error ? error.message : "Could not load the provider database.");
+        setLoadError("We're having trouble loading provider matches. Please refresh or try again soon.");
       });
 
     return () => {
@@ -333,19 +333,15 @@ export function ProviderDashboard() {
           <div className="provider-search-form">{searchForm}</div>
         </header>
 
-        <section className="provider-search-loading" aria-label="Provider database unavailable">
+        <section className="provider-search-loading" aria-label="Provider matches unavailable">
           <div className="eyebrow dark">
             <Search aria-hidden="true" size={15} />
             {symptomLabel} near {originLabel}
           </div>
           <div className="dashboard-error-panel" role="alert">
-            <span>Provider database unavailable</span>
-            <h2>We could not reach the SQLite-backed PCT network.</h2>
+            <span>Provider matches unavailable</span>
+            <h2>We could not load nearby Primary Care Trees.</h2>
             <p>{loadError}</p>
-            <p>
-              The dashboard now uses the Django provider API as the source of truth, so it will not fabricate tree
-              provider fields from the old static demo shards.
-            </p>
           </div>
         </section>
       </main>

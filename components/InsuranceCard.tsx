@@ -29,10 +29,10 @@ export function InsuranceCard() {
         if (!isCurrent) return;
         setProvider(matches.find((match) => match.providerId === providerId) || matches[0] || null);
       })
-      .catch((error) => {
+      .catch(() => {
         if (!isCurrent) return;
         setProvider(null);
-        setLoadError(error instanceof Error ? error.message : "Could not load the selected provider.");
+        setLoadError("We're having trouble loading your selected Primary Care Tree. Please refresh or try again soon.");
       });
 
     return () => {
@@ -61,9 +61,9 @@ export function InsuranceCard() {
         <section className="card-page-header">
           <div className="eyebrow dark">
             <ShieldCheck aria-hidden="true" size={15} />
-            PCT database unavailable
+            Card temporarily unavailable
           </div>
-          <h1>Your health insurance card cannot load yet</h1>
+          <h1>Your card cannot load yet</h1>
           <p>{loadError}</p>
         </section>
       </main>
