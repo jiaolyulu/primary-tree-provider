@@ -27,6 +27,11 @@ const steps = [
 
 const faqs = [
   {
+    question: "What is a primary tree?",
+    answer:
+      "A primary tree is a tree that you can access easily to help guide your care, managing common and uncommon medical problems including persistent symptoms, daily wellness checks, sadness prevention, and referrals to other tree providers.",
+  },
+  {
     question: "Can I bring a saw to my appointment?",
     answer:
       "No. Saws, axes, hatchets, hostile pruning equipment, and bad faith arborist cosplay are not allowed at any provider visit. Bring water, patience, and a willingness to stand still.",
@@ -185,7 +190,7 @@ export default function Home() {
         </div>
 
         <div className="hero-copy">
-          <p className="hero-index">2026 / NYC ECOLOGICAL CARE NETWORK</p>
+          <p className="hero-index">2026 / New York City Care Network based on Urban Forestry</p>
           <h1>
             Primary Care <em>Trees</em>
           </h1>
@@ -201,7 +206,6 @@ export default function Home() {
 
         <div className="hero-demo" aria-label="Find a Primary Care Tree">
           <div className="demo-header">
-            <span>Primary intake</span>
             <h2>Care intake</h2>
           </div>
           <div className="demo-body">
@@ -212,25 +216,24 @@ export default function Home() {
 
       <section className="metric-strip" aria-label="Primary Care Trees network">
         <div className="metric-intro">
-          <span>Care network</span>
           <h2>
-            A clinic made from the city <em>forest</em>.
+          A care network <em>rooted</em> in NYC.
           </h2>
         </div>
         <div className="metric-card">
           <span>01</span>
           <strong>Every provider is planted.</strong>
-          <p>Each match points to a living street tree with a species, address, ZIP code, and neighborhood context.</p>
+          <p>Each provider is a living tree with a documented location, species, and service area.</p>
         </div>
         <div className="metric-card">
           <span>02</span>
-          <strong>Symptoms become ecological referrals.</strong>
-          <p>The intake translates concerns like heat, stress, fatigue, asthma, or rash into species-based specialties.</p>
+          <strong>Every symptom starts a search.</strong>
+          <p>The network considers your symptoms, location, and provider specialties to identify a Primary Tree.</p>
         </div>
         <div className="metric-card">
           <span>03</span>
-          <strong>Care is already circulating.</strong>
-          <p>Shade, cooling, filtration, stormwater absorption, and sidewalk rest become visible as public health work.</p>
+          <strong>Every act of care circulates.</strong>
+          <p>The network traces connections between providers, specialties, and places throughout the city.</p>
         </div>
       </section>
 
@@ -253,8 +256,23 @@ export default function Home() {
           </div>
         </div>
         <figure className="poster-reference">
-          <img src="/images/pct-arbocurists.png" alt="Primary Care Trees arbocurists poster" />
-          <figcaption>ARB0CURISTS / CARE SPECIALISTS FACILITATING PEOPLE-TREE RELATIONSHIPS</figcaption>
+          <div className="poster-header">
+          </div>
+          <img src="/images/arbocurists.png" alt="Arbocurists illustration — five people rendered as tree rings" />
+          <div className="poster-definition">
+            <div className="poster-definition-entry">
+              <strong>Arbocurists (n.)</strong>
+              <em className="poster-phonetic">/ˈar.boʊkjʊr.ɪst/</em>
+              <p>A team of care specialists facilitating relationships between people and tree providers.</p>
+              <p className="poster-see-also">See also: Lu Lyu, Yan Chen, shuang cai, Fanyi Pan, Ruichao Jiang</p>
+            </div>
+          </div>
+          <div className="poster-disciplines">
+            <span>SPECULATIVE DESIGN</span>
+            <span>INTERACTION DESIGN</span>
+            <span>CREATIVE TECH</span>
+            <span>DATA-DRIVEN STORYTELLING</span>
+          </div>
         </figure>
       </section>
 
@@ -376,6 +394,19 @@ export default function Home() {
           <ArrowRight aria-hidden="true" size={18} />
         </Link>
       </section>
+
+      <footer className="site-footer">
+        <p>
+          PCT acknowledges the sacrifice of peer species involved in building and maintaining PCT care
+          infrastructure, including but not limited to paper and print production, furniture manufacturing,
+          and data center construction. PCT does not endorse the sacrifice of trees and remains committed
+          to expanding equitable care relationships between human and non-human providers.
+        </p>
+        <p>
+          PCT is not a real medical service. For any serious disease or unwell, please consult a real
+          healthcare provider.
+        </p>
+      </footer>
     </main>
   );
 }
