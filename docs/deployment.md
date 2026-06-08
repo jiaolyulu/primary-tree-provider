@@ -2,14 +2,14 @@
 
 ## Architecture
 
-Primary Care Trees now supports a Django backend for provider search while keeping the current static shard fallback.
+Primary Care Trees uses the Django backend as the source of truth for provider search.
 
 - Frontend: Next.js app at the repository root.
 - Backend: Django API in `backend/`.
 - Provider data: compact SQLite index at `backend/data/provider_index.sqlite`, generated from `trees_map.json`.
-- Runtime switch: set `NEXT_PUBLIC_PROVIDER_API_BASE_URL` on the frontend to make the dashboard call Django.
+- Runtime API base: set `NEXT_PUBLIC_PROVIDER_API_BASE_URL` on the frontend. Production uses `/_/backend`.
 
-If `NEXT_PUBLIC_PROVIDER_API_BASE_URL` is unset or the API is unavailable, the frontend falls back to matching providers from the static client-side shards.
+If the API is unavailable, the frontend shows a database availability error instead of synthesizing provider fields from the older static client-side shards.
 
 ## Provider Index
 

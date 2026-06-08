@@ -106,8 +106,7 @@ function TreeImage({ provider, className }: { provider: ProviderMatch; className
 }
 
 function estimatedTreeAge(provider: ProviderMatch) {
-  // Rough arborist-style estimate: trunk diameter (real census data) x growth factor.
-  return Math.max(3, Math.round(provider.treeDbh * 2.5));
+  return provider.yearsOfPractice;
 }
 
 const openHoursOptions = [
@@ -259,6 +258,7 @@ export function ProviderDashboard() {
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
   const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
   const [sortBy, setSortBy] = useState("match");
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     if (!detailProvider) return;
@@ -277,12 +277,20 @@ export function ProviderDashboard() {
   useEffect(() => {
     let isCurrent = true;
     setRankedProviders(null);
+    setLoadError("");
 
-    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined).then((matches) => {
-      if (!isCurrent) return;
-      setRankedProviders(matches);
-      setSelectedProviderId(matches[0]?.providerId ?? null);
-    });
+    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined)
+      .then((matches) => {
+        if (!isCurrent) return;
+        setRankedProviders(matches);
+        setSelectedProviderId(matches[0]?.providerId ?? null);
+      })
+      .catch((error) => {
+        if (!isCurrent) return;
+        setRankedProviders([]);
+        setSelectedProviderId(null);
+        setLoadError(error instanceof Error ? error.message : "Could not load the provider database.");
+      });
 
     return () => {
       isCurrent = false;
@@ -314,6 +322,35 @@ export function ProviderDashboard() {
     }
     return `/card?${cardParams.toString()}`;
   };
+
+  if (loadError) {
+    return (
+      <main className="provider-search-page">
+        <header className="provider-search-topbar">
+          <Link href="/" className="provider-logo" aria-label="Primary Care Tree — home">
+            <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
+          </Link>
+          <div className="provider-search-form">{searchForm}</div>
+        </header>
+
+        <section className="provider-search-loading" aria-label="Provider database unavailable">
+          <div className="eyebrow dark">
+            <Search aria-hidden="true" size={15} />
+            {symptomLabel} near {originLabel}
+          </div>
+          <div className="dashboard-error-panel" role="alert">
+            <span>Provider database unavailable</span>
+            <h2>We could not reach the SQLite-backed PCT network.</h2>
+            <p>{loadError}</p>
+            <p>
+              The dashboard now uses the Django provider API as the source of truth, so it will not fabricate tree
+              provider fields from the old static demo shards.
+            </p>
+          </div>
+        </section>
+      </main>
+    );
+  }
 
   if (!rankedProviders?.length) {
     return (
@@ -358,7 +395,7 @@ export function ProviderDashboard() {
         copy.sort((a, b) => b.shadeSideMannerScore - a.shadeSideMannerScore);
         break;
       case "experience":
-        copy.sort((a, b) => b.treeDbh - a.treeDbh);
+        copy.sort((a, b) => b.yearsOfPractice - a.yearsOfPractice);
         break;
       case "reviews":
         copy.sort((a, b) => b.reviewCount - a.reviewCount);
@@ -517,16 +554,8 @@ export function ProviderDashboard() {
             const breakdown = ratingBreakdown(detailProvider);
             const tiles = [
               { label: "Years of experience", value: `~${estimatedTreeAge(detailProvider)} yrs` },
-              {
-                label: "Clinic environment",
-                value:
-                  detailProvider.sidewalkCondition === "NoDamage"
-                    ? "Smooth"
-                    : detailProvider.sidewalkCondition === "Damage"
-                      ? "Gritty"
-                      : "Mixed",
-              },
-              { label: "Shade-side manner", value: detailProvider.treeHealth || "Unlogged" },
+              { label: "Clinic environment", value: detailProvider.waitingRoomFeature },
+              { label: "Shade-side manner", value: detailProvider.shadeSideMannerScore.toFixed(1) },
               {
                 label: "Open hours",
                 value: seededPick(openHoursOptions, String(detailProvider.providerId), 99),
@@ -578,8 +607,8 @@ export function ProviderDashboard() {
                     ))}
                   </div>
                   <p className="tree-detail-tiles-note">
-                    Clinic environment (sidewalk) and shade-side manner (health) are real NYC street-tree
-                    census data; years of experience is estimated from trunk size.
+                    Provider vitals come from the SQLite-backed PCT provider index, with visit language translated into
+                    the speculative care frame.
                   </p>
 
                   <blockquote className="tree-detail-prescription">

@@ -17,15 +17,23 @@ export function InsuranceCard() {
   const longitude = Number(params.get("lng"));
   const hasPinnedLocation = params.get("location") === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
   const [provider, setProvider] = useState<ProviderMatch | null>(null);
+  const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
     let isCurrent = true;
     setProvider(null);
+    setLoadError("");
 
-    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined).then((matches) => {
-      if (!isCurrent) return;
-      setProvider(matches.find((match) => match.providerId === providerId) || matches[0] || null);
-    });
+    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined)
+      .then((matches) => {
+        if (!isCurrent) return;
+        setProvider(matches.find((match) => match.providerId === providerId) || matches[0] || null);
+      })
+      .catch((error) => {
+        if (!isCurrent) return;
+        setProvider(null);
+        setLoadError(error instanceof Error ? error.message : "Could not load the selected provider.");
+      });
 
     return () => {
       isCurrent = false;
@@ -41,6 +49,25 @@ export function InsuranceCard() {
     dashboardParams.set("lng", longitude.toFixed(5));
   } else {
     dashboardParams.set("location", "zip");
+  }
+
+  if (loadError) {
+    return (
+      <main className="card-page">
+        <Link href={`/providers?${dashboardParams.toString()}`} className="back-link">
+          <ArrowLeft aria-hidden="true" size={16} />
+          Back to providers
+        </Link>
+        <section className="card-page-header">
+          <div className="eyebrow dark">
+            <ShieldCheck aria-hidden="true" size={15} />
+            PCT database unavailable
+          </div>
+          <h1>Your health insurance card cannot load yet</h1>
+          <p>{loadError}</p>
+        </section>
+      </main>
+    );
   }
 
   if (!provider) {
