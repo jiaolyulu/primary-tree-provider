@@ -341,13 +341,24 @@ input {
 }
 
 .hero-copy {
-  bottom: clamp(26px, 5vh, 60px);
   color: #fff;
   max-width: 760px;
   position: absolute;
   right: clamp(32px, 7vw, 112px);
+  top: 43%;
+  transform: translateY(-50%);
   width: min(48vw, 760px);
   z-index: 3;
+}
+
+/* On wide screens, drop the hero copy onto the same band as the intake form */
+@media (min-width: 1280px) {
+  .hero-copy {
+    bottom: clamp(26px, 5vh, 60px);
+    top: auto;
+    transform: none;
+    width: min(42vw, 720px);
+  }
 }
 
 .hero-copy::before {
