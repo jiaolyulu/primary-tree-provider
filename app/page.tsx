@@ -1,6 +1,11 @@
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
+import { BubbleCanvas } from "@/components/BubbleCanvas";
+import { HeroVideo } from "@/components/HeroVideo";
 import { IntakeForm } from "@/components/IntakeForm";
+import { LeafCanvas } from "@/components/LeafCanvas";
+import { RainCanvas } from "@/components/RainCanvas";
+import { RootsCanvas } from "@/components/RootsCanvas";
 
 const steps = [
   {
@@ -58,7 +63,7 @@ const pricingItems = [
     name: "First visit",
     price: "$0",
     detail: "Covered by the existing municipal canopy.",
-    fx: "heart",
+    fx: "leaves",
   },
   {
     name: "Follow-up care",
@@ -76,7 +81,7 @@ const pricingItems = [
     name: "Premium network access",
     price: "Compost + attention",
     detail: "Look closely. Notice stress. Advocate for the root zone.",
-    fx: "compost",
+    fx: "roots",
   },
 ];
 
@@ -164,8 +169,9 @@ export default function Home() {
           </div>
         </nav>
 
+        <HeroVideo />
         <div className="hero-image" aria-hidden="true" />
-        <div className="hero-print-grid" aria-hidden="true" />
+        <div className="hero-noise" aria-hidden="true" />
 
         <div className="hero-brand-stamp" aria-label="Primary Care Tree logo">
           <div className="stamp-trees">
@@ -344,11 +350,15 @@ export default function Home() {
         <div className="pricing-grid">
           {pricingItems.map((item) => (
             <article key={item.name} className="pricing-card" data-fx={item.fx}>
-              <div className="pricing-fx" aria-hidden="true">
-                {Array.from({ length: 9 }).map((_, index) => (
-                  <i key={index} />
-                ))}
-              </div>
+              {item.fx === "rain" ? (
+                <RainCanvas />
+              ) : item.fx === "breath" ? (
+                <BubbleCanvas />
+              ) : item.fx === "leaves" ? (
+                <LeafCanvas />
+              ) : (
+                <RootsCanvas />
+              )}
               <span>{item.name}</span>
               <strong>{item.price}</strong>
               <p>{item.detail}</p>
