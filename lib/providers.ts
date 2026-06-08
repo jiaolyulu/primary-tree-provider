@@ -76,7 +76,8 @@ function providerApiBaseUrls() {
   const urls: string[] = [];
 
   if (baseUrl.startsWith("/") && typeof window !== "undefined") {
-    urls.push(`${window.location.origin}${baseUrl}`);
+    const relativeBaseUrl = baseUrl === "/" || baseUrl === "" ? "/_/backend" : baseUrl;
+    urls.push(`${window.location.origin}${relativeBaseUrl}`);
   } else if (typeof window !== "undefined") {
     const parsedUrl = new URL(baseUrl);
     const pointsAtCurrentSiteRoot = parsedUrl.origin === window.location.origin && parsedUrl.pathname === "/";
@@ -97,7 +98,7 @@ function providerSearchUrl(
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
 ) {
-  const url = new URL("/api/providers/search", apiBaseUrl);
+  const url = new URL(`${apiBaseUrl.replace(/\/$/, "")}/api/providers/search`);
   url.searchParams.set("zip", zipcode);
   if (symptom.trim()) url.searchParams.set("symptom", symptom.trim());
   if (coordinates) {
