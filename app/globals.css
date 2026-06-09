@@ -1271,7 +1271,7 @@ input {
   background: rgba(244, 246, 239, 0.88);
   border: 1px solid var(--line-dark);
   display: grid;
-  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 2.2fr);
+  grid-template-columns: minmax(300px, 0.58fr) minmax(0, 2.42fr);
   position: relative;
 }
 
@@ -1287,6 +1287,7 @@ input {
 }
 
 .taxonomy-group-node {
+  align-content: stretch;
   background:
     linear-gradient(rgba(244, 246, 239, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(244, 246, 239, 0.08) 1px, transparent 1px),
@@ -1294,8 +1295,10 @@ input {
   background-size: 26px 26px;
   color: var(--paper);
   display: grid;
+  gap: 20px;
+  grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 238px;
-  padding: 24px 24px 24px 56px;
+  padding: 26px 28px 26px 54px;
   position: relative;
 }
 
@@ -1320,14 +1323,15 @@ input {
 }
 
 .taxonomy-group-node h3 {
-  align-self: end;
+  align-self: center;
   color: var(--paper);
-  font-size: clamp(28px, 3vw, 52px);
+  font-size: clamp(30px, 2.25vw, 42px);
   font-weight: 400;
   letter-spacing: 0;
-  line-height: 0.96;
+  line-height: 1;
   margin: 0;
-  max-width: 8.5em;
+  max-width: 10em;
+  overflow-wrap: normal;
   text-transform: uppercase;
 }
 
