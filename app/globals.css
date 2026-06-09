@@ -1271,7 +1271,7 @@ input {
   background: rgba(244, 246, 239, 0.88);
   border: 1px solid var(--line-dark);
   display: grid;
-  grid-template-columns: minmax(300px, 0.58fr) minmax(0, 2.42fr);
+  grid-template-columns: minmax(330px, 0.64fr) minmax(0, 2.36fr);
   position: relative;
 }
 
@@ -1295,10 +1295,11 @@ input {
   background-size: 26px 26px;
   color: var(--paper);
   display: grid;
-  gap: 20px;
+  gap: 16px;
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 238px;
-  padding: 26px 28px 26px 54px;
+  overflow: hidden;
+  padding: 26px 34px 26px 58px;
   position: relative;
 }
 
@@ -1325,13 +1326,13 @@ input {
 .taxonomy-group-node h3 {
   align-self: center;
   color: var(--paper);
-  font-size: clamp(30px, 2.25vw, 42px);
+  font-size: clamp(26px, 1.72vw, 34px);
   font-weight: 400;
   letter-spacing: 0;
-  line-height: 1;
+  line-height: 1.04;
   margin: 0;
-  max-width: 10em;
-  overflow-wrap: normal;
+  max-width: 100%;
+  overflow-wrap: anywhere;
   text-transform: uppercase;
 }
 
