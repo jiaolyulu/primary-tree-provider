@@ -519,10 +519,6 @@ export default function Home() {
           <h2>
             Which tree treats which <em>symptom</em>?
           </h2>
-          <p>
-            Instead of spotlighting individual doctors, this care map classifies the network by clinical
-            family, then shows how tree species become specialties and symptoms become ecological referrals.
-          </p>
         </div>
         <div className="taxonomy-tree">
           {careTaxonomy.map((group, groupIndex) => (
