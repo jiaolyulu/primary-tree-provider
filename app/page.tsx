@@ -153,246 +153,178 @@ const testimonials = [
   },
 ];
 
-const featuredDoctors = [
+const careTaxonomy = [
   {
-    doctorId: 2827,
-    condition: "Asthma triggers + seasonal allergies",
-    tree: "Sophora",
-    species: "Styphnolobium japonicum",
-    specialty: "Allergy and Immunology",
-    neighborhood: "North Side-South Side",
-    rating: "5.0",
-    reviews: 185,
-    prescription: "Hydrate early; catastrophize late, if at all.",
-    note: "A pollen-season provider for hives, eczema flares, food allergies, and breathy sidewalk weather.",
+    category: "Immune, airway, and infection",
+    summary: "Trees that notice what the air is doing before your body has the words for it.",
+    specialties: [
+      {
+        trees: ["Sophora"],
+        specialty: "Allergy and Immunology",
+        conditions: ["seasonal allergies", "asthma triggers", "hives", "eczema flares"],
+      },
+      {
+        trees: ["White Pine", "Bald Cypress", "Catalpa"],
+        specialty: "Pulmonology",
+        conditions: ["asthma", "chronic cough", "shortness of breath"],
+      },
+      {
+        trees: ["Tree Of Heaven", "Sassafras"],
+        specialty: "Infectious Disease",
+        conditions: ["recurrent infections", "fever evaluation", "wound care"],
+      },
+      {
+        trees: ["Chinese Fringetree", "Japanese Tree Lilac"],
+        specialty: "ENT / Otolaryngology",
+        conditions: ["sinus infection", "nasal congestion", "sore throat"],
+      },
+    ],
   },
   {
-    doctorId: 522923,
-    condition: "Heart palpitations",
-    tree: "Hawthorn",
-    species: "Crataegus",
-    specialty: "Cardiology",
-    neighborhood: "Murray Hill-Kips Bay",
-    rating: "5.0",
-    reviews: 147,
-    prescription: "Reduce urgency by one branch per day.",
-    note: "Hawthorn handles pulse anxiety, shortness of breath, cholesterol worries, and the body's metronome.",
+    category: "Heart, blood, and circulation",
+    summary: "Deep-rooted providers for pulse, pressure, oxygen, and slow systemic repair.",
+    specialties: [
+      {
+        trees: ["Hawthorn"],
+        specialty: "Cardiology",
+        conditions: ["heart palpitations", "high cholesterol", "shortness of breath"],
+      },
+      {
+        trees: ["Scarlet Oak", "Red Maple", "Eastern Redcedar"],
+        specialty: "Hematology",
+        conditions: ["low iron", "anemia", "easy bruising"],
+      },
+      {
+        trees: ["Horse Chestnut"],
+        specialty: "Vascular Medicine",
+        conditions: ["leg swelling", "poor circulation", "varicose veins"],
+      },
+    ],
   },
   {
-    doctorId: 368556,
-    condition: "Psoriasis + eczema",
-    tree: "Siberian Elm",
-    species: "Ulmus pumila",
-    specialty: "Dermatology",
-    neighborhood: "Georgetown-Marine Park-Bergen Beach-Mill Basin",
-    rating: "5.0",
-    reviews: 230,
-    prescription: "Apply shade generously to exposed plans.",
-    note: "A skin-surface specialist for rash, dry skin, acne, and sun-friction days.",
+    category: "Metabolic and digestive care",
+    summary: "Shade for the systems that turn city stress, meals, and sleep into energy.",
+    specialties: [
+      {
+        trees: ["Silver Maple", "Sugar Maple", "Norway Maple"],
+        specialty: "Endocrinology",
+        conditions: ["diabetes", "thyroid disorder", "hormone imbalance"],
+      },
+      {
+        trees: ["Mulberry", "Callery Pear"],
+        specialty: "Nutrition and Weight Management",
+        conditions: ["weight changes", "meal planning", "prediabetes nutrition"],
+      },
+      {
+        trees: ["Common Hackberry", "Crab Apple", "Kentucky Coffeetree"],
+        specialty: "Gastroenterology",
+        conditions: ["stomach pain", "acid reflux", "constipation"],
+      },
+    ],
   },
   {
-    doctorId: 256850,
-    condition: "Sinus infection",
-    tree: "Chinese Fringetree",
-    species: "Chionanthus retusus",
-    specialty: "ENT / Otolaryngology",
-    neighborhood: "Murray Hill",
-    rating: "5.0",
-    reviews: 125,
-    prescription: "Bring the symptom, leave with a plan and one leaf of perspective.",
-    note: "For nasal congestion, sore throat, hearing concerns, and voice changes after loud city air.",
+    category: "Brain, sleep, and mood",
+    summary: "Provider trees for nervous systems trying to stay soft inside a hard city.",
+    specialties: [
+      {
+        trees: ["Ginkgo"],
+        specialty: "Neurology",
+        conditions: ["migraine", "dizziness", "tremor", "memory changes"],
+      },
+      {
+        trees: ["Littleleaf Linden", "Silver Linden"],
+        specialty: "Psychiatry",
+        conditions: ["anxiety", "insomnia", "burnout", "depression"],
+      },
+      {
+        trees: ["Douglas-Fir", "Eastern Hemlock"],
+        specialty: "Sleep Medicine",
+        conditions: ["sleep apnea", "daytime sleepiness", "restless sleep"],
+      },
+    ],
   },
   {
-    doctorId: 139158,
-    condition: "Sudden pain + fever triage",
-    tree: "Black Pine",
-    species: "Pinus nigra",
-    specialty: "Emergency Medicine",
-    neighborhood: "Central Harlem North-Polo Grounds",
-    rating: "5.0",
-    reviews: 132,
-    prescription: "If it is sudden, start with shade and then escalate responsibly.",
-    note: "A same-day assessment tree for minor injuries, dizziness, urgent symptoms, and cuts.",
+    category: "Movement, pain, and aging",
+    summary: "Trees that treat the body as a walking history of weather, labor, and repair.",
+    specialties: [
+      {
+        trees: ["Green Ash"],
+        specialty: "Orthopedics",
+        conditions: ["back pain", "shoulder pain", "arthritis"],
+      },
+      {
+        trees: ["Weeping Willow"],
+        specialty: "Pain Management",
+        conditions: ["chronic pain", "nerve pain", "pain flares"],
+      },
+      {
+        trees: ["Quaking Aspen", "American Larch"],
+        specialty: "Sports Medicine",
+        conditions: ["running injuries", "sprains", "knee pain"],
+      },
+      {
+        trees: ["Pin Oak", "Willow Oak"],
+        specialty: "Geriatrics",
+        conditions: ["fall risk", "mobility changes", "medication management"],
+      },
+    ],
   },
   {
-    doctorId: 694551,
-    condition: "Diabetes + hormone imbalance",
-    tree: "Silver Maple",
-    species: "Acer saccharinum",
-    specialty: "Endocrinology",
-    neighborhood: "Bayside-Bayside Hills",
-    rating: "5.0",
-    reviews: 218,
-    prescription: "Sit nearby until the sidewalk stops arguing.",
-    note: "A metabolic provider for fatigue, weight changes, thyroid disorder, and blood-sugar weather.",
+    category: "Screening, family, and life stage care",
+    summary: "Everyday clinical branches: routine care, growing bodies, and preventive rituals.",
+    specialties: [
+      {
+        trees: ["Crepe Myrtle", "London Planetree"],
+        specialty: "Family and Internal Medicine",
+        conditions: ["annual physical", "cold and flu", "blood pressure follow-up"],
+      },
+      {
+        trees: ["Cherry"],
+        specialty: "Pediatrics",
+        conditions: ["childhood fever", "ear infections", "well-child visits"],
+      },
+      {
+        trees: ["Amur Maackia", "Katsura Tree"],
+        specialty: "Preventive Medicine",
+        conditions: ["annual screenings", "vaccination planning", "risk review"],
+      },
+      {
+        trees: ["Magnolia", "Tulip-Poplar"],
+        specialty: "Women's Health",
+        conditions: ["menstrual concerns", "pelvic pain", "pregnancy planning"],
+      },
+    ],
   },
   {
-    doctorId: 331227,
-    condition: "Cold, flu + routine checkups",
-    tree: "Crepe Myrtle",
-    species: "Lagerstroemia",
-    specialty: "Family Medicine",
-    neighborhood: "Port Richmond",
-    rating: "5.0",
-    reviews: 132,
-    prescription: "Two minutes of shade, repeat when urban life gets loud.",
-    note: "A neighborhood generalist for annual physicals, vaccinations, and ordinary body maintenance.",
-  },
-  {
-    doctorId: 712792,
-    condition: "Stomach pain + bloating",
-    tree: "Common Hackberry",
-    species: "Celtis occidentalis",
-    specialty: "Gastroenterology",
-    neighborhood: "South Ozone Park",
-    rating: "5.0",
-    reviews: 151,
-    prescription: "Bring the symptom, leave with a plan and one leaf of perspective.",
-    note: "A gut-route provider for constipation, diarrhea, colon screening, and uneasy lunch aftermaths.",
-  },
-  {
-    doctorId: 434704,
-    condition: "Fall risk + mobility changes",
-    tree: "Pin Oak",
-    species: "Quercus palustris",
-    specialty: "Geriatrics",
-    neighborhood: "Briarwood-Jamaica Hills",
-    rating: "5.0",
-    reviews: 224,
-    prescription: "Take the long view with a short walk.",
-    note: "An aging-care provider for medication management, frailty screening, and slower safe routes.",
-  },
-  {
-    doctorId: 350900,
-    condition: "Low iron + easy bruising",
-    tree: "Scarlet Oak",
-    species: "Quercus coccinea",
-    specialty: "Hematology",
-    neighborhood: "Richmond Hill",
-    rating: "5.0",
-    reviews: 242,
-    prescription: "Hydrate early; catastrophize late, if at all.",
-    note: "A blood-work companion for anemia, clot history, bleeding concerns, and fatigue from anemia.",
-  },
-  {
-    doctorId: 144776,
-    condition: "Recurrent infections",
-    tree: "Tree Of Heaven",
-    species: "Ailanthus altissima",
-    specialty: "Infectious Disease",
-    neighborhood: "Brownsville",
-    rating: "5.0",
-    reviews: 188,
-    prescription: "Sit nearby until the sidewalk stops arguing.",
-    note: "A resilient provider for fever evaluation, wound infection, travel health, and antibiotic questions.",
-  },
-  {
-    doctorId: 230554,
-    condition: "High blood pressure + diabetes follow-up",
-    tree: "London Planetree",
-    species: "Platanus x acerifolia",
-    specialty: "Internal Medicine",
-    neighborhood: "Grymes Hill-Clifton-Fox Hills",
-    rating: "5.0",
-    reviews: 243,
-    prescription: "Sit nearby until the sidewalk stops arguing.",
-    note: "A chronic-care anchor for medication review, cholesterol, adult wellness, and long appointments.",
-  },
-  {
-    doctorId: 184551,
-    condition: "Kidney disease + fluid retention",
-    tree: "Eastern Cottonwood",
-    species: "Populus deltoides",
-    specialty: "Nephrology",
-    neighborhood: "East Tremont",
-    rating: "5.0",
-    reviews: 123,
-    prescription: "Sit nearby until the sidewalk stops arguing.",
-    note: "A water-balance provider for protein in urine, electrolyte imbalance, and kidney monitoring.",
-  },
-  {
-    doctorId: 678344,
-    condition: "Migraine + dizziness",
-    tree: "Ginkgo",
-    species: "Ginkgo biloba",
-    specialty: "Neurology",
-    neighborhood: "Crown Heights North",
-    rating: "5.0",
-    reviews: 193,
-    prescription: "Two minutes of shade, repeat when urban life gets loud.",
-    note: "A nervous-system provider for tremor, headache, numbness, tingling, and aura days.",
-  },
-  {
-    doctorId: 141019,
-    condition: "Weight changes + meal planning",
-    tree: "Mulberry",
-    species: "Morus",
-    specialty: "Nutrition and Weight Management",
-    neighborhood: "Fort Greene",
-    rating: "5.0",
-    reviews: 180,
-    prescription: "Balance the plate, then balance the afternoon.",
-    note: "A food-and-shade provider for metabolic health, cholesterol nutrition, and prediabetes planning.",
-  },
-  {
-    doctorId: 714039,
-    condition: "Cancer screening reminders",
-    tree: "Smoketree",
-    species: "Cotinus coggygria",
-    specialty: "Oncology",
-    neighborhood: "Woodhaven",
-    rating: "5.0",
-    reviews: 23,
-    prescription: "Sit nearby until the sidewalk stops arguing.",
-    note: "A quiet follow-up provider for family cancer risk, survivorship care, and abnormal imaging anxiety.",
-  },
-  {
-    doctorId: 207534,
-    condition: "Glaucoma screening + red eye",
-    tree: "Golden Raintree",
-    species: "Koelreuteria paniculata",
-    specialty: "Ophthalmology",
-    neighborhood: "Upper West Side",
-    rating: "5.0",
-    reviews: 132,
-    prescription: "Sit nearby until the sidewalk stops arguing.",
-    note: "An eye-care provider for cataract concerns, dry eyes, diabetic eye screening, and irritation.",
-  },
-  {
-    doctorId: 143475,
-    condition: "Back pain + arthritis",
-    tree: "Green Ash",
-    species: "Fraxinus pennsylvanica",
-    specialty: "Orthopedics",
-    neighborhood: "Prospect Heights",
-    rating: "5.0",
-    reviews: 187,
-    prescription: "Two minutes of shade, repeat when urban life gets loud.",
-    note: "A joint-and-bone provider for hip pain, shoulder pain, mobility problems, and fracture follow-up.",
-  },
-  {
-    doctorId: 405732,
-    condition: "Chronic pain + nerve pain",
-    tree: "Weeping Willow",
-    species: "Salix babylonica",
-    specialty: "Pain Management",
-    neighborhood: "Hunters Point-Sunnyside-West Maspeth",
-    rating: "5.0",
-    reviews: 149,
-    prescription: "Function first; heroics can wait until after shade.",
-    note: "A flare-management provider for joint pain, neck pain, pain flares, and non-heroic pacing.",
-  },
-  {
-    doctorId: 637147,
-    condition: "Childhood fever + ear infections",
-    tree: "Cherry",
-    species: "Prunus",
-    specialty: "Pediatrics",
-    neighborhood: "Ft. Totten-Bay Terrace-Clearview",
-    rating: "5.0",
-    reviews: 168,
-    prescription: "Small worries may park under the lowest branch.",
-    note: "A child-care provider for well-child visits, growth concerns, school physicals, and allergies.",
+    category: "Skin, eyes, kidney, and follow-up",
+    summary: "Specialty trees for visible surfaces, hidden fluids, and long-term monitoring.",
+    specialties: [
+      {
+        trees: ["Siberian Elm", "American Elm", "Japanese Zelkova"],
+        specialty: "Dermatology",
+        conditions: ["psoriasis", "eczema", "skin rash", "sun damage"],
+      },
+      {
+        trees: ["Golden Raintree"],
+        specialty: "Ophthalmology",
+        conditions: ["glaucoma screening", "red eye", "cataract concerns"],
+      },
+      {
+        trees: ["Eastern Cottonwood", "European Alder"],
+        specialty: "Nephrology",
+        conditions: ["kidney disease", "protein in urine", "fluid retention"],
+      },
+      {
+        trees: ["River Birch"],
+        specialty: "Urology",
+        conditions: ["urinary frequency", "kidney stones", "bladder pain"],
+      },
+      {
+        trees: ["Smoketree"],
+        specialty: "Oncology",
+        conditions: ["cancer screening reminders", "family cancer risk", "survivorship care"],
+      },
+    ],
   },
 ];
 
@@ -409,7 +341,7 @@ export default function Home() {
               <a href="#about">About</a>
               <a href="#pricing">Pricing</a>
               <a href="#testimonials">Testimonials</a>
-              <a href="#featured-doctors">Doctors</a>
+              <a href="#featured-doctors">Tree Map</a>
               <a href="#faq">Q&amp;A</a>
             </div>
             <Link href="/providers?zip=11215" className="nav-cta">
@@ -583,50 +515,47 @@ export default function Home() {
 
       <section id="featured-doctors" className="doctor-section">
         <div className="testimonial-copy">
-          <span>Featured doctors</span>
+          <span>Tree-specialty map</span>
           <h2>
-            Twenty provider trees, twenty care <em>specialties</em>.
+            Which tree treats which <em>symptom</em>?
           </h2>
           <p>
-            A curated set of high-rated doctors from the NYC provider index, selected for different species,
-            specialties, and the wonderfully strange question of which tree treats which symptom.
+            Instead of spotlighting individual doctors, this care map classifies the network by clinical
+            family, then shows how tree species become specialties and symptoms become ecological referrals.
           </p>
         </div>
-        <div className="doctor-grid">
-          {featuredDoctors.map((doctor) => (
-            <article
-              key={doctor.doctorId}
-              className="doctor-card"
-              tabIndex={0}
-              aria-label={`${doctor.tree} doctor profile for ${doctor.condition}. Hover or focus to view more.`}
-            >
-              <div className="doctor-card-inner">
-                <div className="doctor-card-face doctor-card-front">
-                  <div className="testimonial-card-meta">
-                    <span>{doctor.condition}</span>
-                    <strong>{doctor.tree}</strong>
-                    <small>
-                      <MapPin aria-hidden="true" size={12} />
-                      {doctor.neighborhood}
-                    </small>
-                  </div>
-                  <p>
-                    {doctor.tree} treats {doctor.condition.toLowerCase()} through {doctor.specialty.toLowerCase()},
-                    translating a real street-tree record into a care relationship.
-                  </p>
+        <div className="taxonomy-tree">
+          {careTaxonomy.map((group, groupIndex) => (
+            <article className="taxonomy-group" key={group.category}>
+              <div className="taxonomy-group-node">
+                <span>{String(groupIndex + 1).padStart(2, "0")}</span>
+                <h3>{group.category}</h3>
+                <p>{group.summary}</p>
+              </div>
+              <div className="taxonomy-branches">
+                <div className="taxonomy-head" aria-hidden="true">
+                  <span>Tree providers</span>
+                  <span>Specialty</span>
+                  <span>Care focus</span>
                 </div>
-                <div className="doctor-card-face doctor-card-back">
-                  <div className="doctor-card-label">
-                    <span>Doctor ID {doctor.doctorId}</span>
-                    <strong>{doctor.specialty}</strong>
-                    <div className="doctor-card-fields" aria-label={`${doctor.tree} provider data`}>
-                      <span>{doctor.species}</span>
-                      <span>{doctor.rating} rating / {doctor.reviews} reviews</span>
+                {group.specialties.map((item) => (
+                  <div className="taxonomy-row" key={`${group.category}-${item.specialty}`}>
+                    <div className="taxonomy-trees" aria-label="Tree providers">
+                      {item.trees.map((tree) => (
+                        <strong key={tree}>{tree}</strong>
+                      ))}
                     </div>
-                    <p>{doctor.note}</p>
-                    <p className="doctor-prescription">{doctor.prescription}</p>
+                    <div className="taxonomy-specialty">
+                      <span>Specialty</span>
+                      <strong>{item.specialty}</strong>
+                    </div>
+                    <div className="taxonomy-conditions" aria-label="Care focus">
+                      {item.conditions.map((condition) => (
+                        <em key={condition}>{condition}</em>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                ))}
               </div>
             </article>
           ))}

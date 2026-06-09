@@ -1259,65 +1259,80 @@ input {
   padding: 88px clamp(18px, 5vw, 82px);
 }
 
-.doctor-grid {
+.taxonomy-tree {
   display: grid;
-  gap: 12px;
-  grid-template-columns: repeat(4, 1fr);
-  margin: 42px auto 0;
+  gap: 16px;
+  margin: 46px auto 0;
   max-width: 1440px;
 }
 
-.doctor-card {
-  color: var(--green);
-  display: block;
-  min-height: 292px;
-  perspective: 1200px;
+.taxonomy-group {
+  background: rgba(244, 246, 239, 0.88);
+  border: 1px solid var(--line-dark);
+  display: grid;
+  grid-template-columns: minmax(260px, 0.72fr) minmax(0, 2.2fr);
   position: relative;
 }
 
-.doctor-card:focus {
-  outline: none;
+.taxonomy-group::before {
+  background: var(--green);
+  content: "";
+  height: 100%;
+  left: 24px;
+  opacity: 0.2;
+  position: absolute;
+  top: 0;
+  width: 1px;
 }
 
-.doctor-card:focus-visible {
-  outline: 1px solid var(--green);
-  outline-offset: 5px;
-}
-
-.doctor-card-inner {
+.taxonomy-group-node {
+  background:
+    linear-gradient(rgba(244, 246, 239, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(244, 246, 239, 0.08) 1px, transparent 1px),
+    var(--green);
+  background-size: 26px 26px;
+  color: var(--paper);
   display: grid;
-  min-height: 100%;
-  transform-style: preserve-3d;
-  transition: transform 560ms cubic-bezier(0.22, 1, 0.36, 1);
+  min-height: 238px;
+  padding: 24px 24px 24px 56px;
+  position: relative;
 }
 
-.doctor-card:hover .doctor-card-inner,
-.doctor-card:focus .doctor-card-inner,
-.doctor-card:focus-within .doctor-card-inner {
-  transform: rotateY(180deg);
+.taxonomy-group-node::before {
+  background: var(--paper);
+  border: 1px solid rgba(244, 246, 239, 0.66);
+  border-radius: 999px;
+  box-shadow: 0 0 0 6px rgba(244, 246, 239, 0.12);
+  content: "";
+  height: 11px;
+  left: 19px;
+  position: absolute;
+  top: 31px;
+  width: 11px;
 }
 
-.doctor-card-face {
-  backface-visibility: hidden;
-  border: 1px solid var(--line-dark);
-  grid-area: 1 / 1;
-  min-height: 292px;
+.taxonomy-group-node span {
+  color: rgba(244, 246, 239, 0.72);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
 }
 
-.doctor-card-front {
-  background: rgba(244, 246, 239, 0.82);
-  display: grid;
-  gap: 20px;
-  padding: 22px;
-}
-
-.doctor-card-front .testimonial-card-meta > strong {
-  font-size: clamp(24px, 2.2vw, 36px);
-}
-
-.doctor-card-front p {
+.taxonomy-group-node h3 {
   align-self: end;
-  color: var(--green);
+  color: var(--paper);
+  font-size: clamp(28px, 3vw, 52px);
+  font-weight: 400;
+  letter-spacing: 0;
+  line-height: 0.96;
+  margin: 0;
+  max-width: 8.5em;
+  text-transform: uppercase;
+}
+
+.taxonomy-group-node p {
+  align-self: end;
+  color: rgba(244, 246, 239, 0.84);
   font-family: var(--font-body);
   font-size: 14px;
   font-weight: 400;
@@ -1325,79 +1340,107 @@ input {
   margin: 0;
 }
 
-.doctor-card-back {
-  background:
-    linear-gradient(rgba(244, 246, 239, 0.08) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(244, 246, 239, 0.08) 1px, transparent 1px),
-    var(--green);
-  background-size: 28px 28px;
-  color: var(--paper);
+.taxonomy-branches {
   display: grid;
-  overflow: hidden;
-  position: relative;
-  transform: rotateY(180deg);
 }
 
-.doctor-card-back::after {
-  background: radial-gradient(circle at 82% 12%, rgba(244, 246, 239, 0.16), transparent 38%);
-  content: "";
-  inset: 0;
-  position: absolute;
-}
-
-.doctor-card-label {
-  color: var(--paper);
+.taxonomy-head,
+.taxonomy-row {
   display: grid;
-  gap: 12px;
-  padding: 22px;
-  position: relative;
-  z-index: 1;
+  grid-template-columns: minmax(160px, 1fr) minmax(160px, 0.78fr) minmax(240px, 1.35fr);
 }
 
-.doctor-card-label > span {
-  color: rgba(244, 246, 239, 0.76);
+.taxonomy-head {
+  background: rgba(0, 122, 52, 0.08);
+  border-bottom: 1px solid rgba(0, 122, 52, 0.2);
+  color: rgba(0, 122, 52, 0.68);
   font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.06em;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.doctor-card-label strong {
-  color: var(--paper);
-  font-size: clamp(22px, 2vw, 32px);
-  font-weight: 400;
+.taxonomy-head span {
+  border-left: 1px solid rgba(0, 122, 52, 0.16);
+  padding: 12px 16px;
+}
+
+.taxonomy-row {
+  border-bottom: 1px solid rgba(0, 122, 52, 0.18);
+  min-height: 106px;
+  position: relative;
+}
+
+.taxonomy-row:last-child {
+  border-bottom: 0;
+}
+
+.taxonomy-row::before {
+  background: var(--green);
+  border: 2px solid var(--paper);
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgba(0, 122, 52, 0.32);
+  content: "";
+  height: 9px;
+  left: -6px;
+  position: absolute;
+  top: 28px;
+  width: 9px;
+}
+
+.taxonomy-trees,
+.taxonomy-specialty,
+.taxonomy-conditions {
+  align-content: flex-start;
+  border-left: 1px solid rgba(0, 122, 52, 0.16);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 18px 16px;
+}
+
+.taxonomy-trees strong,
+.taxonomy-conditions em {
+  border: 1px solid rgba(0, 122, 52, 0.3);
+  border-radius: 999px;
+  font-style: normal;
   line-height: 1;
 }
 
-.doctor-card-label p {
-  color: rgba(244, 246, 239, 0.9);
-  font-family: var(--font-body);
-  font-size: 13px;
-  font-weight: 400;
-  line-height: 1.35;
-  margin: 4px 0 0;
+.taxonomy-trees strong {
+  background: var(--green);
+  color: var(--paper);
+  font-size: 14px;
+  font-weight: 500;
+  padding: 9px 12px 10px;
 }
 
-.doctor-card-fields {
-  border-block: 1px solid rgba(244, 246, 239, 0.24);
+.taxonomy-specialty {
   display: grid;
-  gap: 7px;
-  padding-block: 12px;
+  gap: 5px;
 }
 
-.doctor-card-fields span {
-  color: rgba(244, 246, 239, 0.82);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  line-height: 1.25;
+.taxonomy-specialty span {
+  color: rgba(0, 122, 52, 0.58);
+  display: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.doctor-prescription {
-  border-top: 1px solid rgba(244, 246, 239, 0.22);
-  font-style: italic !important;
-  padding-top: 10px;
+.taxonomy-specialty strong {
+  color: var(--green);
+  font-size: clamp(18px, 1.4vw, 24px);
+  font-weight: 400;
+  line-height: 1.05;
+}
+
+.taxonomy-conditions em {
+  background: rgba(0, 122, 52, 0.08);
+  color: var(--green);
+  font-size: 13px;
+  padding: 8px 10px 9px;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -3645,8 +3688,17 @@ details p {
     grid-template-columns: 1fr 1fr;
   }
 
-  .doctor-grid {
-    grid-template-columns: 1fr 1fr;
+  .taxonomy-group {
+    grid-template-columns: 1fr;
+  }
+
+  .taxonomy-group-node {
+    min-height: 210px;
+  }
+
+  .taxonomy-head,
+  .taxonomy-row {
+    grid-template-columns: minmax(160px, 1fr) minmax(150px, 0.8fr) minmax(220px, 1.25fr);
   }
 
   .pricing-grid {
@@ -3787,8 +3839,26 @@ details p {
     grid-template-columns: 1fr;
   }
 
-  .doctor-grid {
+  .taxonomy-head {
+    display: none;
+  }
+
+  .taxonomy-row {
+    gap: 0;
     grid-template-columns: 1fr;
+    min-height: 0;
+  }
+
+  .taxonomy-trees,
+  .taxonomy-specialty,
+  .taxonomy-conditions {
+    border-left: 0;
+    border-top: 1px solid rgba(0, 122, 52, 0.12);
+    padding: 14px 16px;
+  }
+
+  .taxonomy-specialty span {
+    display: block;
   }
 
   .pricing-grid {
