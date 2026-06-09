@@ -109,13 +109,6 @@ function estimatedTreeAge(provider: ProviderMatch) {
   return provider.yearsOfPractice;
 }
 
-const openHoursOptions = [
-  "Dawn–dusk",
-  "Sunup to sundown",
-  "Always (it's a tree)",
-  "Whenever you need shade",
-];
-
 const conditionIconRules: Array<[RegExp, LucideIcon]> = [
   [/vaccinat|immuniz/, Syringe],
   [/blood pressure|cholesterol|chest pain|heart|palpitation|circulation|clot|vein|vascular|cold feet/, HeartPulse],
@@ -203,7 +196,7 @@ const reviewTemplates = [
 
 function generateReviews(provider: ProviderMatch) {
   const seed = String(provider.providerId);
-  const count = 3 + (seededHash(`${seed}:count`) % 2);
+  const count = Math.max(0, Math.min(provider.reviewCount, 4));
   const condition = provider.searchableConditions[0] ?? "general care";
   // Rotate through each pool from a seeded start so names and templates stay
   // distinct within a single tree's review list.
@@ -224,6 +217,14 @@ function generateReviews(provider: ProviderMatch) {
       text,
     };
   });
+}
+
+function openHoursLabel(provider: ProviderMatch) {
+  return provider.weekendAvailability ? "Dawn-dusk, weekends available" : "Dawn-dusk, weekdays only";
+}
+
+function reviewCountLabel(count: number) {
+  return `${count} ${count === 1 ? "review" : "reviews"}`;
 }
 
 function ratingBreakdown(provider: ProviderMatch) {
@@ -490,7 +491,7 @@ export function ProviderDashboard() {
                       <div className="provider-rating">
                         <Star aria-hidden="true" size={14} />
                         <strong>{provider.careRating.toFixed(1)}</strong>
-                        <span>({provider.reviewCount} reviews)</span>
+                        <span>({reviewCountLabel(provider.reviewCount)})</span>
                       </div>
                       <address>
                         {titleCaseAddress(provider.clinicAddress)}, {provider.clinicCity}, {provider.clinicState}{" "}
@@ -549,13 +550,11 @@ export function ProviderDashboard() {
             const reviews = generateReviews(detailProvider);
             const breakdown = ratingBreakdown(detailProvider);
             const tiles = [
+              { label: "Doctor ID", value: String(detailProvider.providerId) },
               { label: "Years of experience", value: `~${estimatedTreeAge(detailProvider)} yrs` },
               { label: "Clinic environment", value: detailProvider.waitingRoomFeature },
               { label: "Shade-side manner", value: detailProvider.shadeSideMannerScore.toFixed(1) },
-              {
-                label: "Open hours",
-                value: seededPick(openHoursOptions, String(detailProvider.providerId), 99),
-              },
+              { label: "Open hours", value: openHoursLabel(detailProvider) },
             ];
             return (
               <div
@@ -585,7 +584,7 @@ export function ProviderDashboard() {
                       <div className="provider-rating">
                         <Star aria-hidden="true" size={15} />
                         <strong>{detailProvider.careRating.toFixed(1)}</strong>
-                        <span>({detailProvider.reviewCount} reviews)</span>
+                        <span>({reviewCountLabel(detailProvider.reviewCount)})</span>
                       </div>
                       <p className="tree-detail-address">
                         {titleCaseAddress(detailProvider.clinicAddress)}, {detailProvider.clinicCity},{" "}
@@ -633,19 +632,23 @@ export function ProviderDashboard() {
 
                   <div className="tree-detail-reviews">
                     <h3>What the block says</h3>
-                    {reviews.map((review) => (
-                      <div key={review.id} className="tree-review">
-                        <div className="tree-review-head">
-                          <strong>{review.name}</strong>
-                          <span className="tree-review-stars" aria-label={`${review.stars} out of 5 stars`}>
-                            {"★".repeat(review.stars)}
-                            <span className="tree-review-stars-empty">{"★".repeat(5 - review.stars)}</span>
-                          </span>
-                          <span className="tree-review-when">{review.when}</span>
+                    {reviews.length ? (
+                      reviews.map((review) => (
+                        <div key={review.id} className="tree-review">
+                          <div className="tree-review-head">
+                            <strong>{review.name}</strong>
+                            <span className="tree-review-stars" aria-label={`${review.stars} out of 5 stars`}>
+                              {"★".repeat(review.stars)}
+                              <span className="tree-review-stars-empty">{"★".repeat(5 - review.stars)}</span>
+                            </span>
+                            <span className="tree-review-when">{review.when}</span>
+                          </div>
+                          <p>{review.text}</p>
                         </div>
-                        <p>{review.text}</p>
-                      </div>
-                    ))}
+                      ))
+                    ) : (
+                      <p className="tree-detail-caption">No public visit notes have been logged for this provider yet.</p>
+                    )}
                     <p className="tree-detail-caption">
                       Notes are written in PCT&rsquo;s speculative language of care — imagined, not clinical.
                     </p>

@@ -88,7 +88,7 @@ export function InsuranceCard() {
     );
   }
 
-  const memberId = `PCT-${String(provider.providerId).slice(-6)}`;
+  const doctorId = String(provider.providerId);
   const groupNumber = `NYC-${provider.clinicZipcode}`;
 
   return (
@@ -132,8 +132,8 @@ export function InsuranceCard() {
               <strong>NYC Visitor</strong>
             </div>
             <div>
-              <span>Member ID</span>
-              <strong>{memberId}</strong>
+              <span>Doctor ID</span>
+              <strong>{doctorId}</strong>
             </div>
             <div>
               <span>Group</span>
