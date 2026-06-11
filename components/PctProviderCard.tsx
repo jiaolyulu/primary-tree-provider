@@ -1,5 +1,6 @@
 "use client";
 
+import QRCode from "qrcode";
 import type { ProviderMatch } from "@/lib/providers";
 
 function shortText(value: string, maxLength: number) {
@@ -28,6 +29,24 @@ function textLines(value: string, maxLength: number, maxLines: number) {
 
 function googleMapsCoordinateUrl(provider: ProviderMatch) {
   return `https://www.google.com/maps?q=${provider.clinicLatitude.toFixed(6)},${provider.clinicLongitude.toFixed(6)}`;
+}
+
+function qrPathForUrl(value: string, size: number) {
+  const qr = QRCode.create(value, { errorCorrectionLevel: "M" });
+  const moduleSize = size / qr.modules.size;
+  const commands: string[] = [];
+
+  for (let row = 0; row < qr.modules.size; row += 1) {
+    for (let col = 0; col < qr.modules.size; col += 1) {
+      if (qr.modules.get(row, col)) {
+        const x = Number((col * moduleSize).toFixed(3));
+        const y = Number((row * moduleSize).toFixed(3));
+        commands.push(`M${x} ${y}h${moduleSize.toFixed(3)}v${moduleSize.toFixed(3)}h-${moduleSize.toFixed(3)}z`);
+      }
+    }
+  }
+
+  return commands.join("");
 }
 
 function dataUrlToBytes(dataUrl: string) {
@@ -64,7 +83,6 @@ async function svgToJpegBytes(svg: SVGSVGElement) {
     .svg-card-tree{fill:#1f2933;font-family:Arial,Helvetica,sans-serif;font-size:29px;font-weight:700}
     .svg-card-body,.svg-card-body-quiet,.svg-card-small{fill:#1f2933;font-family:Arial,Helvetica,sans-serif;font-size:21px}
     .svg-card-body-quiet,.svg-card-small{font-size:16px}
-    .svg-card-link{fill:#244a86;text-decoration:underline}
     .svg-card-rule{stroke:#244a86;stroke-width:3}
   `;
   clone.insertBefore(style, clone.firstChild);
@@ -204,7 +222,7 @@ export function PctProviderCardSvgPair({
   const conditionLines = textLines(provider.searchableConditions.slice(0, 6).join(" / "), 34, 3);
   const availabilityLabel = provider.weekendAvailability ? "Weekend visits available" : "Weekday visits only";
   const mapsUrl = googleMapsCoordinateUrl(provider);
-  const mapsDisplayUrl = mapsUrl.replace("https://www.", "");
+  const mapsQrPath = qrPathForUrl(mapsUrl, 86);
   const frontTitleId = `${cardIdPrefix}-front-title`;
   const backTitleId = `${cardIdPrefix}-back-title`;
   const frontShadowId = `${cardIdPrefix}-front-shadow`;
@@ -315,9 +333,13 @@ export function PctProviderCardSvgPair({
               {line}
             </text>
           ))}
-          <text x="42" y="304" className="svg-card-small">Map URL:</text>
           <a href={mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.speciesCommon} in Google Maps`}>
-            <text x="112" y="304" className="svg-card-small svg-card-link">{mapsDisplayUrl}</text>
+            <g transform="translate(334 188)">
+              <rect x="0" y="0" width="118" height="134" rx="8" fill="#ffffff" stroke="#007a34" strokeOpacity="0.32" />
+              <rect x="16" y="16" width="86" height="86" fill="#ffffff" />
+              <path d={mapsQrPath} fill="#063d22" transform="translate(16 16)" />
+              <text x="59" y="122" textAnchor="middle" className="svg-card-small">Scan for map</text>
+            </g>
           </a>
 
           <text x="470" y="140" className="svg-card-label-bold">Condition Focus</text>
