@@ -2167,10 +2167,16 @@ details p {
   left: 16px;
   padding: 9px 11px;
   position: absolute;
+  text-decoration: none;
 }
 
 .map-coordinate-card svg {
   flex: 0 0 auto;
+}
+
+.map-coordinate-card:hover {
+  background: var(--green);
+  color: #fff;
 }
 
 .locator-copy {
@@ -3097,9 +3103,46 @@ details p {
   background: rgba(0, 122, 52, 0.08);
 }
 
+.tree-map-link {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid var(--line-dark);
+  color: var(--green);
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  justify-content: center;
+  letter-spacing: 0.06em;
+  min-width: 78px;
+  padding: 12px 14px;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.tree-map-link:hover {
+  background: var(--green);
+  color: #fff;
+}
+
 .provider-doctor-panel .provider-card.selected .tree-learn-more {
   border-color: rgba(255, 255, 255, 0.5);
   color: #fff;
+}
+
+.provider-doctor-panel .provider-card.selected .tree-map-link {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
+.provider-doctor-panel .provider-card.selected .tree-map-link:hover {
+  background: #fff;
+  color: var(--green);
 }
 
 .provider-doctor-panel .provider-card.selected .tree-learn-more:hover {
@@ -3280,6 +3323,24 @@ details p {
   color: var(--muted);
   font-size: 13px;
   margin: 6px 0 0;
+}
+
+.tree-detail-map-link {
+  align-items: center;
+  color: var(--green);
+  display: inline-flex;
+  font-size: 12px;
+  font-weight: 700;
+  gap: 6px;
+  letter-spacing: 0.04em;
+  margin-top: 9px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+
+.tree-detail-map-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 .tree-detail-tiles {

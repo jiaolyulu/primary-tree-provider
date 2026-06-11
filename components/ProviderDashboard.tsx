@@ -13,6 +13,7 @@ import {
   Download,
   Droplet,
   Ear,
+  ExternalLink,
   Eye,
   Flower2,
   HeartPulse,
@@ -69,6 +70,10 @@ function providerCardBio(provider: ProviderMatch) {
 
 function titleCaseAddress(value: string) {
   return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function googleMapsCoordinateUrl(provider: ProviderMatch) {
+  return `https://www.google.com/maps/search/?api=1&query=${provider.clinicLatitude.toFixed(6)},${provider.clinicLongitude.toFixed(6)}`;
 }
 
 // Cache resolved species photos so we fetch Wikipedia once per scientific name.
@@ -469,12 +474,19 @@ export function ProviderDashboard() {
               selectedProviderId={selectedProvider.providerId}
               onSelectProvider={setSelectedProviderId}
             />
-            <div className="map-coordinate-card">
+            <a
+              className="map-coordinate-card"
+              href={googleMapsCoordinateUrl(selectedProvider)}
+              target="_blank"
+              rel="noreferrer"
+              aria-label={`Open ${selectedProvider.speciesCommon} coordinates in Google Maps`}
+            >
               <MapPin aria-hidden="true" size={16} />
               <span>
                 {selectedLatitude.toFixed(4)}, {selectedLongitude.toFixed(4)}
               </span>
-            </div>
+              <ExternalLink aria-hidden="true" size={13} />
+            </a>
           </div>
         </aside>
 
@@ -540,6 +552,16 @@ export function ProviderDashboard() {
                   ) : null}
 
                   <div className="provider-card-foot">
+                    <a
+                      className="tree-map-link"
+                      href={googleMapsCoordinateUrl(provider)}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`Open ${provider.speciesCommon} in Google Maps`}
+                    >
+                      <MapPin aria-hidden="true" size={14} />
+                      Map
+                    </a>
                     <button
                       type="button"
                       className="tree-learn-more"
@@ -603,6 +625,16 @@ export function ProviderDashboard() {
                         {titleCaseAddress(detailProvider.clinicAddress)}, {detailProvider.clinicCity},{" "}
                         {detailProvider.clinicState} {detailProvider.clinicZipcode}
                       </p>
+                      <a
+                        className="tree-detail-map-link"
+                        href={googleMapsCoordinateUrl(detailProvider)}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <MapPin aria-hidden="true" size={14} />
+                        Open exact coordinates in Google Maps
+                        <ExternalLink aria-hidden="true" size={13} />
+                      </a>
                     </div>
                   </div>
 
