@@ -34,7 +34,7 @@ export type Provider = {
   clinicZipcode: string;
   clinicCity: string;
   clinicNeighborhood: string;
-  clinicState: "NY";
+  clinicState: string;
   clinicLatitude: number;
   clinicLongitude: number;
 };

@@ -6,27 +6,27 @@ Primary Care Trees uses the Django backend as the source of truth for provider s
 
 - Frontend: Next.js app at the repository root.
 - Backend: Django API in `backend/`.
-- Provider data: compact SQLite index at `backend/data/provider_index.sqlite`, generated from `trees_map.json`.
+- Provider data: compact SQLite index at `backend/data/provider_index.sqlite`, generated from `trees_map_all_fields.json`.
 - Runtime API base: set `NEXT_PUBLIC_PROVIDER_API_BASE_URL` on the frontend. Production uses `/_/backend`.
 
 If the API is unavailable, the frontend shows a database availability error instead of synthesizing provider fields from the older static client-side shards.
 
 ## Provider Index
 
-The Django API reads from `backend/data/provider_index.sqlite`. The SQLite file keeps the source dataset's dictionary encoding so it stays deployable while still supporting indexed queries.
+The Django API reads from `backend/data/provider_index.sqlite`. The SQLite file keeps the source dataset's dictionary encoding for text fields and stores numeric fields directly, so the all-fields export stays deployable while still supporting indexed queries.
 
 Indexed lookup paths:
 
-- `clinic_zipcode_id` for ZIP searches.
-- `(lat, lng)` and `(lng, lat)` for map pin bounding-box searches.
-- `medical_specialty_id` and `(clinic_zipcode_id, medical_specialty_id)` for specialty refinement.
+- `clinic_zipcode` for ZIP searches.
+- `(clinic_latitude, clinic_longitude)` and `(clinic_longitude, clinic_latitude)` for map pin bounding-box searches.
+- `medical_specialty_id` and `(clinic_zipcode, medical_specialty_id)` for specialty refinement.
 - `provider_conditions(condition_key, provider_id)` for exact symptom matching from the dropdown-style condition set.
 - `(star_doctor, care_rating)` for quality tie-breaks.
 
 Rebuild the index after replacing the source JSON:
 
 ```bash
-python backend/manage.py import_tree_map /path/to/trees_map.json --output backend/data/provider_index.sqlite
+python backend/manage.py import_tree_map /path/to/trees_map_all_fields.json --output backend/data/provider_index.sqlite
 ```
 
 ## Local Development
