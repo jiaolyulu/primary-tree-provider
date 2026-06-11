@@ -11,17 +11,17 @@ const steps = [
   {
     number: "01",
     title: "Describe what is happening",
-    text: "Enter a ZIP code or drop a pin. A symptom can refine the match, but location is the required starting point.",
+    text: "Enter a ZIP code or drop a pin. Location opens the NYC provider index; symptoms refine the search when you have one.",
   },
   {
     number: "02",
     title: "Match ecology to care",
-    text: "Species, condition pools, ratings, wait times, sidewalk access, and neighborhood location shape the ranked provider list.",
+    text: "The all-fields provider index weighs species profile, specialty description, care rating, accessibility, wait time, and real coordinates.",
   },
   {
     number: "03",
     title: "Meet your provider tree",
-    text: "Review the tree's specialty, address, care philosophy, prescription, and environmental role before choosing a visit.",
+    text: "Review provider bio, patient summary, services, prescription, office vibe, address, and map location before choosing a visit.",
   },
 ];
 
@@ -99,7 +99,7 @@ const testimonials = [
       "https://commons.wikimedia.org/wiki/Special:FilePath/Tilia%20cordata%20-%20%27Greenspire%27%20littleleaf%20linden.jpg?width=900",
     imageAlt: "Littleleaf Linden tree canopy",
     quote:
-      "The linden did not cure my calendar, but twenty minutes under its small heart-shaped leaves made sleep feel possible again.",
+      "The linden made burnout feel less like a personal failure and more like a pattern I could treat with shade, sleep, and fewer urgent emails.",
   },
   {
     symptom: "Migraine pressure",
@@ -109,7 +109,7 @@ const testimonials = [
       "https://commons.wikimedia.org/wiki/Special:FilePath/Ginkgo-biloba-tree-in-fall.jpg?width=900",
     imageAlt: "Ginkgo biloba tree in fall",
     quote:
-      "My assigned ginkgo gave me a shaded route home and a quieter place to wait out the aura before it became the whole day.",
+      "The Ginkgo visit was reassuring, specific, and unusually good at making migraine care feel approachable from the sidewalk.",
   },
   {
     symptom: "Seasonal allergies",
@@ -119,7 +119,7 @@ const testimonials = [
       "https://commons.wikimedia.org/wiki/Special:FilePath/20120905Styphnolobium%20japonicum.jpg?width=900",
     imageAlt: "Sophora tree in leaf",
     quote:
-      "The Sophora visit turned pollen into a map. I started crossing on the breezier side of the block and stopped treating sneezing as random.",
+      "Sophora translated pollen, hives, triggers, and immune concerns into a care plan I could actually follow on the walk home.",
   },
   {
     symptom: "Fall risk",
@@ -129,7 +129,7 @@ const testimonials = [
       "https://commons.wikimedia.org/wiki/Special:FilePath/Pin%20oak%20quercus%20palustris.jpg?width=900",
     imageAlt: "Pin Oak tree",
     quote:
-      "The Pin Oak prescribed the slowest route to the grocery store: two benches, three shaded pauses, and no pretending I was not tired.",
+      "The Pin Oak took the long view: mobility, medicines, memory, and two shaded pauses before I tried to be brave at the curb.",
   },
   {
     symptom: "Skin rash",
@@ -139,7 +139,7 @@ const testimonials = [
       "https://commons.wikimedia.org/wiki/Special:FilePath/Zelkova%20serrata%20entire.jpg?width=900",
     imageAlt: "Japanese Zelkova tree",
     quote:
-      "The zelkova made exposure visible. Sun, dust, wind, construction grit: my skin had been keeping notes before I had words for them.",
+      "The zelkova made exposure visible. Rashes, irritation, sun, construction dust: my skin had been keeping notes before I had words for them.",
   },
   {
     symptom: "Afternoon fatigue",
@@ -149,14 +149,14 @@ const testimonials = [
       "https://commons.wikimedia.org/wiki/Special:FilePath/E20151113-0001%E2%80%94Liquidambar%20styraciflua%E2%80%94Berkelely%20%2822378349813%29.jpg?width=900",
     imageAlt: "Sweetgum tree",
     quote:
-      "The Sweetgum care plan was simple: shade after lunch, one extra block, and paying attention to when the heat changed my energy.",
+      "The Sweetgum care plan was practical: shade after lunch, one slower block, and noticing when heat changed my energy.",
   },
 ];
 
 const careTaxonomy = [
   {
     category: "Immune, airway, and infection",
-    summary: "Trees that notice what the air is doing before your body has the words for it.",
+    summary: "Pollen-diplomatic and breath-aware species profiles for bodies negotiating city air.",
     specialties: [
       {
         trees: ["Sophora"],
@@ -182,7 +182,7 @@ const careTaxonomy = [
   },
   {
     category: "Heart, blood, and circulation",
-    summary: "Deep-rooted providers for pulse, pressure, oxygen, and slow systemic repair.",
+    summary: "Deep-rooted providers for pulse, pressure, oxygen, blood flow, and slow systemic repair.",
     specialties: [
       {
         trees: ["Hawthorn"],
@@ -203,7 +203,7 @@ const careTaxonomy = [
   },
   {
     category: "Metabolic and digestive care",
-    summary: "Shade for the systems that turn city stress, meals, and sleep into energy.",
+    summary: "Sap-balanced and fruit-and-nut care for the systems that turn city stress, meals, and sleep into energy.",
     specialties: [
       {
         trees: ["Silver Maple", "Sugar Maple", "Norway Maple"],
@@ -224,7 +224,7 @@ const careTaxonomy = [
   },
   {
     category: "Brain, sleep, and mood",
-    summary: "Provider trees for nervous systems trying to stay soft inside a hard city.",
+    summary: "Calm-canopy and focus-restoring profiles for nervous systems trying to stay soft inside a hard city.",
     specialties: [
       {
         trees: ["Ginkgo"],
@@ -245,7 +245,7 @@ const careTaxonomy = [
   },
   {
     category: "Movement, pain, and aging",
-    summary: "Trees that treat the body as a walking history of weather, labor, and repair.",
+    summary: "Strong-limb and long-view providers for bodies carrying weather, labor, repair, and age.",
     specialties: [
       {
         trees: ["Green Ash"],
@@ -271,7 +271,7 @@ const careTaxonomy = [
   },
   {
     category: "Screening, family, and life stage care",
-    summary: "Everyday clinical branches: routine care, growing bodies, and preventive rituals.",
+    summary: "Everyday clinical branches for root-to-canopy primary care, growing bodies, and preventive rituals.",
     specialties: [
       {
         trees: ["Crepe Myrtle", "London Planetree"],
@@ -297,7 +297,7 @@ const careTaxonomy = [
   },
   {
     category: "Skin, eyes, kidney, and follow-up",
-    summary: "Specialty trees for visible surfaces, hidden fluids, and long-term monitoring.",
+    summary: "Bark-aware, rain-attentive, and follow-up-friendly trees for surfaces, fluids, and long-term monitoring.",
     specialties: [
       {
         trees: ["Siberian Elm", "American Elm", "Japanese Zelkova"],
@@ -377,6 +377,7 @@ export default function Home() {
             <span>96,950 providers</span>
             <span>30 specialties</span>
             <span>183 ZIP codes</span>
+            <span>source-authored profiles</span>
           </div>
         </div>
 
@@ -399,17 +400,17 @@ export default function Home() {
         <div className="metric-card">
           <span>01</span>
           <strong>Every provider is planted.</strong>
-          <p>Each provider is a living tree with a documented location, species, and service area.</p>
+          <p>Each provider is a living tree with a documented ID, species, address, neighborhood, and coordinate.</p>
         </div>
         <div className="metric-card">
           <span>02</span>
-          <strong>Every symptom starts a search.</strong>
-          <p>The network considers your symptoms, location, and provider specialties to identify a Primary Tree.</p>
+          <strong>Every profile has a bedside manner.</strong>
+          <p>Records include specialty descriptions, bios, review summaries, office vibe, services, and care prescriptions.</p>
         </div>
         <div className="metric-card">
           <span>03</span>
-          <strong>Every act of care circulates.</strong>
-          <p>The network traces connections between providers, specialties, and places throughout the city.</p>
+          <strong>Every match stays local.</strong>
+          <p>Search ranks nearby trees first, then uses symptoms, care rating, accessibility, and visit timing to refine the list.</p>
         </div>
       </section>
 
@@ -424,6 +425,11 @@ export default function Home() {
               Primary Care Tree is a distributed medical network where trees serve as care providers.
               Using NYC Open Data, we connect New Yorkers with nearby Primary Tree providers through localized
               care matching and ecological specialties.
+            </p>
+            <p>
+              The provider index now carries all-fields care profiles: species-linked specialty descriptions,
+              sidewalk clinic descriptions, patient review summaries, wait timing, weekend availability, accessibility
+              scores, and real map coordinates for each tree.
             </p>
             <p>
               Our network is coordinated by Arbocurists — care specialists who facilitate relationships between
@@ -522,8 +528,8 @@ export default function Home() {
             Reported relief, by provider <em>tree</em>.
           </h2>
           <p>
-            Each note is written in the speculative language of care: symptom, matched tree, neighborhood, and
-            the environmental prescription that helped.
+            Notes draw from the new provider profile language: symptom pools, species specialties, patient review
+            summaries, and environmental prescriptions that make care feel local enough to stand under.
           </p>
         </div>
         <div className="testimonial-grid">
@@ -566,6 +572,10 @@ export default function Home() {
           <h2>
             Which tree treats which <em>symptom</em>?
           </h2>
+          <p>
+            The all-fields index classifies tree species by clinical family, then turns symptoms into ecological
+            referrals: pollen-diplomatic Sophora, root-to-canopy Honeylocust, calm-canopy Linden, long-view Oak.
+          </p>
         </div>
         <div className="taxonomy-tree">
           {careTaxonomy.map((group, groupIndex) => (
@@ -652,7 +662,7 @@ export default function Home() {
             to expanding equitable care relationships between human and non-human providers.
           </p>
           <p>
-            PCT is not a real medical service. For any serious disease or unwell, please consult a real
+            PCT is not a real medical service. For any serious disease or if you feel unwell, please consult a real
             healthcare provider.
           </p>
         </div>
