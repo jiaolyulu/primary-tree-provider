@@ -339,10 +339,10 @@ export default function Home() {
           <div className="nav-right">
             <div className="nav-links">
               <a href="#about">About</a>
+              <a href="#faq">Q&amp;A</a>
               <a href="#pricing">Pricing</a>
               <a href="#testimonials">Testimonials</a>
               <a href="#featured-doctors">Tree Map</a>
-              <a href="#faq">Q&amp;A</a>
             </div>
             <Link href="/providers?zip=11215" className="nav-cta">
               Browse all PCTs
@@ -468,6 +468,53 @@ export default function Home() {
         </div>
       </section>
 
+      <section id="faq" className="section faq-section">
+        <div className="faq-intro">
+          <div className="section-kicker">FAQ</div>
+          <h2>
+            Questions your regular care providers will <em>not</em> answer.
+          </h2>
+        </div>
+        <div className="faq-list">
+          {faqs.map((faq, index) => (
+            <details key={faq.question} open={index === 0}>
+              <summary>
+                <span>{String(index + 1).padStart(3, "0")}</span>
+                {faq.question}
+              </summary>
+              <p>{faq.answer}</p>
+            </details>
+          ))}
+        </div>
+      </section>
+      <section id="pricing" className="pricing-section">
+        <div className="pricing-header">
+          <h2>Free, from <em>roots</em> to <em>shoots</em>.</h2>
+          <p>
+            PCT does not bill insurance. The network runs on public soil, municipal records, photosynthesis,
+            neighborly attention, and the radical affordability of standing under a living thing.
+          </p>
+        </div>
+        <div className="pricing-grid">
+          {pricingItems.map((item) => (
+            <article key={item.name} className="pricing-card" data-fx={item.fx}>
+              {item.fx === "rain" ? (
+                <RainCanvas />
+              ) : item.fx === "breath" ? (
+                <BubbleCanvas />
+              ) : item.fx === "leaves" ? (
+                <LeafCanvas />
+              ) : (
+                <RootsCanvas />
+              )}
+              <span>{item.name}</span>
+              <strong>{item.price}</strong>
+              <p>{item.detail}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section id="testimonials" className="testimonial-section">
         <div className="testimonial-copy">
           <span>Patient notes</span>
@@ -558,53 +605,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section id="faq" className="section faq-section">
-        <div className="faq-intro">
-          <div className="section-kicker">FAQ</div>
-          <h2>
-            Questions your regular care providers will <em>not</em> answer.
-          </h2>
-        </div>
-        <div className="faq-list">
-          {faqs.map((faq, index) => (
-            <details key={faq.question} open={index === 0}>
-              <summary>
-                <span>{String(index + 1).padStart(3, "0")}</span>
-                {faq.question}
-              </summary>
-              <p>{faq.answer}</p>
-            </details>
-          ))}
-        </div>
-      </section>
-
-      <section id="pricing" className="pricing-section">
-        <div className="pricing-header">
-          <h2>Free, from <em>roots</em> to <em>shoots</em>.</h2>
-          <p>
-            PCT does not bill insurance. The network runs on public soil, municipal records, photosynthesis,
-            neighborly attention, and the radical affordability of standing under a living thing.
-          </p>
-        </div>
-        <div className="pricing-grid">
-          {pricingItems.map((item) => (
-            <article key={item.name} className="pricing-card" data-fx={item.fx}>
-              {item.fx === "rain" ? (
-                <RainCanvas />
-              ) : item.fx === "breath" ? (
-                <BubbleCanvas />
-              ) : item.fx === "leaves" ? (
-                <LeafCanvas />
-              ) : (
-                <RootsCanvas />
-              )}
-              <span>{item.name}</span>
-              <strong>{item.price}</strong>
-              <p>{item.detail}</p>
-            </article>
-          ))}
-        </div>
-      </section>
+     
 
       <section className="closing-cta">
         <h2>
@@ -617,16 +618,44 @@ export default function Home() {
       </section>
 
       <footer className="site-footer">
-        <p>
-          PCT acknowledges the sacrifice of peer species involved in building and maintaining PCT care
-          infrastructure, including but not limited to paper and print production, furniture manufacturing,
-          and data center construction. PCT does not endorse the sacrifice of trees and remains committed
-          to expanding equitable care relationships between human and non-human providers.
-        </p>
-        <p>
-          PCT is not a real medical service. For any serious disease or unwell, please consult a real
-          healthcare provider.
-        </p>
+        <div className="footer-main">
+          <div className="footer-brand">
+            <img src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" />
+            <p>A speculative medical network that allows New York City trees to provide care.</p>
+            <p>Powered by <a href="https://www.nyc.gov/site/opendata/index.page" target="_blank" rel="noopener noreferrer">NYC Open Data</a></p>
+            <p>© 2026 Primary Care Tree. No rights reserved. Feel free to use, share, and modify.</p>
+          </div>
+          <div className="footer-nav">
+            <span>Network</span>
+            <a href="#about">About</a>
+            <a href="#how">How it works</a>
+            <a href="#faq">Q&amp;A</a>
+            <a href="#testimonials">Testimonials</a>
+            <a href="#featured-doctors">Tree Map</a>
+            <a href="#pricing">Pricing</a>
+            <Link href="/providers?zip=11215">Browse providers</Link>
+          </div>
+          <div className="footer-nav">
+            <span>Team</span>
+            <a href="https://www.lulyu.me/" target="_blank" rel="noopener noreferrer">Lu Lyu</a>
+            <a href="https://insacy98.github.io/" target="_blank" rel="noopener noreferrer">Yan Chen</a>
+            <a href="https://shuangcai.cargo.site/" target="_blank" rel="noopener noreferrer">shuang cai</a>
+            <a href="https://fanyipan.com/" target="_blank" rel="noopener noreferrer">Fanyi Pan</a>
+            <a href="https://www.ruichao-jiang.com/" target="_blank" rel="noopener noreferrer">Ruichao Jiang</a>
+          </div>
+        </div>
+        <div className="footer-disclaimer">
+          <p>
+            PCT acknowledges the sacrifice of peer species involved in building and maintaining PCT care
+            infrastructure, including but not limited to paper and print production, furniture manufacturing,
+            and data center construction. PCT does not endorse the sacrifice of trees and remains committed
+            to expanding equitable care relationships between human and non-human providers.
+          </p>
+          <p>
+            PCT is not a real medical service. For any serious disease or unwell, please consult a real
+            healthcare provider.
+          </p>
+        </div>
       </footer>
     </main>
   );
