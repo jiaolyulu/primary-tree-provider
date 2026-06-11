@@ -8,7 +8,7 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandParser
 
 
-TEXT_FIELDS = {
+LEGACY_TEXT_FIELDS = {
     "species_common",
     "species_scientific",
     "medical_specialty",
@@ -29,7 +29,7 @@ TEXT_FIELDS = {
     "clinic_neighborhood",
 }
 
-NUMERIC_TYPES = {
+LEGACY_NUMERIC_TYPES = {
     "lng": "REAL NOT NULL",
     "lat": "REAL NOT NULL",
     "provider_id": "INTEGER PRIMARY KEY",
@@ -43,12 +43,26 @@ NUMERIC_TYPES = {
     "shade_side_manner_score": "REAL NOT NULL",
 }
 
+REAL_FIELDS = {"lng", "lat", "care_rating", "shade_side_manner_score", "clinic_latitude", "clinic_longitude"}
+
+INTEGER_FIELDS = {
+    "provider_id",
+    "years_of_practice",
+    "years_at_current_spot",
+    "review_count",
+    "star_doctor",
+    "next_available_visit_days",
+    "weekend_availability",
+    "care_accessibility_score",
+    "clinic_zipcode",
+}
+
 
 class Command(BaseCommand):
-    help = "Build the compact SQLite provider index from trees_map.json."
+    help = "Build the compact SQLite provider index from a packed tree provider JSON export."
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument("source", type=Path, help="Path to trees_map.json")
+        parser.add_argument("source", type=Path, help="Path to a packed tree provider JSON export")
         parser.add_argument(
             "--output",
             type=Path,
@@ -60,11 +74,14 @@ class Command(BaseCommand):
         source: Path = options["source"]
         output: Path = options["output"]
         payload = json.loads(source.read_text())
-        fields: list[str] = payload["metadata"]["fields"]
+        metadata = {**payload["metadata"], "version": payload.get("version")}
+        fields: list[str] = metadata["fields"]
         dicts: dict[str, list[str]] = payload["dicts"]
         rows: list[list[Any]] = payload["rows"]
+        text_fields, numeric_fields, boolean_fields = self.field_groups(metadata, dicts)
 
-        unsupported_fields = [field for field in fields if field not in TEXT_FIELDS and field not in NUMERIC_TYPES]
+        supported_fields = text_fields | numeric_fields | boolean_fields
+        unsupported_fields = [field for field in fields if field not in supported_fields]
         if unsupported_fields:
             raise ValueError(f"Unsupported fields in source: {', '.join(unsupported_fields)}")
 
@@ -76,9 +93,9 @@ class Command(BaseCommand):
         try:
             connection.execute("PRAGMA journal_mode = OFF")
             connection.execute("PRAGMA synchronous = OFF")
-            self.create_schema(connection, fields)
+            self.create_schema(connection, fields, text_fields, numeric_fields, boolean_fields, metadata)
             self.insert_dictionaries(connection, dicts)
-            self.insert_providers(connection, fields, rows)
+            self.insert_providers(connection, fields, rows, text_fields)
             self.insert_conditions(connection, fields, rows, dicts)
             connection.executescript(
                 """
@@ -94,15 +111,53 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(f"Imported {len(rows):,} providers into {output} ({size_mb:.1f} MB)."))
 
     @staticmethod
-    def create_schema(connection: sqlite3.Connection, fields: list[str]) -> None:
+    def field_groups(
+        metadata: dict[str, Any],
+        dicts: dict[str, list[str]],
+    ) -> tuple[set[str], set[str], set[str]]:
+        text_fields = set(metadata.get("text_fields") or dicts.keys() or LEGACY_TEXT_FIELDS)
+        numeric_fields = set(metadata.get("numeric_fields") or LEGACY_NUMERIC_TYPES.keys())
+        boolean_fields = set(metadata.get("boolean_fields") or [])
+        return text_fields, numeric_fields, boolean_fields
+
+    @staticmethod
+    def sql_type(field: str, numeric_fields: set[str], boolean_fields: set[str]) -> str:
+        if field == "provider_id":
+            return "INTEGER PRIMARY KEY"
+        if field in boolean_fields or field in INTEGER_FIELDS:
+            return "INTEGER NOT NULL"
+        if field in numeric_fields or field in REAL_FIELDS:
+            return "REAL NOT NULL"
+        return "INTEGER NOT NULL"
+
+    @staticmethod
+    def provider_column(field: str, text_fields: set[str]) -> str:
+        return f"{field}_id" if field in text_fields else field
+
+    @classmethod
+    def create_schema(
+        cls,
+        connection: sqlite3.Connection,
+        fields: list[str],
+        text_fields: set[str],
+        numeric_fields: set[str],
+        boolean_fields: set[str],
+        metadata: dict[str, Any],
+    ) -> None:
         columns = []
         for field in fields:
-            if field in NUMERIC_TYPES:
-                columns.append(f"{field} {NUMERIC_TYPES[field]}")
-            else:
-                columns.append(f"{field}_id INTEGER NOT NULL")
+            column_name = cls.provider_column(field, text_fields)
+            columns.append(f"{column_name} {cls.sql_type(field, numeric_fields, boolean_fields)}")
 
         connection.execute(f"CREATE TABLE providers ({', '.join(columns)})")
+        connection.execute(
+            """
+            CREATE TABLE source_metadata (
+                key TEXT PRIMARY KEY,
+                value TEXT NOT NULL
+            )
+            """
+        )
         connection.execute(
             """
             CREATE TABLE dictionary_entries (
@@ -121,15 +176,37 @@ class Command(BaseCommand):
             )
             """
         )
+        metadata_entries = [
+            ("version", json.dumps(metadata.get("version"))),
+            ("source_file", json.dumps(metadata.get("source_file"))),
+            ("row_count", json.dumps(metadata.get("row_count"))),
+            ("fields", json.dumps(fields)),
+            ("text_fields", json.dumps(sorted(text_fields))),
+            ("numeric_fields", json.dumps(sorted(numeric_fields))),
+            ("boolean_fields", json.dumps(sorted(boolean_fields))),
+        ]
+        connection.executemany(
+            "INSERT INTO source_metadata (key, value) VALUES (?, ?)",
+            metadata_entries,
+        )
+
+        provider_columns = {cls.provider_column(field, text_fields) for field in fields}
+        zip_column = "clinic_zipcode_id" if "clinic_zipcode_id" in provider_columns else "clinic_zipcode"
+        latitude_column = "clinic_latitude" if "clinic_latitude" in provider_columns else "lat"
+        longitude_column = "clinic_longitude" if "clinic_longitude" in provider_columns else "lng"
+        specialty_column = (
+            "medical_specialty_id" if "medical_specialty_id" in provider_columns else "medical_specialty"
+        )
+
         connection.executescript(
-            """
+            f"""
             CREATE INDEX idx_dictionary_value ON dictionary_entries (field, value);
-            CREATE INDEX idx_providers_zip ON providers (clinic_zipcode_id);
-            CREATE INDEX idx_providers_lat_lng ON providers (lat, lng);
-            CREATE INDEX idx_providers_lng_lat ON providers (lng, lat);
-            CREATE INDEX idx_providers_specialty ON providers (medical_specialty_id);
+            CREATE INDEX idx_providers_zip ON providers ({zip_column});
+            CREATE INDEX idx_providers_lat_lng ON providers ({latitude_column}, {longitude_column});
+            CREATE INDEX idx_providers_lng_lat ON providers ({longitude_column}, {latitude_column});
+            CREATE INDEX idx_providers_specialty ON providers ({specialty_column});
             CREATE INDEX idx_providers_star_rating ON providers (star_doctor, care_rating DESC);
-            CREATE INDEX idx_providers_zip_specialty ON providers (clinic_zipcode_id, medical_specialty_id);
+            CREATE INDEX idx_providers_zip_specialty ON providers ({zip_column}, {specialty_column});
             CREATE INDEX idx_provider_conditions_key ON provider_conditions (condition_key, provider_id);
             CREATE INDEX idx_provider_conditions_provider ON provider_conditions (provider_id);
             """
@@ -147,9 +224,15 @@ class Command(BaseCommand):
             entries,
         )
 
-    @staticmethod
-    def insert_providers(connection: sqlite3.Connection, fields: list[str], rows: list[list[Any]]) -> None:
-        column_names = [field if field in NUMERIC_TYPES else f"{field}_id" for field in fields]
+    @classmethod
+    def insert_providers(
+        cls,
+        connection: sqlite3.Connection,
+        fields: list[str],
+        rows: list[list[Any]],
+        text_fields: set[str],
+    ) -> None:
+        column_names = [cls.provider_column(field, text_fields) for field in fields]
         placeholders = ", ".join("?" for _ in column_names)
         connection.executemany(
             f"INSERT INTO providers ({', '.join(column_names)}) VALUES ({placeholders})",
