@@ -218,8 +218,9 @@ input {
 
 .hero-section {
   min-height: 100svh;
-  overflow: hidden;
+  overflow: visible;
   position: relative;
+  z-index: 2;
 }
 
 .nav {
@@ -717,7 +718,7 @@ input {
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  z-index: 30;
+  z-index: 80;
 }
 
 .symptom-group {
@@ -840,6 +841,8 @@ input {
   gap: 0;
   grid-template-columns: 1.15fr repeat(3, 1fr);
   padding: 0 clamp(18px, 5vw, 82px);
+  position: relative;
+  z-index: 1;
 }
 
 .metric-intro,
