@@ -368,7 +368,7 @@ export default function Home() {
         <div className="hero-copy">
           <p className="hero-index">2026 / New York City Care Network based on Urban Forestry</p>
           <h1>
-            Primary Care <em>Trees</em>
+            Primary Care <em>Tree</em>
           </h1>
           <p className="hero-subtitle">
             We help you find the primary care tree that is right for you.
