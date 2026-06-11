@@ -432,15 +432,15 @@ export default function Home() {
           </div>
         </div>
         <figure className="poster-reference">
-          <div className="poster-header">
-          </div>
-          <img src="/images/arbocurists.png" alt="Arbocurists illustration — five people rendered as tree rings" />
-          <div className="poster-definition">
-            <div className="poster-definition-entry">
-              <strong>Arbocurists (n.)</strong>
-              <em className="poster-phonetic">/ˈar.boʊkjʊr.ɪst/</em>
-              <p>A team of care specialists facilitating relationships between people and tree providers.</p>
-              <p className="poster-see-also">See also: Lu Lyu, Yan Chen, shuang cai, Fanyi Pan, Ruichao Jiang</p>
+          <div className="poster-body">
+            <img src="/images/arbocurists.png" alt="Arbocurists illustration — five people rendered as tree rings" />
+            <div className="poster-definition">
+              <div className="poster-definition-entry">
+                <strong>Arbocurists (n.)</strong>
+                <em className="poster-phonetic">/ˈar.boʊkjʊr.ɪst/</em>
+                <p>A team of care specialists facilitating relationships between people and tree providers.</p>
+                <p className="poster-see-also">See also: <a href="https://www.lulyu.me/" target="_blank" rel="noopener noreferrer">Lu Lyu</a>, <a href="https://insacy98.github.io/" target="_blank" rel="noopener noreferrer">Yan Chen</a>, <a href="https://shuangcai.cargo.site/" target="_blank" rel="noopener noreferrer">shuang cai</a>, <a href="https://fanyipan.com/" target="_blank" rel="noopener noreferrer">Fanyi Pan</a>, <a href="https://www.ruichao-jiang.com/" target="_blank" rel="noopener noreferrer">Ruichao Jiang</a></p>
+              </div>
             </div>
           </div>
           <div className="poster-disciplines">
@@ -562,7 +562,7 @@ export default function Home() {
         <div className="faq-intro">
           <div className="section-kicker">FAQ</div>
           <h2>
-            Questions your insurer will <em>not</em> answer.
+            Questions your regular care providers will <em>not</em> answer.
           </h2>
         </div>
         <div className="faq-list">
@@ -580,7 +580,7 @@ export default function Home() {
 
       <section id="pricing" className="pricing-section">
         <div className="pricing-header">
-          <h2>Pricing</h2>
+          <h2>Free, from <em>roots</em> to <em>shoots</em>.</h2>
           <p>
             PCT does not bill insurance. The network runs on public soil, municipal records, photosynthesis,
             neighborly attention, and the radical affordability of standing under a living thing.
