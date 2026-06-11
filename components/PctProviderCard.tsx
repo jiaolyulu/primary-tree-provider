@@ -279,7 +279,7 @@ export function PctProviderCardSvgPair({
               </g>
             ))}
             <text x="102" y="32" className="svg-card-brand">PrimaryCareTree</text>
-            <text x="104" y="58" className="svg-card-small">NYC Open Data provider card</text>
+            <text x="104" y="58" className="svg-card-small">NYC Open Data tree provider card by PCT</text>
           </g>
 
           <text x="42" y="136" className="svg-card-label">Provider ID</text>
