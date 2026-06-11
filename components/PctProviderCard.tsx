@@ -49,6 +49,28 @@ function qrPathForUrl(value: string, size: number) {
   return commands.join("");
 }
 
+function barcodeBars(value: string, width: number, height: number) {
+  const bits = value
+    .split("")
+    .map((char) => char.charCodeAt(0).toString(2).padStart(8, "0"))
+    .join("");
+  const barCount = 64;
+  const unit = width / barCount;
+
+  return Array.from({ length: barCount }, (_, index) => {
+    const bit = bits[index % bits.length];
+    const nextBit = bits[(index + 5) % bits.length];
+    const barWidth = bit === "1" ? unit * 0.72 : unit * 0.34;
+    const barHeight = nextBit === "1" ? height : height * 0.72;
+    return {
+      height: Number(barHeight.toFixed(3)),
+      width: Number(barWidth.toFixed(3)),
+      x: Number((index * unit).toFixed(3)),
+      y: Number((height - barHeight).toFixed(3)),
+    };
+  });
+}
+
 function dataUrlToBytes(dataUrl: string) {
   const base64 = dataUrl.split(",")[1] ?? "";
   const binary = window.atob(base64);
@@ -222,7 +244,8 @@ export function PctProviderCardSvgPair({
   const conditionLines = textLines(provider.searchableConditions.slice(0, 6).join(" / "), 34, 3);
   const availabilityLabel = provider.weekendAvailability ? "Weekend visits available" : "Weekday visits only";
   const mapsUrl = googleMapsCoordinateUrl(provider);
-  const mapsQrPath = qrPathForUrl(mapsUrl, 86);
+  const mapsQrPath = qrPathForUrl(mapsUrl, 112);
+  const providerBarcode = barcodeBars(`PCT-${doctorId}`, 500, 72);
   const frontTitleId = `${cardIdPrefix}-front-title`;
   const backTitleId = `${cardIdPrefix}-back-title`;
   const frontShadowId = `${cardIdPrefix}-front-shadow`;
@@ -333,14 +356,6 @@ export function PctProviderCardSvgPair({
               {line}
             </text>
           ))}
-          <a href={mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.speciesCommon} in Google Maps`}>
-            <g transform="translate(334 188)">
-              <rect x="0" y="0" width="118" height="134" rx="8" fill="#ffffff" stroke="#007a34" strokeOpacity="0.32" />
-              <rect x="16" y="16" width="86" height="86" fill="#ffffff" />
-              <path d={mapsQrPath} fill="#063d22" transform="translate(16 16)" />
-              <text x="59" y="122" textAnchor="middle" className="svg-card-small">Scan for map</text>
-            </g>
-          </a>
 
           <text x="470" y="140" className="svg-card-label-bold">Condition Focus</text>
           {conditionLines.map((line, index) => (
@@ -351,20 +366,25 @@ export function PctProviderCardSvgPair({
 
           <line x1="42" y1="336" x2="814" y2="336" className="svg-card-rule" />
 
-          <text x="42" y="382" className="svg-card-label-bold">Record Details</text>
-          <text x="42" y="416" className="svg-card-body">Provider type: {shortText(provider.providerType, 34)}</text>
-          <text x="42" y="448" className="svg-card-body">Experience level: {shortText(provider.treeExperienceLevel, 30)}</text>
-          <text x="42" y="480" className="svg-card-body">Years at site: {provider.yearsAtCurrentSpot}</text>
+          <a href={mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.speciesCommon} in Google Maps`}>
+            <g transform="translate(42 364)">
+              <rect x="0" y="0" width="146" height="146" rx="10" fill="#ffffff" stroke="#007a34" strokeOpacity="0.32" />
+              <rect x="17" y="17" width="112" height="112" fill="#ffffff" />
+              <path d={mapsQrPath} fill="#063d22" transform="translate(17 17)" />
+              <text x="73" y="139" textAnchor="middle" className="svg-card-small">Scan for map</text>
+            </g>
+          </a>
 
-          <text x="470" y="382" className="svg-card-label-bold">Environmental Access</text>
-          <text x="470" y="416" className="svg-card-body">Care access score: {provider.careAccessibilityScore.toFixed(1)}</text>
-          <text x="470" y="448" className="svg-card-body">Shade-side manner: {provider.shadeSideMannerScore.toFixed(1)}</text>
-          <text x="470" y="480" className="svg-card-body">Next visit: {provider.nextAvailableVisitDays} days</text>
-
-          <text x="42" y="510" className="svg-card-small">Experience: {provider.yearsOfPractice} years of practice</text>
-          <text x="814" y="510" textAnchor="end" className="svg-card-small">
-            Storm response: {provider.stormResponseReadiness}
-          </text>
+          <g transform="translate(226 378)">
+            <text x="0" y="0" className="svg-card-label-bold">Provider Barcode</text>
+            <rect x="0" y="24" width="540" height="92" rx="8" fill="#ffffff" stroke="#007a34" strokeOpacity="0.24" />
+            <g transform="translate(20 34)">
+              {providerBarcode.map((bar, index) => (
+                <rect key={`${bar.x}-${index}`} x={bar.x} y={bar.y} width={bar.width} height={bar.height} fill="#063d22" />
+              ))}
+            </g>
+            <text x="270" y="106" textAnchor="middle" className="svg-card-small">PCT-{doctorId}</text>
+          </g>
         </svg>
       </article>
     </div>
