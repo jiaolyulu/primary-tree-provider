@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { ProviderMatch, providerNetworkStats, rankProviders } from "@/lib/providers";
+import { ProviderMatch, rankProviders } from "@/lib/providers";
 
 function shortText(value: string, maxLength: number) {
   return value.length > maxLength ? `${value.slice(0, maxLength - 1)}…` : value;
@@ -113,15 +113,14 @@ export function InsuranceCard() {
   }
 
   const doctorId = String(provider.providerId);
-  const groupNumber = `NYC-${provider.clinicZipcode}`;
-  const memberId = `${provider.clinicZipcode}-${doctorId.slice(-4).padStart(4, "0")}`;
-  const payerId = `TREE-${provider.clinicZipcode}`;
   const visitLine = `${provider.clinicAddress}, ${provider.clinicCity}, ${provider.clinicState} ${provider.clinicZipcode}`;
-  const primaryProviderLines = textLines(provider.speciesCommon, 20, 2);
-  const clinicLines = textLines(provider.clinicName, 30, 2);
-  const addressLines = textLines(visitLine, 44, 2);
-  const prescriptionLines = textLines(provider.signaturePrescription, 54, 3);
-  const specialtyLines = textLines(provider.medicalSpecialty, 24, 2);
+  const primaryProviderLines = textLines(provider.speciesCommon, 26, 2);
+  const clinicLines = textLines(provider.clinicName, 34, 2);
+  const addressLines = textLines(visitLine, 50, 2);
+  const specialtyLines = textLines(provider.medicalSpecialty, 28, 2);
+  const conditionLines = textLines(provider.searchableConditions.slice(0, 6).join(" / "), 34, 3);
+  const availabilityLabel = provider.weekendAvailability ? "Weekend visits available" : "Weekday visits only";
+  const coordinatesLabel = `${provider.clinicLatitude.toFixed(5)}, ${provider.clinicLongitude.toFixed(5)}`;
 
   return (
     <main className="card-page">
@@ -135,19 +134,18 @@ export function InsuranceCard() {
           <ShieldCheck aria-hidden="true" size={15} />
           Primary PCT selected
         </div>
-        <h1>Your health insurance card</h1>
+        <h1>Your PCT provider card</h1>
         <p>
-          This speculative coverage card now names the actual Primary Care Tree selected from the ranked NYC Open Data
-          provider network.
+          A compact card built from the selected NYC tree-provider record and your care search context.
         </p>
       </section>
 
-      <section className="insurance-card-shell" aria-label="Primary Care Trees insurance card">
+      <section className="insurance-card-shell" aria-label="Primary Care Trees provider card">
         <div className="insurance-card-pair">
-          <article className="insurance-card-panel" aria-label="Primary Care Trees insurance card front">
+          <article className="insurance-card-panel" aria-label="Primary Care Trees provider card front">
             <span className="insurance-card-side-label">Front</span>
             <svg className="insurance-card-svg" viewBox="0 0 856 540" role="img" aria-labelledby="pct-card-front-title">
-              <title id="pct-card-front-title">Primary Care Trees insurance card front</title>
+              <title id="pct-card-front-title">Primary Care Trees provider card front</title>
               <defs>
                 <filter id="pctCardShadow" x="-8%" y="-8%" width="116%" height="116%">
                   <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="#063d22" floodOpacity="0.18" />
@@ -164,66 +162,47 @@ export function InsuranceCard() {
                   </g>
                 ))}
                 <text x="102" y="32" className="svg-card-brand">PrimaryCareTrees</text>
-                <text x="104" y="58" className="svg-card-small">Health Plan (80840)</text>
+                <text x="104" y="58" className="svg-card-small">NYC Open Data provider card</text>
               </g>
 
-              <text x="255" y="122" className="svg-card-number">911-{doctorId.slice(-4).padStart(4, "0")}-04</text>
-              <text x="42" y="152" className="svg-card-label">Member ID:</text>
-              <text x="180" y="152" className="svg-card-value">{memberId}</text>
-              <text x="520" y="152" className="svg-card-label">Group Number:</text>
-              <text x="745" y="152" textAnchor="end" className="svg-card-value">{groupNumber}</text>
+              <text x="42" y="136" className="svg-card-label">Provider ID</text>
+              <text x="190" y="136" className="svg-card-number">{doctorId}</text>
+              <text x="520" y="136" className="svg-card-label">Search ZIP</text>
+              <text x="745" y="136" textAnchor="end" className="svg-card-value">{zipcode}</text>
               <line x1="42" y1="165" x2="814" y2="165" className="svg-card-rule" />
 
-              <text x="42" y="194" className="svg-card-label">Member:</text>
-              <text x="42" y="220" className="svg-card-body">NYC VISITOR</text>
-              <text x="42" y="246" className="svg-card-label">Primary Tree Provider:</text>
+              <text x="42" y="204" className="svg-card-label">Primary Tree Provider</text>
               {primaryProviderLines.map((line, index) => (
-                <text key={line} x="42" y={278 + index * 30} className="svg-card-tree">
+                <text key={line} x="42" y={242 + index * 36} className="svg-card-tree">
                   {line}
                 </text>
               ))}
-              <text x="42" y="348" className="svg-card-body-quiet">{shortText(provider.speciesScientific, 34)}</text>
+              <text x="42" y="322" className="svg-card-body-quiet">{shortText(provider.speciesScientific, 44)}</text>
 
-              <text x="470" y="197" className="svg-card-label">Specialty</text>
+              <text x="470" y="204" className="svg-card-label">Clinical Specialty</text>
               {specialtyLines.map((line, index) => (
-                <text key={line} x="470" y={225 + index * 29} className="svg-card-value">
-                  {line}
-                </text>
-              ))}
-              <text x="470" y="300" className="svg-card-label">Payer ID {payerId}</text>
-              <text x="470" y="330" className="svg-card-label">Visit Site:</text>
-              {clinicLines.map((line, index) => (
-                <text key={line} x="470" y={356 + index * 22} className="svg-card-body">
-                  {line}
-                </text>
-              ))}
-              {addressLines.map((line, index) => (
-                <text key={line} x="470" y={404 + index * 22} className="svg-card-body-quiet">
+                <text key={line} x="470" y={242 + index * 33} className="svg-card-value">
                   {line}
                 </text>
               ))}
 
-              <rect x="548" y="230" width="266" height="122" fill="none" stroke="#007a34" strokeWidth="4" />
-              <text x="568" y="262" className="svg-card-label">PCT Rx</text>
-              <text x="568" y="290" className="svg-card-body">Rx Bin: OXYGEN</text>
-              <text x="568" y="316" className="svg-card-body">Rx PCN: H2O</text>
-              <text x="568" y="342" className="svg-card-body">Rx Grp: SHADE</text>
+              <rect x="42" y="370" width="266" height="86" rx="12" fill="#f3f7f0" stroke="#007a34" strokeOpacity="0.32" />
+              <text x="62" y="404" className="svg-card-label">Care rating</text>
+              <text x="62" y="438" className="svg-card-value">{provider.careRating.toFixed(1)} / 5</text>
 
-              <text x="42" y="430" className="svg-card-small">Copays:</text>
-              <text x="42" y="456" className="svg-card-body">Office: $0</text>
-              <text x="150" y="456" className="svg-card-body">ER: Compost only</text>
-              <text x="42" y="482" className="svg-card-body">Water: encouraged</text>
-              <text x="150" y="482" className="svg-card-body">Spec: {shortText(provider.distanceLabel, 18)}</text>
-              <text x="42" y="510" className="svg-card-small">0508</text>
-              <text x="470" y="482" className="svg-card-plan">Canopy Care Plus</text>
-              <text x="470" y="508" className="svg-card-body-quiet">Administered by NYC Open Data Urban Forestry</text>
+              <rect x="342" y="370" width="472" height="86" rx="12" fill="#f3f7f0" stroke="#007a34" strokeOpacity="0.32" />
+              <text x="362" y="404" className="svg-card-label">Availability</text>
+              <text x="362" y="438" className="svg-card-body">{availabilityLabel}</text>
+
+              <text x="42" y="505" className="svg-card-small">Distance from search location: {provider.distanceLabel}</text>
+              <text x="814" y="505" textAnchor="end" className="svg-card-small">Neighborhood: {shortText(provider.clinicNeighborhood, 30)}</text>
             </svg>
           </article>
 
-          <article className="insurance-card-panel" aria-label="Primary Care Trees insurance card back">
+          <article className="insurance-card-panel" aria-label="Primary Care Trees provider card back">
             <span className="insurance-card-side-label">Back</span>
             <svg className="insurance-card-svg" viewBox="0 0 856 540" role="img" aria-labelledby="pct-card-back-title">
-              <title id="pct-card-back-title">Primary Care Trees insurance card back</title>
+              <title id="pct-card-back-title">Primary Care Trees provider card back</title>
               <defs>
                 <filter id="pctCardBackShadow" x="-8%" y="-8%" width="116%" height="116%">
                   <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="#063d22" floodOpacity="0.18" />
@@ -232,33 +211,52 @@ export function InsuranceCard() {
               <rect x="10" y="10" width="836" height="520" rx="24" fill="#ffffff" filter="url(#pctCardBackShadow)" />
               <rect x="10" y="10" width="836" height="520" rx="24" fill="none" stroke="#007a34" strokeOpacity="0.36" />
 
-              <text x="782" y="48" textAnchor="end" className="svg-card-small">Printed: 06/11/26</text>
+              <g transform="translate(42 44)">
+                {[0, 1, 2, 3, 4].map((tree) => (
+                  <g key={tree} transform={`translate(${tree * 14} 0)`}>
+                    <path d="M7 0 C16 14 17 34 7 43 C-2 34 -2 14 7 0Z" fill="#007a34" />
+                    <rect x="5.5" y="40" width="3" height="18" fill="#007a34" />
+                  </g>
+                ))}
+                <text x="92" y="30" className="svg-card-brand">Provider Record</text>
+                <text x="94" y="56" className="svg-card-small">Fields shown from selected PCT data</text>
+              </g>
 
-              <text x="42" y="132" className="svg-card-label-bold">Members:</text>
-              <text x="162" y="132" className="svg-card-body">We&apos;re here to help. Check shade, find</text>
-              <text x="42" y="160" className="svg-card-body">a tree, ask a question and breathe.</text>
-              <text x="42" y="202" className="svg-card-label">Web:</text>
-              <text x="162" y="202" className="svg-card-body">primary-tree-provider.vercel.app</text>
-              <text x="42" y="244" className="svg-card-label">Phone:</text>
-              <text x="162" y="244" className="svg-card-body">311-CANOPY</text>
+              <text x="42" y="140" className="svg-card-label-bold">Visit Site</text>
+              {clinicLines.map((line, index) => (
+                <text key={line} x="42" y={174 + index * 26} className="svg-card-body">
+                  {line}
+                </text>
+              ))}
+              {addressLines.map((line, index) => (
+                <text key={line} x="42" y={240 + index * 24} className="svg-card-body-quiet">
+                  {line}
+                </text>
+              ))}
+              <text x="42" y="304" className="svg-card-small">Coordinates: {coordinatesLabel}</text>
 
-              <line x1="42" y1="282" x2="814" y2="282" className="svg-card-rule" />
-              <text x="42" y="310" className="svg-card-label-bold">Providers:</text>
-              <text x="162" y="310" className="svg-card-body">{doctorId} or PCT network desk</text>
-              <text x="42" y="338" className="svg-card-label">Claims:</text>
-              <text x="162" y="338" className="svg-card-body">NYC street tree record, ZIP {provider.clinicZipcode}</text>
-
-              <text x="42" y="392" className="svg-card-label-bold">Coverage notes:</text>
-              {prescriptionLines.map((line, index) => (
-                <text key={line} x="42" y={424 + index * 26} className="svg-card-body">
+              <text x="470" y="140" className="svg-card-label-bold">Condition Focus</text>
+              {conditionLines.map((line, index) => (
+                <text key={line} x="470" y={174 + index * 26} className="svg-card-body">
                   {line}
                 </text>
               ))}
 
-              <text x="42" y="510" className="svg-card-label">Rules:</text>
-              <text x="122" y="510" className="svg-card-body">No saws. Hydration encouraged. Shade is in network.</text>
-              <text x="782" y="510" textAnchor="end" className="svg-card-small">
-                {providerNetworkStats.totalProviders.toLocaleString()} trees
+              <line x1="42" y1="336" x2="814" y2="336" className="svg-card-rule" />
+
+              <text x="42" y="382" className="svg-card-label-bold">Record Details</text>
+              <text x="42" y="416" className="svg-card-body">Provider type: {shortText(provider.providerType, 34)}</text>
+              <text x="42" y="448" className="svg-card-body">Experience level: {shortText(provider.treeExperienceLevel, 30)}</text>
+              <text x="42" y="480" className="svg-card-body">Years at site: {provider.yearsAtCurrentSpot}</text>
+
+              <text x="470" y="382" className="svg-card-label-bold">Environmental Access</text>
+              <text x="470" y="416" className="svg-card-body">Care access score: {provider.careAccessibilityScore.toFixed(1)}</text>
+              <text x="470" y="448" className="svg-card-body">Shade-side manner: {provider.shadeSideMannerScore.toFixed(1)}</text>
+              <text x="470" y="480" className="svg-card-body">Next visit: {provider.nextAvailableVisitDays} days</text>
+
+              <text x="42" y="510" className="svg-card-small">Experience: {provider.yearsOfPractice} years of practice</text>
+              <text x="814" y="510" textAnchor="end" className="svg-card-small">
+                Storm response: {provider.stormResponseReadiness}
               </text>
             </svg>
           </article>
