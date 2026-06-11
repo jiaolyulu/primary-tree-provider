@@ -360,7 +360,7 @@ export function ProviderDashboard() {
           </div>
           <div className="dashboard-error-panel" role="alert">
             <span>Provider matches unavailable</span>
-            <h2>We could not load nearby Primary Care Trees.</h2>
+            <h2>We could not load nearby Primary Care Tree.</h2>
             <p>{loadError}</p>
           </div>
         </section>

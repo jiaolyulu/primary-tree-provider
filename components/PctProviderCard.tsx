@@ -253,7 +253,7 @@ export function PctProviderCardSvgPair({
 
   return (
     <div className="insurance-card-pair">
-      <article className="insurance-card-panel" aria-label="Primary Care Trees provider card front">
+      <article className="insurance-card-panel" aria-label="Primary Care Tree provider card front">
         <span className="insurance-card-side-label">Front</span>
         <svg
           id={`${cardIdPrefix}-front`}
@@ -262,7 +262,7 @@ export function PctProviderCardSvgPair({
           role="img"
           aria-labelledby={frontTitleId}
         >
-          <title id={frontTitleId}>Primary Care Trees provider card front</title>
+          <title id={frontTitleId}>Primary Care Tree provider card front</title>
           <defs>
             <filter id={frontShadowId} x="-8%" y="-8%" width="116%" height="116%">
               <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="#063d22" floodOpacity="0.18" />
@@ -316,7 +316,7 @@ export function PctProviderCardSvgPair({
         </svg>
       </article>
 
-      <article className="insurance-card-panel" aria-label="Primary Care Trees provider card back">
+      <article className="insurance-card-panel" aria-label="Primary Care Tree provider card back">
         <span className="insurance-card-side-label">Back</span>
         <svg
           id={`${cardIdPrefix}-back`}
@@ -325,7 +325,7 @@ export function PctProviderCardSvgPair({
           role="img"
           aria-labelledby={backTitleId}
         >
-          <title id={backTitleId}>Primary Care Trees provider card back</title>
+          <title id={backTitleId}>Primary Care Tree provider card back</title>
           <defs>
             <filter id={backShadowId} x="-8%" y="-8%" width="116%" height="116%">
               <feDropShadow dx="0" dy="8" stdDeviation="8" floodColor="#063d22" floodOpacity="0.18" />

@@ -390,7 +390,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="metric-strip" aria-label="Primary Care Trees network">
+      <section className="metric-strip" aria-label="Primary Care Tree network">
         <div className="metric-intro">
           <h2>
           A care network <em>rooted</em> in NYC.
@@ -421,7 +421,7 @@ export default function Home() {
           </h2>
           <div className="body-stack">
             <p>
-              Primary Care Trees is a distributed medical network where trees serve as care providers.
+              Primary Care Tree is a distributed medical network where trees serve as care providers.
               Using NYC Open Data, we connect New Yorkers with nearby Primary Tree providers through localized
               care matching and ecological specialties.
             </p>

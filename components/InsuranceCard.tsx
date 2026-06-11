@@ -105,7 +105,7 @@ export function InsuranceCard() {
         <p>A compact card built from the selected NYC tree-provider record and your care search context.</p>
       </section>
 
-      <section className="insurance-card-shell" aria-label="Primary Care Trees provider card">
+      <section className="insurance-card-shell" aria-label="Primary Care Tree provider card">
         <PctProviderCardSvgPair cardIdPrefix="pct-provider-card-page" provider={provider} zipcode={zipcode} />
       </section>
     </main>
