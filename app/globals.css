@@ -3446,15 +3446,12 @@ details p {
 }
 
 .insurance-card-shell {
-  align-items: stretch;
-  display: grid;
-  gap: 18px;
-  grid-template-columns: minmax(320px, 1fr) minmax(280px, 0.42fr);
   margin: 0 auto;
-  max-width: 1160px;
+  max-width: 1280px;
 }
 
 .insurance-card-shell.loading {
+  display: grid;
   grid-template-columns: 1fr;
 }
 
@@ -3489,6 +3486,98 @@ details p {
 .insurance-card-shell.loading .insurance-card span:first-child {
   height: 72px;
   width: min(48%, 360px);
+}
+
+.insurance-card-pair {
+  align-items: start;
+  display: grid;
+  gap: clamp(18px, 3vw, 34px);
+  grid-template-columns: repeat(2, minmax(320px, 1fr));
+}
+
+.insurance-card-panel {
+  display: grid;
+  gap: 10px;
+  min-width: 0;
+}
+
+.insurance-card-side-label {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.insurance-card-svg {
+  aspect-ratio: 856 / 540;
+  display: block;
+  height: auto;
+  max-width: 100%;
+  width: 100%;
+}
+
+.svg-card-brand {
+  fill: #17477f;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 35px;
+  font-weight: 700;
+}
+
+.svg-card-number {
+  fill: #1f2933;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.svg-card-label,
+.svg-card-label-bold {
+  fill: #244a86;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 21px;
+}
+
+.svg-card-label-bold {
+  font-weight: 700;
+}
+
+.svg-card-value {
+  fill: #1f2933;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 28px;
+}
+
+.svg-card-tree {
+  fill: #1f2933;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 29px;
+  font-weight: 700;
+}
+
+.svg-card-body,
+.svg-card-body-quiet,
+.svg-card-small {
+  fill: #1f2933;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 21px;
+}
+
+.svg-card-body-quiet,
+.svg-card-small {
+  font-size: 16px;
+}
+
+.svg-card-plan {
+  fill: #1f2933;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+}
+
+.svg-card-rule {
+  stroke: #244a86;
+  stroke-width: 3;
 }
 
 .insurance-card-top {
@@ -3680,6 +3769,12 @@ details p {
 
   .insurance-card-shell {
     grid-template-columns: 1fr;
+  }
+
+  .insurance-card-pair {
+    grid-template-columns: 1fr;
+    margin: 0 auto;
+    max-width: 760px;
   }
 
   .steps-grid,
