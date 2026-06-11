@@ -6,11 +6,11 @@ import { useEffect, useMemo, useState } from "react";
 import {
   Activity,
   Apple,
-  ArrowRight,
   Baby,
   Bone,
   Brain,
   ClipboardCheck,
+  Download,
   Droplet,
   Ear,
   Eye,
@@ -33,6 +33,7 @@ import {
   Zap,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
+import { downloadProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
 import { ProviderMatch, rankProviders } from "@/lib/providers";
 
@@ -258,13 +259,21 @@ export function ProviderDashboard() {
   const [rankedProviders, setRankedProviders] = useState<ProviderMatch[] | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
   const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
+  const [cardProvider, setCardProvider] = useState<ProviderMatch | null>(null);
+  const [isDownloadingCard, setIsDownloadingCard] = useState(false);
+  const [cardDownloadError, setCardDownloadError] = useState("");
   const [sortBy, setSortBy] = useState("match");
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
-    if (!detailProvider) return;
+    if (!detailProvider && !cardProvider) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setDetailProvider(null);
+      if (event.key !== "Escape") return;
+      if (cardProvider) {
+        setCardProvider(null);
+      } else {
+        setDetailProvider(null);
+      }
     };
     document.addEventListener("keydown", onKeyDown);
     const previousOverflow = document.body.style.overflow;
@@ -273,7 +282,7 @@ export function ProviderDashboard() {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [detailProvider]);
+  }, [detailProvider, cardProvider]);
 
   useEffect(() => {
     let isCurrent = true;
@@ -309,19 +318,24 @@ export function ProviderDashboard() {
     />
   );
 
-  const buildCardUrl = (providerId: number) => {
-    const cardParams = new URLSearchParams();
-    cardParams.set("zip", zipcode);
-    cardParams.set("providerId", String(providerId));
-    if (symptom) cardParams.set("symptom", symptom);
-    if (hasPinnedLocation) {
-      cardParams.set("location", "pin");
-      cardParams.set("lat", latitude.toFixed(5));
-      cardParams.set("lng", longitude.toFixed(5));
-    } else {
-      cardParams.set("location", "zip");
+  const openCardDialog = (provider: ProviderMatch) => {
+    setDetailProvider(null);
+    setCardProvider(provider);
+    setIsDownloadingCard(false);
+    setCardDownloadError("");
+  };
+
+  const downloadCardPdf = async () => {
+    if (!cardProvider) return;
+    setIsDownloadingCard(true);
+    setCardDownloadError("");
+    try {
+      await downloadProviderCardPdf(`pct-provider-card-dialog-${cardProvider.providerId}`, cardProvider);
+    } catch {
+      setCardDownloadError("We could not prepare the PDF. Please try again.");
+    } finally {
+      setIsDownloadingCard(false);
     }
-    return `/card?${cardParams.toString()}`;
   };
 
   if (loadError) {
@@ -533,10 +547,9 @@ export function ProviderDashboard() {
                     >
                       Learn more
                     </button>
-                    <Link href={buildCardUrl(provider.providerId)} className="provider-choose-btn">
+                    <button type="button" className="provider-choose-btn" onClick={() => openCardDialog(provider)}>
                       Choose as Primary PCT
-                      <ArrowRight aria-hidden="true" size={16} />
-                    </Link>
+                    </button>
                   </div>
                 </article>
               );
@@ -654,18 +667,71 @@ export function ProviderDashboard() {
                     </p>
                   </div>
 
-                  <Link
-                    href={buildCardUrl(detailProvider.providerId)}
+                  <button
+                    type="button"
                     className="provider-choose-btn tree-detail-choose"
+                    onClick={() => openCardDialog(detailProvider)}
                   >
                     Choose as Primary PCT
-                    <ArrowRight aria-hidden="true" size={16} />
-                  </Link>
+                  </button>
                 </div>
               </div>
             );
           })()
         : null}
+
+      {cardProvider ? (
+        <div
+          className="tree-detail-overlay card-dialog-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${cardProvider.speciesCommon} PCT provider card`}
+          onClick={() => setCardProvider(null)}
+        >
+          <div className="card-dialog-modal" onClick={(event) => event.stopPropagation()}>
+            <div className="card-dialog-header">
+              <div>
+                <span className="provider-card-eyebrow">
+                  Primary PCT · {cardProvider.clinicNeighborhood}
+                </span>
+                <h2>{cardProvider.speciesCommon} provider card</h2>
+              </div>
+              <button
+                type="button"
+                className="tree-detail-close"
+                onClick={() => setCardProvider(null)}
+                aria-label="Close card"
+              >
+                <X aria-hidden="true" size={18} />
+              </button>
+            </div>
+
+            <div className="card-dialog-body">
+              <PctProviderCardSvgPair
+                cardIdPrefix={`pct-provider-card-dialog-${cardProvider.providerId}`}
+                provider={cardProvider}
+                zipcode={zipcode}
+              />
+            </div>
+
+            <div className="card-dialog-actions">
+              {cardDownloadError ? <p role="alert">{cardDownloadError}</p> : null}
+              <button type="button" className="tree-learn-more" onClick={() => setCardProvider(null)}>
+                Keep browsing
+              </button>
+              <button
+                type="button"
+                className="provider-choose-btn"
+                onClick={downloadCardPdf}
+                disabled={isDownloadingCard}
+              >
+                <Download aria-hidden="true" size={16} />
+                {isDownloadingCard ? "Preparing PDF..." : "Download PDF"}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

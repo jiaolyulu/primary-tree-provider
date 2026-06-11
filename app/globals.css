@@ -3111,8 +3111,10 @@ details p {
   background: rgba(255, 255, 255, 0.6);
   border: 1px solid var(--green);
   color: var(--green);
+  cursor: pointer;
   display: flex;
   flex: 1;
+  font-family: inherit;
   font-size: 12px;
   font-weight: 700;
   gap: 8px;
@@ -3128,6 +3130,11 @@ details p {
 .provider-choose-btn:hover {
   background: var(--green);
   color: #fff;
+}
+
+.provider-choose-btn:disabled {
+  cursor: wait;
+  opacity: 0.68;
 }
 
 /* ---- Tree detail modal ---- */
@@ -3172,6 +3179,77 @@ details p {
 .tree-detail-close:hover {
   background: var(--green);
   color: #fff;
+}
+
+.card-dialog-overlay {
+  align-items: center;
+  padding: clamp(16px, 3vw, 34px);
+}
+
+.card-dialog-modal {
+  background: var(--paper);
+  border: 1px solid var(--green);
+  box-shadow: 0 30px 80px rgba(6, 61, 34, 0.35);
+  color: var(--ink);
+  max-height: calc(100vh - 40px);
+  max-width: min(1320px, 100%);
+  overflow-y: auto;
+  padding: clamp(16px, 2.4vw, 28px);
+  position: relative;
+  width: 100%;
+}
+
+.card-dialog-header {
+  align-items: flex-start;
+  display: flex;
+  gap: 18px;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding-right: 48px;
+}
+
+.card-dialog-header h2 {
+  color: var(--green);
+  font-family: var(--font-serif);
+  font-size: clamp(30px, 4vw, 54px);
+  letter-spacing: 0;
+  line-height: 0.95;
+  margin: 4px 0 0;
+  text-transform: uppercase;
+}
+
+.card-dialog-body {
+  background:
+    linear-gradient(rgba(0, 122, 52, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 122, 52, 0.055) 1px, transparent 1px),
+    #f7f8f2;
+  background-size: 32px 32px;
+  border: 1px solid rgba(0, 122, 52, 0.24);
+  padding: clamp(12px, 2vw, 22px);
+}
+
+.card-dialog-body .insurance-card-pair {
+  gap: clamp(14px, 2vw, 22px);
+}
+
+.card-dialog-actions {
+  align-items: center;
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 18px;
+}
+
+.card-dialog-actions p {
+  color: #b3261e;
+  flex: 1;
+  font-size: 14px;
+  margin: 0;
+}
+
+.card-dialog-actions .tree-learn-more,
+.card-dialog-actions .provider-choose-btn {
+  flex: 0 0 auto;
 }
 
 .tree-detail-head {
@@ -3896,6 +3974,16 @@ details p {
 
   .provider-card-expanded {
     padding-left: 20px;
+  }
+
+  .card-dialog-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .card-dialog-actions .tree-learn-more,
+  .card-dialog-actions .provider-choose-btn {
+    width: 100%;
   }
 }
 
