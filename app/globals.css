@@ -3707,6 +3707,11 @@ details p {
   font-size: 16px;
 }
 
+.svg-card-link {
+  fill: #244a86;
+  text-decoration: underline;
+}
+
 .svg-card-plan {
   fill: #1f2933;
   font-family: Arial, Helvetica, sans-serif;

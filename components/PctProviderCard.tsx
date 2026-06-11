@@ -26,6 +26,10 @@ function textLines(value: string, maxLength: number, maxLines: number) {
   return lines.map((line, index) => (index === maxLines - 1 ? shortText(line, maxLength) : line));
 }
 
+function googleMapsCoordinateUrl(provider: ProviderMatch) {
+  return `https://www.google.com/maps?q=${provider.clinicLatitude.toFixed(6)},${provider.clinicLongitude.toFixed(6)}`;
+}
+
 function dataUrlToBytes(dataUrl: string) {
   const base64 = dataUrl.split(",")[1] ?? "";
   const binary = window.atob(base64);
@@ -60,6 +64,7 @@ async function svgToJpegBytes(svg: SVGSVGElement) {
     .svg-card-tree{fill:#1f2933;font-family:Arial,Helvetica,sans-serif;font-size:29px;font-weight:700}
     .svg-card-body,.svg-card-body-quiet,.svg-card-small{fill:#1f2933;font-family:Arial,Helvetica,sans-serif;font-size:21px}
     .svg-card-body-quiet,.svg-card-small{font-size:16px}
+    .svg-card-link{fill:#244a86;text-decoration:underline}
     .svg-card-rule{stroke:#244a86;stroke-width:3}
   `;
   clone.insertBefore(style, clone.firstChild);
@@ -198,7 +203,8 @@ export function PctProviderCardSvgPair({
   const specialtyLines = textLines(provider.medicalSpecialty, 28, 2);
   const conditionLines = textLines(provider.searchableConditions.slice(0, 6).join(" / "), 34, 3);
   const availabilityLabel = provider.weekendAvailability ? "Weekend visits available" : "Weekday visits only";
-  const coordinatesLabel = `${provider.clinicLatitude.toFixed(5)}, ${provider.clinicLongitude.toFixed(5)}`;
+  const mapsUrl = googleMapsCoordinateUrl(provider);
+  const mapsDisplayUrl = mapsUrl.replace("https://www.", "");
   const frontTitleId = `${cardIdPrefix}-front-title`;
   const backTitleId = `${cardIdPrefix}-back-title`;
   const frontShadowId = `${cardIdPrefix}-front-shadow`;
@@ -309,7 +315,10 @@ export function PctProviderCardSvgPair({
               {line}
             </text>
           ))}
-          <text x="42" y="304" className="svg-card-small">Coordinates: {coordinatesLabel}</text>
+          <text x="42" y="304" className="svg-card-small">Map URL:</text>
+          <a href={mapsUrl} target="_blank" rel="noreferrer" aria-label={`Open ${provider.speciesCommon} in Google Maps`}>
+            <text x="112" y="304" className="svg-card-small svg-card-link">{mapsDisplayUrl}</text>
+          </a>
 
           <text x="470" y="140" className="svg-card-label-bold">Condition Focus</text>
           {conditionLines.map((line, index) => (
