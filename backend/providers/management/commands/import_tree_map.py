@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import sqlite3
 from pathlib import Path
 from typing import Any
@@ -8,17 +9,28 @@ from typing import Any
 from django.core.management.base import BaseCommand, CommandParser
 
 
+DEFAULT_SOURCE = Path("backend/data/trees_map_all_fields.json")
+FIELD_NAME_PATTERN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
+
+# Used for exports that do not declare metadata.text_fields.
 LEGACY_TEXT_FIELDS = {
     "species_common",
     "species_scientific",
     "medical_specialty",
+    "specialty_description",
     "provider_type",
+    "tree_experience_level",
     "popularity_badge",
     "searchable_conditions",
+    "storm_response_readiness",
     "care_philosophy",
+    "provider_bio",
+    "clinic_description",
     "patient_review_summary",
+    "care_audience",
     "primary_care_services",
     "signature_prescription",
+    "office_vibe",
     "waiting_room_feature",
     "leaf_paperwork_level",
     "branch_office_status",
@@ -27,6 +39,7 @@ LEGACY_TEXT_FIELDS = {
     "clinic_zipcode",
     "clinic_city",
     "clinic_neighborhood",
+    "clinic_state",
 }
 
 LEGACY_NUMERIC_TYPES = {
@@ -62,7 +75,13 @@ class Command(BaseCommand):
     help = "Build the compact SQLite provider index from a packed tree provider JSON export."
 
     def add_arguments(self, parser: CommandParser) -> None:
-        parser.add_argument("source", type=Path, help="Path to a packed tree provider JSON export")
+        parser.add_argument(
+            "source",
+            type=Path,
+            nargs="?",
+            default=DEFAULT_SOURCE,
+            help="Path to a packed tree provider JSON export",
+        )
         parser.add_argument(
             "--output",
             type=Path,
@@ -80,10 +99,7 @@ class Command(BaseCommand):
         rows: list[list[Any]] = payload["rows"]
         text_fields, numeric_fields, boolean_fields = self.field_groups(metadata, dicts)
 
-        supported_fields = text_fields | numeric_fields | boolean_fields
-        unsupported_fields = [field for field in fields if field not in supported_fields]
-        if unsupported_fields:
-            raise ValueError(f"Unsupported fields in source: {', '.join(unsupported_fields)}")
+        self.validate_source(metadata, fields, dicts, rows, text_fields, numeric_fields, boolean_fields)
 
         output.parent.mkdir(parents=True, exist_ok=True)
         if output.exists():
@@ -97,6 +113,7 @@ class Command(BaseCommand):
             self.insert_dictionaries(connection, dicts)
             self.insert_providers(connection, fields, rows, text_fields)
             self.insert_conditions(connection, fields, rows, dicts)
+            self.validate_database(connection, fields, rows, dicts, metadata)
             connection.executescript(
                 """
                 PRAGMA optimize;
@@ -109,6 +126,58 @@ class Command(BaseCommand):
 
         size_mb = output.stat().st_size / 1024 / 1024
         self.stdout.write(self.style.SUCCESS(f"Imported {len(rows):,} providers into {output} ({size_mb:.1f} MB)."))
+
+    @staticmethod
+    def validate_source(
+        metadata: dict[str, Any],
+        fields: list[str],
+        dicts: dict[str, list[str]],
+        rows: list[list[Any]],
+        text_fields: set[str],
+        numeric_fields: set[str],
+        boolean_fields: set[str],
+    ) -> None:
+        if not fields:
+            raise ValueError("Source metadata must include at least one field.")
+        if len(fields) != len(set(fields)):
+            raise ValueError("Source metadata includes duplicate field names.")
+        unsafe_fields = [field for field in fields if not FIELD_NAME_PATTERN.match(field)]
+        if unsafe_fields:
+            raise ValueError(f"Source metadata includes unsafe field names: {', '.join(unsafe_fields)}")
+
+        supported_fields = text_fields | numeric_fields | boolean_fields
+        unsupported_fields = [field for field in fields if field not in supported_fields]
+        if unsupported_fields:
+            raise ValueError(f"Unsupported fields in source: {', '.join(unsupported_fields)}")
+
+        for required_field in ["provider_id", "searchable_conditions"]:
+            if required_field not in fields:
+                raise ValueError(f"Source metadata must include {required_field}.")
+
+        expected_row_count = metadata.get("row_count")
+        if expected_row_count is not None and expected_row_count != len(rows):
+            raise ValueError(f"Source row_count is {expected_row_count:,}, but payload has {len(rows):,} rows.")
+
+        text_fields_without_dictionaries = sorted(field for field in text_fields if field not in dicts)
+        if text_fields_without_dictionaries:
+            raise ValueError(
+                "Text fields missing dictionary entries: " + ", ".join(text_fields_without_dictionaries)
+            )
+
+        field_indexes = {field: index for index, field in enumerate(fields)}
+        for row_index, row in enumerate(rows):
+            if len(row) != len(fields):
+                raise ValueError(
+                    f"Row {row_index} has {len(row)} values, but source metadata defines {len(fields)} fields."
+                )
+
+        for field in text_fields:
+            dictionary_values = dicts[field]
+            field_index = field_indexes[field]
+            for row_index, row in enumerate(rows):
+                value_id = row[field_index]
+                if not isinstance(value_id, int) or value_id < 0 or value_id >= len(dictionary_values):
+                    raise ValueError(f"Row {row_index} has an invalid dictionary id for {field}: {value_id!r}.")
 
     @staticmethod
     def field_groups(
@@ -132,7 +201,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def provider_column(field: str, text_fields: set[str]) -> str:
-        return f"{field}_id" if field in text_fields else field
+        return field
 
     @classmethod
     def create_schema(
@@ -259,3 +328,39 @@ class Command(BaseCommand):
             "INSERT INTO provider_conditions (provider_id, condition_key) VALUES (?, ?)",
             condition_rows,
         )
+
+    @staticmethod
+    def validate_database(
+        connection: sqlite3.Connection,
+        fields: list[str],
+        rows: list[list[Any]],
+        dicts: dict[str, list[str]],
+        metadata: dict[str, Any],
+    ) -> None:
+        provider_columns = [row[1] for row in connection.execute("PRAGMA table_info(providers)").fetchall()]
+        if provider_columns != fields:
+            raise ValueError("SQLite providers table does not preserve the source field list exactly.")
+
+        provider_count = connection.execute("SELECT COUNT(*) FROM providers").fetchone()[0]
+        if provider_count != len(rows):
+            raise ValueError(f"SQLite providers table has {provider_count:,} rows, expected {len(rows):,}.")
+
+        expected_row_count = metadata.get("row_count")
+        if expected_row_count is not None and provider_count != expected_row_count:
+            raise ValueError(
+                f"SQLite providers table has {provider_count:,} rows, source metadata expects {expected_row_count:,}."
+            )
+
+        dictionary_count = connection.execute("SELECT COUNT(*) FROM dictionary_entries").fetchone()[0]
+        expected_dictionary_count = sum(len(values) for values in dicts.values())
+        if dictionary_count != expected_dictionary_count:
+            raise ValueError(
+                "SQLite dictionary_entries table has "
+                f"{dictionary_count:,} rows, expected {expected_dictionary_count:,}."
+            )
+
+        metadata_fields = json.loads(
+            connection.execute("SELECT value FROM source_metadata WHERE key = 'fields'").fetchone()[0]
+        )
+        if metadata_fields != fields:
+            raise ValueError("SQLite source_metadata fields do not match the source field list.")

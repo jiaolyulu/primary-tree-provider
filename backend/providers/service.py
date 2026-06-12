@@ -64,17 +64,17 @@ def has_provider_field(field: str) -> bool:
     return field in columns or f"{field}_id" in columns
 
 
+def uses_dictionary_column(field: str, column: str) -> bool:
+    return column.endswith("_id") or field in dictionaries()
+
+
 def provider_value(row: sqlite3.Row, field: str) -> Any:
     column = storage_column(field)
-    if column.endswith("_id"):
-        return dictionaries()[field][row[column]]
+    if uses_dictionary_column(field, column):
+        values = dictionaries().get(field)
+        if values is not None and isinstance(row[column], int):
+            return values[row[column]]
     return row[column]
-
-
-def provider_value_or(row: sqlite3.Row, field: str, fallback: Any) -> Any:
-    if has_provider_field(field):
-        return provider_value(row, field)
-    return fallback
 
 
 def zipcode_label(value: Any) -> str:
@@ -126,16 +126,6 @@ def coordinate_distance_miles(origin: Coordinates, destination: Coordinates) -> 
     return earth_radius_miles * 2 * math.atan2(math.sqrt(haversine), math.sqrt(1 - haversine))
 
 
-def experience_level(years: int) -> str:
-    if years >= 32:
-        return "Ancient attending"
-    if years >= 20:
-        return "Seasoned canopy clinician"
-    if years >= 8:
-        return "Established neighborhood healer"
-    return "Newly rooted resident"
-
-
 def rows_for_coordinates(database: sqlite3.Connection, coordinates: Coordinates) -> list[sqlite3.Row]:
     latitude = coordinates["latitude"]
     longitude = coordinates["longitude"]
@@ -172,14 +162,14 @@ def rows_for_coordinates(database: sqlite3.Connection, coordinates: Coordinates)
 
 def rows_for_zip(database: sqlite3.Connection, zipcode: str) -> list[sqlite3.Row]:
     zip_column = storage_column("clinic_zipcode")
-    if zip_column.endswith("_id"):
+    if uses_dictionary_column("clinic_zipcode", zip_column):
         zip_id = dictionary_ids().get("clinic_zipcode", {}).get(zipcode)
         if zip_id is not None:
             rows = database.execute(
-                """
+                f"""
                 SELECT *
                 FROM providers
-                WHERE clinic_zipcode_id = ?
+                WHERE {zip_column} = ?
                 ORDER BY star_doctor DESC, care_rating DESC, care_accessibility_score DESC
                 LIMIT 700
                 """,
@@ -201,7 +191,7 @@ def rows_for_zip(database: sqlite3.Connection, zipcode: str) -> list[sqlite3.Row
             f"""
             SELECT *
             FROM providers
-            WHERE clinic_zipcode_id IN ({placeholders})
+            WHERE {zip_column} IN ({placeholders})
             ORDER BY star_doctor DESC, care_rating DESC, care_accessibility_score DESC
             LIMIT 900
             """,
@@ -273,34 +263,22 @@ def row_to_provider(row: sqlite3.Row) -> dict[str, Any]:
     searchable_conditions = split_list(decoded(row, "searchable_conditions"))
     primary_care_services = split_list(decoded(row, "primary_care_services"))
     years_of_practice = int(provider_value(row, "years_of_practice"))
-    years_at_current_spot = int(provider_value_or(row, "years_at_current_spot", max(1, round(years_of_practice * 0.62))))
+    years_at_current_spot = int(provider_value(row, "years_at_current_spot"))
     care_accessibility_score = int(provider_value(row, "care_accessibility_score"))
-    storm_response_readiness = provider_value_or(
-        row,
-        "storm_response_readiness",
-        "High" if care_accessibility_score >= 92 else "Medium" if care_accessibility_score >= 78 else "Standard",
-    )
+    storm_response_readiness = decoded(row, "storm_response_readiness")
     clinic_zipcode = zipcode_label(provider_value(row, "clinic_zipcode"))
-    clinic_latitude = (
-        provider_value(row, "clinic_latitude") if has_provider_field("clinic_latitude") else provider_value(row, "lat")
-    )
-    clinic_longitude = (
-        provider_value(row, "clinic_longitude") if has_provider_field("clinic_longitude") else provider_value(row, "lng")
-    )
+    clinic_latitude = provider_value(row, "clinic_latitude")
+    clinic_longitude = provider_value(row, "clinic_longitude")
 
     return {
         "providerId": row["provider_id"],
         "speciesCommon": species_common,
         "speciesScientific": species_scientific,
         "medicalSpecialty": medical_specialty,
-        "specialtyDescription": provider_value_or(
-            row,
-            "specialty_description",
-            f"{medical_specialty} is assigned from the {species_common} species profile in the mapped PCT provider dataset.",
-        ),
+        "specialtyDescription": decoded(row, "specialty_description"),
         "searchableConditions": searchable_conditions,
         "providerType": provider_type,
-        "treeExperienceLevel": provider_value_or(row, "tree_experience_level", experience_level(years_of_practice)),
+        "treeExperienceLevel": decoded(row, "tree_experience_level"),
         "yearsOfPractice": years_of_practice,
         "yearsAtCurrentSpot": years_at_current_spot,
         "careRating": provider_value(row, "care_rating"),
@@ -313,25 +291,13 @@ def row_to_provider(row: sqlite3.Row) -> dict[str, Any]:
         "careAccessibilityScore": care_accessibility_score,
         "shadeSideMannerScore": provider_value(row, "shade_side_manner_score"),
         "carePhilosophy": decoded(row, "care_philosophy"),
-        "providerBio": provider_value_or(
-            row,
-            "provider_bio",
-            f"At {clinic_address}, this {species_common} uses shade, street rhythm, and species memory to support {medical_specialty.lower()} concerns.",
-        ),
-        "clinicDescription": provider_value_or(
-            row,
-            "clinic_description",
-            f"Patients find this practice at a documented NYC street-tree location in {clinic_neighborhood}, where the waiting room is sidewalk, canopy, and weather.",
-        ),
+        "providerBio": decoded(row, "provider_bio"),
+        "clinicDescription": decoded(row, "clinic_description"),
         "patientReviewSummary": decoded(row, "patient_review_summary"),
-        "careAudience": provider_value_or(
-            row,
-            "care_audience",
-            f"People seeking {medical_specialty.lower()} support near {clinic_neighborhood}",
-        ),
+        "careAudience": decoded(row, "care_audience"),
         "primaryCareServices": primary_care_services,
         "signaturePrescription": decoded(row, "signature_prescription"),
-        "officeVibe": provider_value_or(row, "office_vibe", provider_type),
+        "officeVibe": decoded(row, "office_vibe"),
         "waitingRoomFeature": decoded(row, "waiting_room_feature"),
         "leafPaperworkLevel": decoded(row, "leaf_paperwork_level"),
         "branchOfficeStatus": decoded(row, "branch_office_status"),
@@ -340,7 +306,7 @@ def row_to_provider(row: sqlite3.Row) -> dict[str, Any]:
         "clinicZipcode": clinic_zipcode,
         "clinicCity": decoded(row, "clinic_city"),
         "clinicNeighborhood": clinic_neighborhood,
-        "clinicState": provider_value_or(row, "clinic_state", "NY"),
+        "clinicState": decoded(row, "clinic_state"),
         "clinicLatitude": clinic_latitude,
         "clinicLongitude": clinic_longitude,
     }
