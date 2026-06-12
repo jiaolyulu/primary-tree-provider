@@ -7,6 +7,14 @@ import { LeafCanvas } from "@/components/LeafCanvas";
 import { RainCanvas } from "@/components/RainCanvas";
 import { RootsCanvas } from "@/components/RootsCanvas";
 
+const team = [
+  { name: "Lu Lyu", href: "https://www.lulyu.me/" },
+  { name: "Yan Chen", href: "https://insacy98.github.io/" },
+  { name: "shuang cai", href: "https://shuangcai.cargo.site/" },
+  { name: "Fanyi Pan", href: "https://fanyipan.com/" },
+  { name: "Ruichao Jiang", href: "https://www.ruichao-jiang.com/" },
+];
+
 const steps = [
   {
     number: "01",
@@ -329,6 +337,7 @@ const careTaxonomy = [
 ];
 
 export default function Home() {
+  const shuffledTeam = [...team].sort(() => Math.random() - 0.5);
   return (
     <main>
       <section className="hero-section">
@@ -439,7 +448,15 @@ export default function Home() {
                 <strong>Arbocurists (n.)</strong>
                 <em className="poster-phonetic">/ˈar.boʊkjʊr.ɪst/</em>
                 <p>A team of care specialists facilitating relationships between people and tree providers.</p>
-                <p className="poster-see-also">See also: <a href="https://www.lulyu.me/" target="_blank" rel="noopener noreferrer">Lu Lyu</a>, <a href="https://insacy98.github.io/" target="_blank" rel="noopener noreferrer">Yan Chen</a>, <a href="https://shuangcai.cargo.site/" target="_blank" rel="noopener noreferrer">shuang cai</a>, <a href="https://fanyipan.com/" target="_blank" rel="noopener noreferrer">Fanyi Pan</a>, <a href="https://www.ruichao-jiang.com/" target="_blank" rel="noopener noreferrer">Ruichao Jiang</a></p>
+                <p className="poster-see-also">
+                  See also:{" "}
+                  {shuffledTeam.map((member, i) => (
+                    <span key={member.name}>
+                      <a href={member.href} target="_blank" rel="noopener noreferrer">{member.name}</a>
+                      {i < shuffledTeam.length - 1 ? ", " : ""}
+                    </span>
+                  ))}
+                </p>
               </div>
             </div>
           </div>
@@ -637,11 +654,11 @@ export default function Home() {
           </div>
           <div className="footer-nav">
             <span>Team</span>
-            <a href="https://www.lulyu.me/" target="_blank" rel="noopener noreferrer">Lu Lyu</a>
-            <a href="https://insacy98.github.io/" target="_blank" rel="noopener noreferrer">Yan Chen</a>
-            <a href="https://shuangcai.cargo.site/" target="_blank" rel="noopener noreferrer">shuang cai</a>
-            <a href="https://fanyipan.com/" target="_blank" rel="noopener noreferrer">Fanyi Pan</a>
-            <a href="https://www.ruichao-jiang.com/" target="_blank" rel="noopener noreferrer">Ruichao Jiang</a>
+            {shuffledTeam.map((member) => (
+              <a key={member.name} href={member.href} target="_blank" rel="noopener noreferrer">
+                {member.name}
+              </a>
+            ))}
           </div>
         </div>
         <div className="footer-disclaimer">
