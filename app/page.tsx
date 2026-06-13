@@ -186,15 +186,6 @@ export default function Home() {
         </div>
 
         <div className="hero-foot">
-          <div className="hero-demo" aria-label="Find a Primary Care Tree">
-            <div className="demo-header">
-              <h2>Care intake</h2>
-            </div>
-            <div className="demo-body">
-              <IntakeForm />
-            </div>
-          </div>
-
           <div className="hero-copy">
             <p className="hero-index">2026 / New York City Care Network based on Urban Forestry</p>
             <h1>
@@ -208,6 +199,15 @@ export default function Home() {
               <span>30 specialties</span>
               <span>183 ZIP codes</span>
               <span>source-authored profiles</span>
+            </div>
+          </div>
+
+          <div className="hero-demo" aria-label="Find a Primary Care Tree">
+            <div className="demo-header">
+              <h2>Care intake</h2>
+            </div>
+            <div className="demo-body">
+              <IntakeForm />
             </div>
           </div>
         </div>
