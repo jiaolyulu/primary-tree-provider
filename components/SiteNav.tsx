@@ -1,0 +1,57 @@
+"use client";
+
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Menu, X } from "lucide-react";
+
+const navLinks = [
+  { href: "/#about", label: "About" },
+  { href: "/#faq", label: "Q&A" },
+  { href: "/#pricing", label: "Pricing" },
+  { href: "/#testimonials", label: "Testimonials" },
+  { href: "/#featured-doctors", label: "Tree Map" },
+];
+
+export function SiteNav() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [open]);
+
+  return (
+    <nav className="nav">
+      <Link href="/" className="nav-logo" aria-label="Primary Care Tree — home">
+        <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
+      </Link>
+
+      <button
+        type="button"
+        className="nav-toggle"
+        aria-label={open ? "Close menu" : "Open menu"}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+      >
+        {open ? <X aria-hidden="true" size={22} /> : <Menu aria-hidden="true" size={22} />}
+      </button>
+
+      <div className={open ? "nav-right is-open" : "nav-right"}>
+        <div className="nav-links">
+          {navLinks.map((link) => (
+            <a key={link.href} href={link.href} onClick={() => setOpen(false)}>
+              {link.label}
+            </a>
+          ))}
+        </div>
+        <Link href="/pcts" className="nav-cta" onClick={() => setOpen(false)}>
+          Browse all PCTs
+        </Link>
+      </div>
+    </nav>
+  );
+}
