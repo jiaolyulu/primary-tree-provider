@@ -185,28 +185,30 @@ export default function Home() {
           <strong>Primary Care Tree</strong>
         </div>
 
-        <div className="hero-copy">
-          <p className="hero-index">2026 / New York City Care Network based on Urban Forestry</p>
-          <h1>
-            Primary Care <em>Tree</em>
-          </h1>
-          <p className="hero-subtitle">
-            We help you find the primary care tree that is right for you.
-          </p>
-          <div className="hero-proof-line" aria-label="Provider network details">
-            <span>96,950 providers</span>
-            <span>30 specialties</span>
-            <span>183 ZIP codes</span>
-            <span>source-authored profiles</span>
+        <div className="hero-foot">
+          <div className="hero-demo" aria-label="Find a Primary Care Tree">
+            <div className="demo-header">
+              <h2>Care intake</h2>
+            </div>
+            <div className="demo-body">
+              <IntakeForm />
+            </div>
           </div>
-        </div>
 
-        <div className="hero-demo" aria-label="Find a Primary Care Tree">
-          <div className="demo-header">
-            <h2>Care intake</h2>
-          </div>
-          <div className="demo-body">
-            <IntakeForm />
+          <div className="hero-copy">
+            <p className="hero-index">2026 / New York City Care Network based on Urban Forestry</p>
+            <h1>
+              Primary Care <em>Tree</em>
+            </h1>
+            <p className="hero-subtitle">
+              We help you find the primary care tree that is right for you.
+            </p>
+            <div className="hero-proof-line" aria-label="Provider network details">
+              <span>96,950 providers</span>
+              <span>30 specialties</span>
+              <span>183 ZIP codes</span>
+              <span>source-authored profiles</span>
+            </div>
           </div>
         </div>
       </section>

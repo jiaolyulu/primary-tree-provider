@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
+import { TreeThumb } from "@/components/TreeThumb";
 import { careTaxonomy } from "@/lib/careTaxonomy";
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default function BrowseAllPcts() {
             {group.specialties.flatMap((entry) =>
               entry.trees.map((tree) => (
                 <article key={`${entry.specialty}-${tree}`} className="pct-card">
+                  <TreeThumb name={tree} />
                   <span className="pct-card-specialty">{entry.specialty}</span>
                   <h3>{tree}</h3>
                   <div className="condition-chips pct-card-conditions">

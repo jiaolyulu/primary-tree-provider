@@ -379,13 +379,48 @@ input {
   z-index: 3;
 }
 
-/* On wide screens, drop the hero copy onto the same band as the intake form */
+/* Wrapper is transparent by default so the form + copy keep their own positioning */
+.hero-foot {
+  display: contents;
+}
+
+/* On wide screens, lay the form + copy as equal-height columns on the same band */
 @media (min-width: 1280px) {
-  .hero-copy {
+  .hero-foot {
+    align-items: stretch;
     bottom: clamp(26px, 5vh, 60px);
+    display: flex;
+    gap: clamp(28px, 4vw, 80px);
+    justify-content: space-between;
+    left: clamp(24px, 5vw, 86px);
+    position: absolute;
+    right: clamp(32px, 7vw, 112px);
+    z-index: 5;
+  }
+
+  .hero-foot .hero-demo,
+  .hero-foot .hero-copy {
+    bottom: auto;
+    left: auto;
+    max-width: none;
+    position: static;
+    right: auto;
     top: auto;
     transform: none;
-    width: min(42vw, 720px);
+    width: auto;
+  }
+
+  .hero-foot .hero-demo {
+    display: flex;
+    flex: 0 0 min(43vw, 520px);
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .hero-foot .hero-copy {
+    display: flex;
+    flex: 0 1 min(46vw, 720px);
+    flex-direction: column;
   }
 }
 
@@ -4588,6 +4623,7 @@ details p {
   flex-direction: column;
   gap: 10px;
   min-height: 200px;
+  overflow: hidden;
   padding: 18px;
   transition:
     background 160ms ease,
@@ -4597,6 +4633,15 @@ details p {
 .pct-card:hover {
   background: #fff;
   transform: translateY(-3px);
+}
+
+.pct-card-img {
+  aspect-ratio: 16 / 10;
+  border-bottom: 1px solid var(--line-dark);
+  display: block;
+  margin: -18px -18px 12px;
+  object-fit: cover;
+  width: calc(100% + 36px);
 }
 
 .pct-card-specialty {
