@@ -5,7 +5,7 @@ import { HeroVideo } from "@/components/HeroVideo";
 import { IntakeForm } from "@/components/IntakeForm";
 import { LeafCanvas } from "@/components/LeafCanvas";
 import { RainCanvas } from "@/components/RainCanvas";
-import { RootsCanvas } from "@/components/RootsCanvas";
+import { MoteCanvas } from "@/components/MoteCanvas";
 import { SiteNav } from "@/components/SiteNav";
 import { careTaxonomy } from "@/lib/careTaxonomy";
 
@@ -341,7 +341,7 @@ export default function Home() {
               ) : item.fx === "leaves" ? (
                 <LeafCanvas />
               ) : (
-                <RootsCanvas />
+                <MoteCanvas />
               )}
               <span>{item.name}</span>
               <strong>{item.price}</strong>

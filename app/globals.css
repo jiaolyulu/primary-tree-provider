@@ -169,6 +169,25 @@ body {
   overflow-x: hidden;
 }
 
+/* Subtle film grain over the whole page for tactile paper texture. */
+body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.13;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 180px 180px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body::after {
+    opacity: 0.06;
+  }
+}
+
 a {
   color: var(--green);
   text-decoration: underline;
@@ -251,10 +270,17 @@ input {
 
 .nav-logo {
   align-items: center;
-  background: rgba(247, 249, 243, 0.95);
   display: inline-flex;
   flex: 0 0 auto;
-  padding: 7px 9px;
+}
+
+/* Solid variant: a standalone green bar (e.g. the Browse-all-PCTs page) */
+.nav.nav-solid {
+  background: var(--ink);
+  left: auto;
+  position: sticky;
+  right: auto;
+  top: 0;
 }
 
 .nav-logo img {
@@ -3081,8 +3107,8 @@ details p {
   color: var(--green);
   cursor: pointer;
   display: grid;
-  gap: 0 16px;
-  grid-template-columns: 72px minmax(0, 1fr);
+  gap: 0 18px;
+  grid-template-columns: clamp(120px, 26%, 150px) minmax(0, 1fr);
   padding: 20px 20px 16px;
   position: relative;
   text-align: left;
@@ -3095,6 +3121,7 @@ details p {
 }
 
 .provider-card-media {
+  align-self: start;
   grid-column: 1;
   grid-row: 1;
   position: relative;
@@ -3104,9 +3131,9 @@ details p {
   aspect-ratio: 1;
   border: 1px solid rgba(0, 122, 52, 0.28);
   display: block;
-  height: 72px;
+  height: auto;
   object-fit: cover;
-  width: 72px;
+  width: 100%;
 }
 
 .provider-card-rank {
@@ -3197,7 +3224,7 @@ details p {
 }
 
 .provider-card-expanded {
-  padding: 0 20px 2px 108px;
+  padding: 0 20px 2px calc(20px + clamp(120px, 26%, 150px) + 18px);
 }
 
 .provider-card-expanded p {
@@ -3237,7 +3264,8 @@ details p {
 }
 
 .tree-learn-more:hover {
-  background: rgba(0, 122, 52, 0.08);
+  background: var(--green);
+  color: #fff;
 }
 
 .tree-map-link {
@@ -3283,7 +3311,8 @@ details p {
 }
 
 .provider-doctor-panel .provider-card.selected .tree-learn-more:hover {
-  background: rgba(255, 255, 255, 0.14);
+  background: #fff;
+  color: var(--green);
 }
 
 .provider-choose-btn {
@@ -4467,6 +4496,13 @@ details p {
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .provider-tree-avatar {
+    aspect-ratio: 16 / 10;
+    height: auto;
+    min-height: 0;
+    width: 100%;
   }
 
   .provider-card-body {

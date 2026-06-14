@@ -42,14 +42,20 @@ export function HeroVideo() {
     };
 
     video.addEventListener("canplay", onReady);
+    video.addEventListener("loadeddata", onReady);
     video.addEventListener("play", onPlay);
     video.addEventListener("ended", onEnded);
+
+    // If the video is cached it may already be playable before this effect runs,
+    // so `canplay` would never fire — reveal it immediately in that case.
+    if (video.readyState >= 2) setReady(true);
 
     const attempt = video.play();
     if (attempt && typeof attempt.catch === "function") attempt.catch(() => {});
 
     return () => {
       video.removeEventListener("canplay", onReady);
+      video.removeEventListener("loadeddata", onReady);
       video.removeEventListener("play", onPlay);
       video.removeEventListener("ended", onEnded);
       cancelAnimationFrame(raf);

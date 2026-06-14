@@ -64,10 +64,6 @@ function providerTreeImage(provider: ProviderMatch) {
   return "/images/pct-tree-hero.jpg";
 }
 
-function providerCardBio(provider: ProviderMatch) {
-  return provider.providerBio.replace(/^At [^,]+, /, "");
-}
-
 function titleCaseAddress(value: string) {
   return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
 }
@@ -534,7 +530,6 @@ export function ProviderDashboard() {
                         {titleCaseAddress(provider.clinicAddress)}, {provider.clinicCity}, {provider.clinicState}{" "}
                         {provider.clinicZipcode}
                       </address>
-                      <p className="provider-card-bio">{providerCardBio(provider)}</p>
                       <div className="condition-chips" aria-label={`${provider.speciesCommon} symptoms`}>
                         {conditionTags.map((condition) => {
                           const ConditionIcon = conditionIcon(condition);

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
+import { SiteNav } from "@/components/SiteNav";
 import { TreeThumb } from "@/components/TreeThumb";
 import { careTaxonomy } from "@/lib/careTaxonomy";
 
@@ -17,15 +18,7 @@ const totalSpecies = careTaxonomy.reduce(
 export default function BrowseAllPcts() {
   return (
     <main className="pct-directory-page">
-      <header className="pct-directory-topbar">
-        <Link href="/" className="provider-logo" aria-label="Primary Care Tree — home">
-          <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
-        </Link>
-        <Link href="/providers?zip=11215" className="pct-directory-find">
-          Find a PCT near you
-          <ArrowRight aria-hidden="true" size={15} />
-        </Link>
-      </header>
+      <SiteNav variant="solid" cta={{ href: "/providers?zip=11215", label: "Find a PCT" }} />
 
       <section className="pct-directory-intro">
         <span>The PCT network</span>

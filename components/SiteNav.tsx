@@ -12,7 +12,17 @@ const navLinks = [
   { href: "/#featured-doctors", label: "Tree Map" },
 ];
 
-export function SiteNav() {
+type SiteNavProps = {
+  // The right-hand call to action; defaults to the "Browse all PCTs" directory link.
+  cta?: { href: string; label: string };
+  // "overlay" sits transparently over the hero; "solid" is a standalone green bar.
+  variant?: "overlay" | "solid";
+};
+
+export function SiteNav({
+  cta = { href: "/pcts", label: "Browse all PCTs" },
+  variant = "overlay",
+}: SiteNavProps = {}) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -25,7 +35,7 @@ export function SiteNav() {
   }, [open]);
 
   return (
-    <nav className="nav">
+    <nav className={variant === "solid" ? "nav nav-solid" : "nav"}>
       <Link href="/" className="nav-logo" aria-label="Primary Care Tree — home">
         <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
       </Link>
@@ -48,8 +58,8 @@ export function SiteNav() {
             </a>
           ))}
         </div>
-        <Link href="/pcts" className="nav-cta" onClick={() => setOpen(false)}>
-          Browse all PCTs
+        <Link href={cta.href} className="nav-cta" onClick={() => setOpen(false)}>
+          {cta.label}
         </Link>
       </div>
     </nav>
