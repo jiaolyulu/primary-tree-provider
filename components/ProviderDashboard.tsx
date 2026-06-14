@@ -188,33 +188,44 @@ const reviewDates = [
 ];
 
 const reviewTemplates = [
-  "Came in for {condition}. The {species} didn't rush me — just offered shade and let the {hood} block slow down until I could think.",
-  "Five stars. Prescribed 'one slower block' and somehow that worked better than the last three apps on my phone.",
-  "I keep coming back. This {species} treats the sidewalk like a waiting room and it actually helps.",
-  "Skeptical at first, but the canopy runs on time. {hood} is lucky to have it.",
-  "Best {specialty} on the block. No paperwork, just shade, weather, and a little patience.",
-  "The {species} made my {condition} feel less like a mystery and more like something the street had been tracking all along.",
-  "Quiet, steady, a little drippy after rain. Would shelter under again.",
-  "Came for the shade, stayed for the perspective. Would reroute my commute past it.",
-  "Gave me a bench, a breeze, and zero judgment. The {hood} regulars know.",
-  "Not the flashiest tree, but it remembers the block better than I do.",
+  "Came in for {condition}. The {species} actually treated it — a {specialty} plan I could keep up with, and it eased within a couple weeks.",
+  "I'd bounced between clinics for {condition}. This {species} handled the {specialty} side patiently and it finally made sense.",
+  "Best {specialty} care on the block. They pinned down what was driving my {condition} and gave me one simple thing to do.",
+  "Skeptical a tree could help my {condition}, but the {specialty} treatment was the real deal — flare-ups way down.",
+  "Came for {condition}, left understanding it. The {species} explained the {specialty} part without rushing or scaring me.",
+  "My {condition} is finally manageable. Whatever this {species} does for {specialty}, it works.",
+  "Direct, specific {specialty}. Took my {condition} seriously, never alarmist, and the follow-up actually helped.",
+  "Referred here for {condition} and stayed. This {species} treats {specialty} like it matters.",
+  "Five stars for {specialty}. The {species} caught my {condition} early and the plan was easy to stick to.",
+  "Years of {condition} and no one connected the dots until this {species}. Genuinely good {specialty} care.",
+  "Gentle but thorough on my {condition} — the kind of {specialty} attention you don't get in a ten-minute visit.",
+  "Whole family sees this {species} now: my {condition} and my partner's {condition2} handled with the same calm {specialty} approach.",
+  "Came in stressed about {condition}. Left with a clear {specialty} plan and a lot less worry.",
+  "The only provider who made progress on my {condition}. Real {specialty}, no gimmicks — just steady {species} care.",
 ];
 
 function generateReviews(provider: ProviderMatch) {
   const seed = String(provider.providerId);
   const count = Math.max(0, Math.min(provider.reviewCount, 4));
-  const condition = provider.searchableConditions[0] ?? "general care";
-  // Rotate through each pool from a seeded start so names and templates stay
-  // distinct within a single tree's review list.
+  const conditions = provider.searchableConditions.length
+    ? provider.searchableConditions
+    : ["the symptom"];
+  const specialty = provider.medicalSpecialty.toLowerCase();
+  // Rotate through each pool from a seeded start so names, dates, templates,
+  // and the highlighted condition stay distinct within one tree's list.
   const nameStart = seededHash(`${seed}:name`) % reviewerNames.length;
   const dateStart = seededHash(`${seed}:date`) % reviewDates.length;
   const templateStart = seededHash(`${seed}:tpl`) % reviewTemplates.length;
+  const condStart = seededHash(`${seed}:cond`) % conditions.length;
   return Array.from({ length: count }, (_, index) => {
+    const condition = conditions[(condStart + index) % conditions.length];
+    const condition2 = conditions[(condStart + index + 1) % conditions.length];
     const text = reviewTemplates[(templateStart + index) % reviewTemplates.length]
       .split("{species}").join(provider.speciesCommon)
       .split("{hood}").join(provider.clinicNeighborhood)
+      .split("{condition2}").join(condition2)
       .split("{condition}").join(condition)
-      .split("{specialty}").join(provider.medicalSpecialty.toLowerCase());
+      .split("{specialty}").join(specialty);
     return {
       id: index,
       name: reviewerNames[(nameStart + index) % reviewerNames.length],

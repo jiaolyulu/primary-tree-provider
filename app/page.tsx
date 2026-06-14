@@ -207,7 +207,7 @@ export default function Home() {
               <h2>Care intake</h2>
             </div>
             <div className="demo-body">
-              <IntakeForm />
+              <IntakeForm initialZip="11215" />
             </div>
           </div>
         </div>

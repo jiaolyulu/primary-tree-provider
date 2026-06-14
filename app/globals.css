@@ -4746,3 +4746,60 @@ details p {
     white-space: nowrap;
   }
 }
+
+/* Tablet / narrow desktop: stack the hero copy + form as one left-aligned column */
+@media (min-width: 621px) and (max-width: 1279px) {
+  .hero-section {
+    align-items: flex-start;
+    display: flex;
+    flex-direction: column;
+    gap: clamp(24px, 4vh, 48px);
+    justify-content: flex-end;
+    min-height: 100svh;
+    padding: 120px clamp(24px, 5vw, 86px) clamp(40px, 6vh, 72px);
+  }
+
+  .hero-copy {
+    bottom: auto;
+    left: auto;
+    max-width: 720px;
+    position: relative;
+    right: auto;
+    top: auto;
+    transform: none;
+    width: 100%;
+  }
+
+  .hero-demo {
+    bottom: auto;
+    left: auto;
+    max-width: 520px;
+    position: relative;
+    right: auto;
+    width: 100%;
+  }
+
+  .hero-brand-stamp {
+    display: none;
+  }
+}
+
+/* Mobile: give the provider-card actions room (Map + Learn more on one row, Choose full-width) */
+@media (max-width: 620px) {
+  .provider-card-foot {
+    flex-wrap: wrap;
+  }
+
+  .tree-map-link {
+    flex: 1 1 auto;
+    justify-content: center;
+  }
+
+  .tree-learn-more {
+    flex: 1 1 auto;
+  }
+
+  .provider-card-foot .provider-choose-btn {
+    flex: 1 1 100%;
+  }
+}

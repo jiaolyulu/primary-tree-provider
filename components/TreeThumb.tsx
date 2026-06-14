@@ -5,6 +5,12 @@ import { useEffect, useState } from "react";
 const cache = new Map<string, string>();
 const FALLBACK = "/images/pct-tree-hero.jpg";
 
+// Species whose common name lands on a Wikipedia disambiguation page; pin a real article.
+const TITLE_OVERRIDES: Record<string, string> = {
+  "White Pine": "Eastern white pine",
+  Hawthorn: "Crataegus",
+};
+
 // Lazily resolves a real photo for a tree species (by common name) from Wikipedia,
 // caching per name and falling back to the house tree image.
 export function TreeThumb({ name }: { name: string }) {
@@ -21,7 +27,8 @@ export function TreeThumb({ name }: { name: string }) {
     const trimmed = name.trim();
     const sentenceCase = trimmed.charAt(0).toUpperCase() + trimmed.slice(1).toLowerCase();
     const deHyphen = sentenceCase.replace(/-/g, " ");
-    const variants = [...new Set([trimmed, sentenceCase, deHyphen, `${deHyphen} (tree)`])];
+    const override = TITLE_OVERRIDES[trimmed];
+    const variants = [...new Set([override, trimmed, sentenceCase, deHyphen, `${deHyphen} (tree)`].filter(Boolean) as string[])];
 
     const resolve = async () => {
       for (const variant of variants) {
