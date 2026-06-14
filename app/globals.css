@@ -2516,7 +2516,7 @@ details p {
   display: inline-flex;
   font-size: 13px;
   gap: 5px;
-  padding: 7px 9px;
+  padding: 2px 7px;
 }
 
 .condition-chips span svg {
@@ -4759,23 +4759,15 @@ details p {
     padding: 120px clamp(24px, 5vw, 86px) clamp(40px, 6vh, 72px);
   }
 
-  .hero-copy {
+  .hero-copy,
+  .hero-demo {
     bottom: auto;
     left: auto;
-    max-width: 720px;
+    max-width: min(620px, 100%);
     position: relative;
     right: auto;
     top: auto;
     transform: none;
-    width: 100%;
-  }
-
-  .hero-demo {
-    bottom: auto;
-    left: auto;
-    max-width: 520px;
-    position: relative;
-    right: auto;
     width: 100%;
   }
 
