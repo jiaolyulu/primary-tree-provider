@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { BubbleCanvas } from "@/components/BubbleCanvas";
+import { HashScroll } from "@/components/HashScroll";
 import { HeroVideo } from "@/components/HeroVideo";
 import { IntakeForm } from "@/components/IntakeForm";
 import { LeafCanvas } from "@/components/LeafCanvas";
@@ -167,6 +168,7 @@ export default function Home() {
   const shuffledTeam = [...team].sort(() => Math.random() - 0.5);
   return (
     <main>
+      <HashScroll />
       <section className="hero-section">
         <SiteNav />
 
@@ -198,8 +200,8 @@ export default function Home() {
               <span>96,950 providers</span>
               <span>30 specialties</span>
               <span>183 ZIP codes</span>
-              <span>source-authored profiles</span>
             </div>
+            <p className="hero-proof-note">Source-authored profiles</p>
           </div>
 
           <div className="hero-demo" aria-label="Find a Primary Care Tree">

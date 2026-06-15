@@ -34,6 +34,24 @@ export function SiteNav({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [open]);
 
+  // For in-page anchors, scroll the element directly instead of relying on the
+  // native hash jump, which mis-targets with smooth scrolling + lazy-loaded
+  // images. Cross-page links fall through to normal navigation (HashScroll on
+  // the landing page handles the scroll once it loads).
+  const handleNavClick = (event: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    setOpen(false);
+    const hashIndex = href.indexOf("#");
+    if (hashIndex === -1) return;
+    const id = href.slice(hashIndex + 1);
+    const path = href.slice(0, hashIndex) || "/";
+    if (window.location.pathname !== path) return;
+    const target = document.getElementById(id);
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: "smooth" });
+    window.history.replaceState(null, "", `#${id}`);
+  };
+
   return (
     <nav className={variant === "solid" ? "nav nav-solid" : "nav"}>
       <Link href="/" className="nav-logo" aria-label="Primary Care Tree — home">
@@ -53,7 +71,7 @@ export function SiteNav({
       <div className={open ? "nav-right is-open" : "nav-right"}>
         <div className="nav-links">
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} onClick={() => setOpen(false)}>
+            <a key={link.href} href={link.href} onClick={(event) => handleNavClick(event, link.href)}>
               {link.label}
             </a>
           ))}

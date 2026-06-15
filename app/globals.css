@@ -515,6 +515,15 @@ input {
   border-right: 0;
 }
 
+.hero-proof-note {
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  margin: 10px 0 0;
+  text-transform: uppercase;
+}
+
 .hero-brand-stamp {
   align-items: center;
   background: rgba(244, 246, 239, 0.94);
