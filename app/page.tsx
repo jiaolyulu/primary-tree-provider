@@ -359,10 +359,6 @@ export default function Home() {
           <h2>
             Reported relief, by provider <em>tree</em>.
           </h2>
-          <p>
-            Notes draw from the new provider profile language: symptom pools, species specialties, patient review
-            summaries, and environmental prescriptions that make care feel local enough to stand under.
-          </p>
         </div>
         <div className="testimonial-grid">
           {testimonials.map((testimonial) => (
