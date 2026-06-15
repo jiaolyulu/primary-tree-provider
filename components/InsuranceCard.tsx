@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Download, ShieldCheck } from "lucide-react";
-import { downloadProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
+import { ArrowLeft, Download, Printer, ShieldCheck } from "lucide-react";
+import { downloadProviderCardPdf, printProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderMatch, rankProviders } from "@/lib/providers";
 
 export function InsuranceCard() {
@@ -20,6 +20,7 @@ export function InsuranceCard() {
   const [provider, setProvider] = useState<ProviderMatch | null>(null);
   const [loadError, setLoadError] = useState("");
   const [isDownloadingCard, setIsDownloadingCard] = useState(false);
+  const [isPrintingCard, setIsPrintingCard] = useState(false);
   const [cardDownloadError, setCardDownloadError] = useState("");
 
   useEffect(() => {
@@ -105,6 +106,19 @@ export function InsuranceCard() {
     }
   };
 
+  const printCardPdf = async () => {
+    if (!provider) return;
+    setIsPrintingCard(true);
+    setCardDownloadError("");
+    try {
+      await printProviderCardPdf("pct-provider-card-page");
+    } catch {
+      setCardDownloadError("We could not prepare the card for printing. Please try again.");
+    } finally {
+      setIsPrintingCard(false);
+    }
+  };
+
   return (
     <main className="card-page">
       <Link href={`/providers?${dashboardParams.toString()}`} className="back-link">
@@ -129,6 +143,15 @@ export function InsuranceCard() {
           >
             <Download aria-hidden="true" size={16} />
             {isDownloadingCard ? "Preparing PDF..." : "Download"}
+          </button>
+          <button
+            type="button"
+            className="provider-choose-btn"
+            onClick={printCardPdf}
+            disabled={isPrintingCard}
+          >
+            <Printer aria-hidden="true" size={16} />
+            {isPrintingCard ? "Preparing print..." : "Print"}
           </button>
         </div>
       </section>

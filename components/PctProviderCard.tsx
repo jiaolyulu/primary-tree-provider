@@ -234,12 +234,16 @@ function createCardPdf(images: Array<{ bytes: Uint8Array; height: number; width:
   return new Blob([concatBytes(chunks)], { type: "application/pdf" });
 }
 
-export async function downloadProviderCardPdf(cardIdPrefix: string, provider: ProviderMatch) {
+async function providerCardPdf(cardIdPrefix: string) {
   const front = document.getElementById(`${cardIdPrefix}-front`) as SVGSVGElement | null;
   const back = document.getElementById(`${cardIdPrefix}-back`) as SVGSVGElement | null;
   if (!front || !back) throw new Error("Card is not ready yet.");
 
-  const pdf = createCardPdf([await svgToJpegBytes(front), await svgToJpegBytes(back)]);
+  return createCardPdf([await svgToJpegBytes(front), await svgToJpegBytes(back)]);
+}
+
+export async function downloadProviderCardPdf(cardIdPrefix: string, provider: ProviderMatch) {
+  const pdf = await providerCardPdf(cardIdPrefix);
   const url = URL.createObjectURL(pdf);
   const link = document.createElement("a");
   link.href = url;
@@ -248,6 +252,28 @@ export async function downloadProviderCardPdf(cardIdPrefix: string, provider: Pr
   link.click();
   link.remove();
   URL.revokeObjectURL(url);
+}
+
+export async function printProviderCardPdf(cardIdPrefix: string) {
+  const pdf = await providerCardPdf(cardIdPrefix);
+  const url = URL.createObjectURL(pdf);
+  const frame = document.createElement("iframe");
+  frame.style.height = "0";
+  frame.style.position = "fixed";
+  frame.style.right = "0";
+  frame.style.top = "0";
+  frame.style.width = "0";
+  frame.src = url;
+  document.body.append(frame);
+
+  frame.onload = () => {
+    frame.contentWindow?.focus();
+    frame.contentWindow?.print();
+    setTimeout(() => {
+      frame.remove();
+      URL.revokeObjectURL(url);
+    }, 1000);
+  };
 }
 
 export function PctProviderCardSvgPair({

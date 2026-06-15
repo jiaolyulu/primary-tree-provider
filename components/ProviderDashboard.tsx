@@ -21,6 +21,7 @@ import {
   MapPin,
   Microscope,
   Moon,
+  Printer,
   Search,
   ShieldCheck,
   Smile,
@@ -34,7 +35,7 @@ import {
   Zap,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
-import { downloadProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
+import { downloadProviderCardPdf, printProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
 import { fetchProviderById, ProviderMatch, rankProviders } from "@/lib/providers";
 import { getTreeImageForProvider } from "@/lib/treeImageSources";
@@ -250,6 +251,7 @@ export function ProviderDashboard() {
   const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
   const [cardProvider, setCardProvider] = useState<ProviderMatch | null>(null);
   const [isDownloadingCard, setIsDownloadingCard] = useState(false);
+  const [isPrintingCard, setIsPrintingCard] = useState(false);
   const [cardDownloadError, setCardDownloadError] = useState("");
   const [sortBy, setSortBy] = useState("match");
   const [displayLimit, setDisplayLimit] = useState(8);
@@ -323,6 +325,7 @@ export function ProviderDashboard() {
     setDetailProvider(null);
     setCardProvider(provider);
     setIsDownloadingCard(false);
+    setIsPrintingCard(false);
     setCardDownloadError("");
   };
 
@@ -336,6 +339,19 @@ export function ProviderDashboard() {
       setCardDownloadError("We could not prepare the PDF. Please try again.");
     } finally {
       setIsDownloadingCard(false);
+    }
+  };
+
+  const printCardPdf = async () => {
+    if (!cardProvider) return;
+    setIsPrintingCard(true);
+    setCardDownloadError("");
+    try {
+      await printProviderCardPdf(`pct-provider-card-dialog-${cardProvider.providerId}`);
+    } catch {
+      setCardDownloadError("We could not prepare the card for printing. Please try again.");
+    } finally {
+      setIsPrintingCard(false);
     }
   };
 
@@ -765,6 +781,15 @@ export function ProviderDashboard() {
               >
                 <Download aria-hidden="true" size={16} />
                 {isDownloadingCard ? "Preparing PDF..." : "Download"}
+              </button>
+              <button
+                type="button"
+                className="provider-choose-btn"
+                onClick={printCardPdf}
+                disabled={isPrintingCard}
+              >
+                <Printer aria-hidden="true" size={16} />
+                {isPrintingCard ? "Preparing print..." : "Print"}
               </button>
             </div>
           </div>
