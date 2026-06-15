@@ -1282,8 +1282,13 @@ input {
   line-height: 1;
 }
 
-.testimonial-card-front p {
+.testimonial-quote {
   align-self: end;
+  display: grid;
+  gap: 7px;
+}
+
+.testimonial-quote p {
   color: var(--green);
   font-family: var(--font-body);
   font-size: 14px;
@@ -1291,6 +1296,16 @@ input {
   font-weight: 400;
   line-height: 1.45;
   margin: 0;
+}
+
+.testimonial-quote cite {
+  color: var(--muted);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-style: normal;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .testimonial-card-back {
@@ -1347,7 +1362,7 @@ input {
   line-height: 1;
 }
 
-.testimonial-image-label p {
+.testimonial-image-label .testimonial-quote p {
   color: rgba(244, 246, 239, 0.9);
   font-family: var(--font-body);
   font-size: 13px;
@@ -1355,6 +1370,10 @@ input {
   font-weight: 400;
   line-height: 1.35;
   margin: 4px 0 0;
+}
+
+.testimonial-image-label .testimonial-quote cite {
+  color: rgba(244, 246, 239, 0.78);
 }
 
 .doctor-section {
@@ -4332,8 +4351,7 @@ details p {
     font-size: clamp(24px, 9vw, 34px);
   }
 
-  .testimonial-card-front p,
-  .testimonial-image-label p {
+  .testimonial-quote p {
     display: -webkit-box;
     font-size: 13px;
     line-height: 1.34;

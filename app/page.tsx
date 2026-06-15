@@ -379,17 +379,23 @@ export default function Home() {
                     <strong>{testimonial.tree}</strong>
                     <small>
                       <MapPin aria-hidden="true" size={12} />
-                      {testimonial.patient ? `${testimonial.patient} · ${testimonial.neighborhood}` : testimonial.neighborhood}
+                      {testimonial.neighborhood}
                     </small>
                   </div>
-                  <p>&ldquo;{testimonial.quote}&rdquo;</p>
+                  <div className="testimonial-quote">
+                    <p>&ldquo;{testimonial.quote}&rdquo;</p>
+                    {testimonial.patient ? <cite>{testimonial.patient}</cite> : null}
+                  </div>
                 </div>
                 <div className="testimonial-card-face testimonial-card-back">
                   <img src={testimonial.image} alt={testimonial.imageAlt} loading="lazy" />
                   <div className="testimonial-image-label">
                     <span>Provider tree</span>
                     <strong>{testimonial.tree}</strong>
-                    <p>&ldquo;{testimonial.quote}&rdquo;</p>
+                    <div className="testimonial-quote">
+                      <p>&ldquo;{testimonial.quote}&rdquo;</p>
+                      {testimonial.patient ? <cite>{testimonial.patient}</cite> : null}
+                    </div>
                   </div>
                 </div>
               </div>
