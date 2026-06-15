@@ -1,7 +1,9 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import type { CSSProperties } from "react";
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { ArrowRight, ChevronDown, LoaderCircle, MapPin, Stethoscope } from "lucide-react";
 import { LeafletPinMap } from "@/components/LeafletPinMap";
 
@@ -69,11 +71,15 @@ export function IntakeForm({
   const router = useRouter();
   const messageId = useId();
   const pickerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const hasInitialPin = Number.isFinite(initialLat) && Number.isFinite(initialLng);
   const [zipcode, setZipcode] = useState(initialZip);
   const [symptom, setSymptom] = useState(initialSymptom);
   const [formMessage, setFormMessage] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+  const [isClient, setIsClient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationMode, setLocationMode] = useState<"zip" | "pin">(
     initialLocationMode || (hasInitialPin ? "pin" : "zip"),
@@ -85,8 +91,13 @@ export function IntakeForm({
   const hasLocation = locationMode === "pin" ? hasChosenPin : zipcode.trim().length === 5;
 
   useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
-      if (!pickerRef.current?.contains(event.target as Node)) {
+      const target = event.target as Node;
+      if (!pickerRef.current?.contains(target) && !menuRef.current?.contains(target)) {
         setIsPickerOpen(false);
       }
     }
@@ -94,6 +105,28 @@ export function IntakeForm({
     document.addEventListener("pointerdown", handlePointerDown);
     return () => document.removeEventListener("pointerdown", handlePointerDown);
   }, []);
+
+  useEffect(() => {
+    if (!isPickerOpen) return;
+
+    const updateMenuPosition = () => {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      setMenuStyle({
+        left: rect.left,
+        top: rect.bottom + 8,
+        width: rect.width,
+      });
+    };
+
+    updateMenuPosition();
+    window.addEventListener("resize", updateMenuPosition);
+    window.addEventListener("scroll", updateMenuPosition, true);
+    return () => {
+      window.removeEventListener("resize", updateMenuPosition);
+      window.removeEventListener("scroll", updateMenuPosition, true);
+    };
+  }, [isPickerOpen]);
 
   useEffect(() => {
     setZipcode(initialZip);
@@ -152,6 +185,52 @@ export function IntakeForm({
       document.activeElement.blur();
     }
   }
+
+  const symptomMenu =
+    isPickerOpen && isClient
+      ? createPortal(
+          <div ref={menuRef} className="symptom-menu" role="listbox" aria-label="Symptom" style={menuStyle}>
+            <button
+              type="button"
+              className="symptom-any-button"
+              role="option"
+              aria-selected={!symptom}
+              onPointerDown={(event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                selectSymptom("");
+              }}
+              onClick={() => selectSymptom("")}
+            >
+              Any symptom / closest tree
+            </button>
+            {symptomGroups.map((group) => (
+              <div className="symptom-group" key={group.label}>
+                <span>{group.label}</span>
+                <div>
+                  {group.options.map((option) => (
+                    <button
+                      key={option}
+                      type="button"
+                      role="option"
+                      aria-selected={symptom === option}
+                      onPointerDown={(event) => {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        selectSymptom(option);
+                      }}
+                      onClick={() => selectSymptom(option)}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>,
+          document.body,
+        )
+      : null;
 
   return (
     <form
@@ -226,6 +305,7 @@ export function IntakeForm({
         <span>Symptom</span>
         <div className="symptom-picker" ref={pickerRef}>
           <button
+            ref={triggerRef}
             type="button"
             className="field-wrap symptom-trigger"
             aria-expanded={isPickerOpen}
@@ -236,47 +316,7 @@ export function IntakeForm({
             <span className={symptom ? "" : "placeholder"}>{symptom || "Any symptom"}</span>
             <ChevronDown aria-hidden="true" size={17} />
           </button>
-          {isPickerOpen ? (
-            <div className="symptom-menu" role="listbox" aria-label="Symptom">
-              <button
-                type="button"
-                className="symptom-any-button"
-                role="option"
-                aria-selected={!symptom}
-                onPointerDown={(event) => {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  selectSymptom("");
-                }}
-                onClick={() => selectSymptom("")}
-              >
-                Any symptom / closest tree
-              </button>
-              {symptomGroups.map((group) => (
-                <div className="symptom-group" key={group.label}>
-                  <span>{group.label}</span>
-                  <div>
-                    {group.options.map((option) => (
-                      <button
-                        key={option}
-                        type="button"
-                        role="option"
-                        aria-selected={symptom === option}
-                        onPointerDown={(event) => {
-                          event.preventDefault();
-                          event.stopPropagation();
-                          selectSymptom(option);
-                        }}
-                        onClick={() => selectSymptom(option)}
-                      >
-                        {option}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : null}
+          {symptomMenu}
         </div>
       </div>
       <button type="submit" className="primary-button" disabled={isSubmitting}>
