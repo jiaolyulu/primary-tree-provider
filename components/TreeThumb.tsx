@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { FALLBACK_TREE_IMAGE, getTreeImageForSpecies } from "@/lib/treeImageSources";
 
 const cache = new Map<string, string>();
-const FALLBACK = "/images/pct-tree-hero.jpg";
 
 // Species whose common name lands on a Wikipedia disambiguation page; pin a real article.
 const TITLE_OVERRIDES: Record<string, string> = {
@@ -14,14 +14,23 @@ const TITLE_OVERRIDES: Record<string, string> = {
 // Lazily resolves a real photo for a tree species (by common name) from Wikipedia,
 // caching per name and falling back to the house tree image.
 export function TreeThumb({ name }: { name: string }) {
-  const [src, setSrc] = useState(() => cache.get(name) ?? FALLBACK);
+  const fallback = getTreeImageForSpecies(name);
+  const [src, setSrc] = useState(() => cache.get(name) ?? fallback);
 
   useEffect(() => {
+    const curated = getTreeImageForSpecies(name);
+    if (curated !== FALLBACK_TREE_IMAGE) {
+      cache.set(name, curated);
+      setSrc(curated);
+      return;
+    }
+
     const cached = cache.get(name);
     if (cached) {
       setSrc(cached);
       return;
     }
+    setSrc(fallback);
     let active = true;
 
     const trimmed = name.trim();
@@ -54,7 +63,7 @@ export function TreeThumb({ name }: { name: string }) {
     return () => {
       active = false;
     };
-  }, [name]);
+  }, [fallback, name]);
 
   return <img className="pct-card-img" src={src} alt={`${name} tree`} loading="lazy" />;
 }

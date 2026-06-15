@@ -37,32 +37,7 @@ import { IntakeForm } from "@/components/IntakeForm";
 import { downloadProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
 import { fetchProviderById, ProviderMatch, rankProviders } from "@/lib/providers";
-
-function providerTreeImage(provider: ProviderMatch) {
-  const species = provider.speciesCommon.toLowerCase();
-  if (species.includes("linden")) {
-    return "https://commons.wikimedia.org/wiki/Special:FilePath/Tilia%20cordata%20-%20%27Greenspire%27%20littleleaf%20linden.jpg?width=500";
-  }
-  if (species.includes("ginkgo")) {
-    return "https://commons.wikimedia.org/wiki/Special:FilePath/Ginkgo-biloba-tree-in-fall.jpg?width=500";
-  }
-  if (species.includes("sophora") || species.includes("pagoda")) {
-    return "https://commons.wikimedia.org/wiki/Special:FilePath/20120905Styphnolobium%20japonicum.jpg?width=500";
-  }
-  if (species.includes("oak")) {
-    return "https://commons.wikimedia.org/wiki/Special:FilePath/Pin%20oak%20quercus%20palustris.jpg?width=500";
-  }
-  if (species.includes("zelkova")) {
-    return "https://commons.wikimedia.org/wiki/Special:FilePath/Zelkova%20serrata%20entire.jpg?width=500";
-  }
-  if (species.includes("sweetgum")) {
-    return "https://commons.wikimedia.org/wiki/Special:FilePath/E20151113-0001%E2%80%94Liquidambar%20styraciflua%E2%80%94Berkelely%20%2822378349813%29.jpg?width=500";
-  }
-  if (species.includes("lilac")) {
-    return "https://commons.wikimedia.org/wiki/Special:FilePath/Syringa%20reticulata%20tree.jpg?width=500";
-  }
-  return "/images/pct-tree-hero.jpg";
-}
+import { getTreeImageForProvider } from "@/lib/treeImageSources";
 
 function titleCaseAddress(value: string) {
   return value.toLowerCase().replace(/\b\w/g, (char) => char.toUpperCase());
@@ -76,7 +51,7 @@ function googleMapsCoordinateUrl(provider: ProviderMatch) {
 const speciesImageCache = new Map<string, string>();
 
 function TreeImage({ provider, className }: { provider: ProviderMatch; className: string }) {
-  const fallback = providerTreeImage(provider);
+  const fallback = getTreeImageForProvider(provider);
   const scientific = provider.speciesScientific?.trim() ?? "";
   const [src, setSrc] = useState(() => speciesImageCache.get(scientific) ?? fallback);
 

@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "audit:tree-images": "python scripts/audit_tree_images.py --check-commons --scientific-only --limit 5 --wait 1.5",
     "start": "next start",
     "lint": "next lint"
   },
