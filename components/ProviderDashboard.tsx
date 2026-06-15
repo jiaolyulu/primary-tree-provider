@@ -652,10 +652,6 @@ export function ProviderDashboard() {
                       </div>
                     ))}
                   </div>
-                  <p className="tree-detail-tiles-note">
-                    Provider vitals come from the SQLite-backed PCT provider index, with visit language translated into
-                    the speculative care frame.
-                  </p>
 
                   <blockquote className="tree-detail-prescription">
                     {detailProvider.signaturePrescription}
