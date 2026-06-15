@@ -105,6 +105,7 @@ const testimonials = [
   {
     symptom: "Burnout + insomnia",
     tree: "Littleleaf Linden",
+    patient: "Jon",
     neighborhood: "Midwood",
     image: "/images/littleleaf-linden-testimonial.jpg",
     imageAlt: "Person resting under a Littleleaf Linden street tree",
@@ -378,7 +379,7 @@ export default function Home() {
                     <strong>{testimonial.tree}</strong>
                     <small>
                       <MapPin aria-hidden="true" size={12} />
-                      {testimonial.neighborhood}
+                      {testimonial.patient ? `${testimonial.patient} · ${testimonial.neighborhood}` : testimonial.neighborhood}
                     </small>
                   </div>
                   <p>&ldquo;{testimonial.quote}&rdquo;</p>
