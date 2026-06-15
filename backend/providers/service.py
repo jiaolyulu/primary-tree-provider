@@ -311,6 +311,51 @@ def row_to_provider(row: sqlite3.Row) -> dict[str, Any]:
         "clinicLongitude": clinic_longitude,
     }
 
+def all_provider_coords() -> list[tuple[int, float, float, str, str]]:
+    """Return (provider_id, lat, lng, zipcode, species_common) for every provider — used by the network map."""
+    lat_col = "clinic_latitude" if has_provider_field("clinic_latitude") else "lat"
+    lng_col = "clinic_longitude" if has_provider_field("clinic_longitude") else "lng"
+    zip_col = storage_column("clinic_zipcode")
+    name_col = storage_column("species_common")
+    with connection() as database:
+        rows = database.execute(
+            f"SELECT provider_id, {lat_col}, {lng_col}, {zip_col}, {name_col} FROM providers"
+        ).fetchall()
+    zip_dict = dictionaries().get("clinic_zipcode", {})
+    name_dict = dictionaries().get("species_common", {})
+    result = []
+    for row in rows:
+        raw_zip = row[3]
+        zip_str = zip_dict.get(raw_zip, zipcode_label(raw_zip)) if isinstance(raw_zip, int) else zipcode_label(raw_zip)
+        raw_name = row[4]
+        name_str = name_dict.get(raw_name, str(raw_name)) if isinstance(raw_name, int) else str(raw_name)
+        result.append((row[0], row[1], row[2], zip_str, name_str))
+    return result
+
+
+def get_provider_by_id(provider_id: int) -> dict[str, Any] | None:
+    id_column = storage_column("provider_id") if has_provider_field("provider_id") else "provider_id"
+    with connection() as database:
+        rows = database.execute(
+            f"SELECT * FROM providers WHERE {id_column} = ? LIMIT 1",
+            (provider_id,),
+        ).fetchall()
+        if not rows:
+            return None
+        row = rows[0]
+        conditions = condition_map(database, [provider_id])
+
+    provider = row_to_provider(row)
+    return {
+        **provider,
+        "conditionMatch": False,
+        "distance": 0.0,
+        "distanceLabel": "0.00 mi",
+        "locationMatchLabel": "your selection",
+        "matchScore": 999,
+    }
+
+
 def rank_providers(zipcode: str, symptom: str, coordinates: Coordinates | None = None) -> list[dict[str, Any]]:
     normalized_symptom = symptom.strip().lower()
     has_symptom = bool(normalized_symptom)

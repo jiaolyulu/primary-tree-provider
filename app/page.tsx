@@ -228,13 +228,13 @@ export default function Home() {
         </div>
         <div className="metric-card">
           <span>02</span>
-          <strong>Every profile has a bedside manner.</strong>
-          <p>Records include specialty descriptions, bios, review summaries, office vibe, services, and care prescriptions.</p>
+          <strong>Every symptom starts a search.</strong>
+          <p>The network considers symptoms, location, & provider specialties to identify a Primary Tree</p>
         </div>
         <div className="metric-card">
           <span>03</span>
-          <strong>Every match stays local.</strong>
-          <p>Search ranks nearby trees first, then uses symptoms, care rating, accessibility, and visit timing to refine the list.</p>
+          <strong>Every act of care circulates.</strong>
+          <p>The network traces connections between providers, specialties, and places throughout the city.</p>
         </div>
       </section>
 
@@ -473,7 +473,7 @@ export default function Home() {
             <a href="#how">How it works</a>
             <a href="#faq">Q&amp;A</a>
             <a href="#testimonials">Testimonials</a>
-            <a href="#featured-doctors">Tree Map</a>
+            <a href="#featured-doctors">Specialty Map</a>
             <a href="#pricing">Pricing</a>
             <Link href="/providers?zip=11215">Browse providers</Link>
           </div>

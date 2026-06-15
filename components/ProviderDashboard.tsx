@@ -36,7 +36,7 @@ import {
 import { IntakeForm } from "@/components/IntakeForm";
 import { downloadProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
-import { ProviderMatch, rankProviders } from "@/lib/providers";
+import { fetchProviderById, ProviderMatch, rankProviders } from "@/lib/providers";
 
 function providerTreeImage(provider: ProviderMatch) {
   const species = provider.speciesCommon.toLowerCase();
@@ -267,14 +267,17 @@ export function ProviderDashboard() {
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lng"));
   const hasPinnedLocation = params.get("location") === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
+  const preferredId = Number(params.get("id")) || null;
   const originLabel = hasPinnedLocation ? "your dropped pin" : zipcode;
   const [rankedProviders, setRankedProviders] = useState<ProviderMatch[] | null>(null);
+  const [pinnedProvider, setPinnedProvider] = useState<ProviderMatch | null>(null);
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
   const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
   const [cardProvider, setCardProvider] = useState<ProviderMatch | null>(null);
   const [isDownloadingCard, setIsDownloadingCard] = useState(false);
   const [cardDownloadError, setCardDownloadError] = useState("");
   const [sortBy, setSortBy] = useState("match");
+  const [displayLimit, setDisplayLimit] = useState(8);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
@@ -296,16 +299,27 @@ export function ProviderDashboard() {
     };
   }, [detailProvider, cardProvider]);
 
+  // Fetch the directly-clicked provider by ID so it always appears regardless of search ranking.
+  useEffect(() => {
+    if (!preferredId) { setPinnedProvider(null); return; }
+    let isCurrent = true;
+    fetchProviderById(preferredId).then((p) => {
+      if (isCurrent) setPinnedProvider(p);
+    });
+    return () => { isCurrent = false; };
+  }, [preferredId]);
+
   useEffect(() => {
     let isCurrent = true;
     setRankedProviders(null);
+    setDisplayLimit(8);
     setLoadError("");
 
     rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined)
       .then((matches) => {
         if (!isCurrent) return;
         setRankedProviders(matches);
-        setSelectedProviderId(matches[0]?.providerId ?? null);
+        setSelectedProviderId(preferredId ?? matches[0]?.providerId ?? null);
       })
       .catch(() => {
         if (!isCurrent) return;
@@ -431,7 +445,12 @@ export function ProviderDashboard() {
     }
     return copy;
   })();
-  const displayedProviders = sortedProviders.slice(0, 8);
+  const displayedProviders = (() => {
+    const limit = pinnedProvider ? displayLimit - 1 : displayLimit;
+    const base = sortedProviders.filter((p) => p.providerId !== preferredId).slice(0, limit);
+    return pinnedProvider ? [pinnedProvider, ...base] : base;
+  })();
+  const hasMore = sortedProviders.length + (pinnedProvider ? 1 : 0) > displayLimit;
   const selectedProvider =
     displayedProviders.find((provider) => provider.providerId === selectedProviderId) || displayedProviders[0];
   const selectedLatitude = selectedProvider.clinicLatitude;
@@ -583,6 +602,16 @@ export function ProviderDashboard() {
               );
             })}
           </div>
+
+          {hasMore && (
+            <button
+              type="button"
+              className="provider-load-more"
+              onClick={() => setDisplayLimit((n) => n + 8)}
+            >
+              Load more providers in this area
+            </button>
+          )}
         </section>
       </section>
 

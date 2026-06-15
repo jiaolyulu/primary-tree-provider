@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from providers.service import provider_network_stats, rank_providers
+from providers.service import all_provider_coords, get_provider_by_id, provider_network_stats, rank_providers
 
 
 def with_public_api_headers(response: HttpResponse) -> HttpResponse:
@@ -50,3 +50,20 @@ def provider_search(request: HttpRequest) -> HttpResponse:
         },
     }
     return with_public_api_headers(JsonResponse(payload))
+
+
+def provider_coords(request: HttpRequest) -> HttpResponse:
+    """Compact [id, lat, lng, zip] list for every provider — powers the network map."""
+    if request.method == "OPTIONS":
+        return with_public_api_headers(HttpResponse(status=204))
+    coords = all_provider_coords()
+    return with_public_api_headers(JsonResponse({"coords": coords}))
+
+
+def provider_detail(request: HttpRequest, provider_id: int) -> HttpResponse:
+    if request.method == "OPTIONS":
+        return with_public_api_headers(HttpResponse(status=204))
+    provider = get_provider_by_id(provider_id)
+    if provider is None:
+        return with_public_api_headers(JsonResponse({"error": "Provider not found"}, status=404))
+    return with_public_api_headers(JsonResponse({"provider": provider}))

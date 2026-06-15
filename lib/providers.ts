@@ -108,6 +108,23 @@ function providerSearchUrl(
   return url;
 }
 
+export async function fetchProviderById(providerId: number): Promise<ProviderMatch | null> {
+  const apiBaseUrls = providerApiBaseUrls();
+  for (const apiBaseUrl of apiBaseUrls) {
+    let response: Response;
+    try {
+      response = await fetch(`${apiBaseUrl.replace(/\/$/, "")}/api/providers/${providerId}`, { cache: "no-store" });
+    } catch {
+      continue;
+    }
+    if (response.status === 404) return null;
+    if (!response.ok) continue;
+    const payload = (await response.json()) as { provider?: ProviderMatch };
+    return payload.provider ?? null;
+  }
+  return null;
+}
+
 export async function rankProviders(
   zipcode: string,
   symptom: string,

@@ -9,7 +9,7 @@ const navLinks = [
   { href: "/#faq", label: "Q&A" },
   { href: "/#pricing", label: "Pricing" },
   { href: "/#testimonials", label: "Testimonials" },
-  { href: "/#featured-doctors", label: "Tree Map" },
+  { href: "/#featured-doctors", label: "Specialty Map" },
 ];
 
 type SiteNavProps = {
