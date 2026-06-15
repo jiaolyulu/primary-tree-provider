@@ -145,6 +145,11 @@ export function IntakeForm({
     router.push(targetUrl);
   }
 
+  function selectSymptom(nextSymptom: string) {
+    setSymptom(nextSymptom);
+    setIsPickerOpen(false);
+  }
+
   return (
     <form
       className={compact ? "intake-form compact" : "intake-form"}
@@ -225,27 +230,20 @@ export function IntakeForm({
             onClick={() => setIsPickerOpen((open) => !open)}
           >
             <Stethoscope aria-hidden="true" size={18} />
-            <span className={symptom ? "" : "placeholder"}>{symptom || "Optional symptom"}</span>
+            <span className={symptom ? "" : "placeholder"}>{symptom || "Any symptom"}</span>
             <ChevronDown aria-hidden="true" size={17} />
           </button>
           {isPickerOpen ? (
             <div className="symptom-menu" role="listbox" aria-label="Symptom">
-              <div className="symptom-group">
-                <span>Optional</span>
-                <div>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={!symptom}
-                    onClick={() => {
-                      setSymptom("");
-                      setIsPickerOpen(false);
-                    }}
-                  >
-                    No symptom, closest tree
-                  </button>
-                </div>
-              </div>
+              <button
+                type="button"
+                className="symptom-any-button"
+                role="option"
+                aria-selected={!symptom}
+                onClick={() => selectSymptom("")}
+              >
+                Any symptom / closest tree
+              </button>
               {symptomGroups.map((group) => (
                 <div className="symptom-group" key={group.label}>
                   <span>{group.label}</span>
@@ -256,10 +254,7 @@ export function IntakeForm({
                         type="button"
                         role="option"
                         aria-selected={symptom === option}
-                        onClick={() => {
-                          setSymptom(option);
-                          setIsPickerOpen(false);
-                        }}
+                        onClick={() => selectSymptom(option)}
                       >
                         {option}
                       </button>

@@ -825,10 +825,6 @@ input {
   padding: 10px 0;
 }
 
-.symptom-group:first-child {
-  padding-top: 0;
-}
-
 .symptom-group:last-child {
   border-bottom: 0;
   padding-bottom: 0;
@@ -849,6 +845,7 @@ input {
   gap: 6px;
 }
 
+.symptom-any-button,
 .symptom-group button {
   background: rgba(255, 255, 255, 0.44);
   border: 1px solid var(--line);
@@ -858,6 +855,15 @@ input {
   padding: 7px 9px;
 }
 
+.symptom-any-button {
+  display: block;
+  margin-bottom: 10px;
+  text-align: left;
+  width: 100%;
+}
+
+.symptom-any-button[aria-selected="true"],
+.symptom-any-button:hover,
 .symptom-group button:hover,
 .symptom-group button[aria-selected="true"] {
   background: var(--green);
@@ -4545,6 +4551,7 @@ details p {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .symptom-any-button,
   .symptom-group button {
     min-height: 42px;
     padding: 10px 11px;
