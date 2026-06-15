@@ -106,9 +106,8 @@ const testimonials = [
     symptom: "Burnout + insomnia",
     tree: "Littleleaf Linden",
     neighborhood: "Midwood",
-    image:
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Tilia%20cordata%20-%20%27Greenspire%27%20littleleaf%20linden.jpg?width=900",
-    imageAlt: "Littleleaf Linden tree canopy",
+    image: "/images/littleleaf-linden-testimonial.jpg",
+    imageAlt: "Person resting under a Littleleaf Linden street tree",
     quote:
       "The linden made burnout feel less like a personal failure and more like a pattern I could treat with shade, sleep, and fewer urgent emails.",
   },
