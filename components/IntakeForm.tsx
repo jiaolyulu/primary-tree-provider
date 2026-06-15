@@ -148,6 +148,9 @@ export function IntakeForm({
   function selectSymptom(nextSymptom: string) {
     setSymptom(nextSymptom);
     setIsPickerOpen(false);
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
   }
 
   return (
@@ -219,7 +222,7 @@ export function IntakeForm({
         </div>
       )}
 
-      <label>
+      <div className="intake-field">
         <span>Symptom</span>
         <div className="symptom-picker" ref={pickerRef}>
           <button
@@ -240,6 +243,11 @@ export function IntakeForm({
                 className="symptom-any-button"
                 role="option"
                 aria-selected={!symptom}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  selectSymptom("");
+                }}
                 onClick={() => selectSymptom("")}
               >
                 Any symptom / closest tree
@@ -254,6 +262,11 @@ export function IntakeForm({
                         type="button"
                         role="option"
                         aria-selected={symptom === option}
+                        onPointerDown={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          selectSymptom(option);
+                        }}
                         onClick={() => selectSymptom(option)}
                       >
                         {option}
@@ -265,7 +278,7 @@ export function IntakeForm({
             </div>
           ) : null}
         </div>
-      </label>
+      </div>
       <button type="submit" className="primary-button" disabled={isSubmitting}>
         <span>{isSubmitting ? "Finding PCT" : "Find a PCT"}</span>
         {isSubmitting ? (

@@ -629,12 +629,14 @@ input {
   margin: 0;
 }
 
-.intake-form label {
+.intake-form label,
+.intake-field {
   display: grid;
   gap: 6px;
 }
 
-.intake-form label > span {
+.intake-form label > span,
+.intake-field > span {
   color: var(--green);
   font-size: 12px;
   font-weight: 700;
@@ -2876,13 +2878,15 @@ details p {
   min-width: 0;
 }
 
-.provider-search-form .intake-form.compact label {
+.provider-search-form .intake-form.compact label,
+.provider-search-form .intake-form.compact .intake-field {
   border-right: 1px solid var(--line);
   gap: 0;
   min-width: 0;
 }
 
-.provider-search-form .intake-form.compact label > span {
+.provider-search-form .intake-form.compact label > span,
+.provider-search-form .intake-form.compact .intake-field > span {
   font-size: 10px;
   padding: 8px 10px 0;
 }
@@ -4233,7 +4237,7 @@ details p {
     grid-column: 1 / -1;
   }
 
-  .provider-search-form .intake-form.compact label:nth-of-type(2) {
+  .provider-search-form .intake-form.compact .intake-field {
     border-right: 0;
   }
 
@@ -4593,7 +4597,8 @@ details p {
     grid-template-columns: 1fr;
   }
 
-  .provider-search-form .intake-form.compact label {
+  .provider-search-form .intake-form.compact label,
+  .provider-search-form .intake-form.compact .intake-field {
     border-right: 0;
     border-top: 1px solid var(--line);
   }
