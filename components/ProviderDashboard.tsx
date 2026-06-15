@@ -789,7 +789,7 @@ export function ProviderDashboard() {
                 disabled={isDownloadingCard}
               >
                 <Download aria-hidden="true" size={16} />
-                {isDownloadingCard ? "Preparing PDF..." : "Download PDF"}
+                {isDownloadingCard ? "Preparing PDF..." : "Download print-size PDF"}
               </button>
             </div>
           </div>

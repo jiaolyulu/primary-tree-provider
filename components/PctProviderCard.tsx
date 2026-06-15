@@ -161,9 +161,13 @@ function createCardPdf(images: Array<{ bytes: Uint8Array; height: number; width:
   const endObject = () => addString("endobj\n");
 
   const pageWidth = 612;
-  const pageHeight = 386;
-  const objectCount = 2 + images.length * 3;
-  const pageIds = images.map((_, index) => 3 + index * 3);
+  const pageHeight = 792;
+  const cardWidth = 3.375 * 72;
+  const cardHeight = 2.125 * 72;
+  const cardGap = 36;
+  const cardStartX = (pageWidth - cardWidth * 2 - cardGap) / 2;
+  const cardStartY = 388;
+  const objectCount = 7;
 
   addString("%PDF-1.4\n");
   startObject(1);
@@ -171,27 +175,39 @@ function createCardPdf(images: Array<{ bytes: Uint8Array; height: number; width:
   endObject();
 
   startObject(2);
-  addString(`<< /Type /Pages /Kids [${pageIds.map((id) => `${id} 0 R`).join(" ")}] /Count ${images.length} >>\n`);
+  addString("<< /Type /Pages /Kids [3 0 R] /Count 1 >>\n");
   endObject();
 
-  images.forEach((image, index) => {
-    const pageId = 3 + index * 3;
-    const contentId = pageId + 1;
-    const imageId = pageId + 2;
-    const imageName = `Card${index + 1}`;
-    const content = `q\n${pageWidth} 0 0 ${pageHeight} 0 0 cm\n/${imageName} Do\nQ\n`;
+  const [front, back] = images;
+  const frontX = cardStartX;
+  const backX = cardStartX + cardWidth + cardGap;
+  const labelY = cardStartY + cardHeight + 24;
+  const noteY = cardStartY - 34;
+  const content = [
+    "BT /F1 9 Tf 0.18 0.34 0.22 rg",
+    `${frontX.toFixed(2)} ${labelY.toFixed(2)} Td (FRONT) Tj`,
+    `${(backX - frontX).toFixed(2)} 0 Td (BACK) Tj`,
+    "ET",
+    "BT /F1 8 Tf 0.28 0.39 0.32 rg",
+    `${frontX.toFixed(2)} ${noteY.toFixed(2)} Td (Print at 100% / Actual Size. Each card side is 3.375 in x 2.125 in.) Tj`,
+    "ET",
+    `q 0.7 w 0.75 0.82 0.76 RG ${frontX.toFixed(2)} ${cardStartY.toFixed(2)} ${cardWidth.toFixed(2)} ${cardHeight.toFixed(2)} re S Q`,
+    `q 0.7 w 0.75 0.82 0.76 RG ${backX.toFixed(2)} ${cardStartY.toFixed(2)} ${cardWidth.toFixed(2)} ${cardHeight.toFixed(2)} re S Q`,
+    `q ${cardWidth.toFixed(2)} 0 0 ${cardHeight.toFixed(2)} ${frontX.toFixed(2)} ${cardStartY.toFixed(2)} cm /FrontCard Do Q`,
+    `q ${cardWidth.toFixed(2)} 0 0 ${cardHeight.toFixed(2)} ${backX.toFixed(2)} ${cardStartY.toFixed(2)} cm /BackCard Do Q`,
+  ].join("\n");
 
-    startObject(pageId);
-    addString(
-      `<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight}] /Resources << /XObject << /${imageName} ${imageId} 0 R >> >> /Contents ${contentId} 0 R >>\n`,
-    );
-    endObject();
+  startObject(3);
+  addString(
+    "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 6 0 R >> /XObject << /FrontCard 5 0 R /BackCard 4 0 R >> >> /Contents 7 0 R >>\n",
+  );
+  endObject();
 
-    startObject(contentId);
-    addString(`<< /Length ${encoder.encode(content).length} >>\nstream\n${content}endstream\n`);
-    endObject();
-
-    startObject(imageId);
+  [
+    { id: 4, image: back },
+    { id: 5, image: front },
+  ].forEach(({ id, image }) => {
+    startObject(id);
     addString(
       `<< /Type /XObject /Subtype /Image /Width ${image.width} /Height ${image.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${image.bytes.length} >>\nstream\n`,
     );
@@ -199,6 +215,14 @@ function createCardPdf(images: Array<{ bytes: Uint8Array; height: number; width:
     addString("\nendstream\n");
     endObject();
   });
+
+  startObject(6);
+  addString("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>\n");
+  endObject();
+
+  startObject(7);
+  addString(`<< /Length ${encoder.encode(content).length} >>\nstream\n${content}\nendstream\n`);
+  endObject();
 
   const xrefOffset = byteLength;
   addString(`xref\n0 ${objectCount + 1}\n0000000000 65535 f \n`);

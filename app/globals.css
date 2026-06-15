@@ -3780,6 +3780,22 @@ details p {
   max-width: 760px;
 }
 
+.card-page-actions {
+  align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 18px;
+}
+
+.card-page-actions > p {
+  color: #b3261e;
+  flex: 1 1 260px;
+  font-size: 14px;
+  line-height: 1.35;
+  margin: 0;
+}
+
 .insurance-card-shell {
   margin: 0 auto;
   max-width: 1280px;

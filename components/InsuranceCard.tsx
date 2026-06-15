@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, ShieldCheck } from "lucide-react";
-import { PctProviderCardSvgPair } from "@/components/PctProviderCard";
+import { ArrowLeft, Download, ShieldCheck } from "lucide-react";
+import { downloadProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderMatch, rankProviders } from "@/lib/providers";
 
 export function InsuranceCard() {
@@ -19,6 +19,8 @@ export function InsuranceCard() {
   const hasPinnedLocation = params.get("location") === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
   const [provider, setProvider] = useState<ProviderMatch | null>(null);
   const [loadError, setLoadError] = useState("");
+  const [isDownloadingCard, setIsDownloadingCard] = useState(false);
+  const [cardDownloadError, setCardDownloadError] = useState("");
 
   useEffect(() => {
     let isCurrent = true;
@@ -29,6 +31,7 @@ export function InsuranceCard() {
       .then((matches) => {
         if (!isCurrent) return;
         setProvider(matches.find((match) => match.providerId === providerId) || matches[0] || null);
+        setCardDownloadError("");
       })
       .catch(() => {
         if (!isCurrent) return;
@@ -89,6 +92,19 @@ export function InsuranceCard() {
     );
   }
 
+  const downloadCardPdf = async () => {
+    if (!provider) return;
+    setIsDownloadingCard(true);
+    setCardDownloadError("");
+    try {
+      await downloadProviderCardPdf("pct-provider-card-page", provider);
+    } catch {
+      setCardDownloadError("We could not prepare the PDF. Please try again.");
+    } finally {
+      setIsDownloadingCard(false);
+    }
+  };
+
   return (
     <main className="card-page">
       <Link href={`/providers?${dashboardParams.toString()}`} className="back-link">
@@ -103,6 +119,18 @@ export function InsuranceCard() {
         </div>
         <h1>Your PCT provider card</h1>
         <p>A compact card built from the selected NYC tree-provider record and your care search context.</p>
+        <div className="card-page-actions">
+          {cardDownloadError ? <p role="alert">{cardDownloadError}</p> : null}
+          <button
+            type="button"
+            className="provider-choose-btn"
+            onClick={downloadCardPdf}
+            disabled={isDownloadingCard}
+          >
+            <Download aria-hidden="true" size={16} />
+            {isDownloadingCard ? "Preparing PDF..." : "Download print-size PDF"}
+          </button>
+        </div>
       </section>
 
       <section className="insurance-card-shell" aria-label="Primary Care Tree provider card">
