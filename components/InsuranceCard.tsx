@@ -128,7 +128,7 @@ export function InsuranceCard() {
             disabled={isDownloadingCard}
           >
             <Download aria-hidden="true" size={16} />
-            {isDownloadingCard ? "Preparing PDF..." : "Download print-size PDF"}
+            {isDownloadingCard ? "Preparing PDF..." : "Download"}
           </button>
         </div>
       </section>
