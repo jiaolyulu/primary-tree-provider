@@ -4244,11 +4244,6 @@ details p {
 }
 
 @media (max-width: 620px) {
-  .provider-search-topbar {
-    position: sticky;
-    top: 0;
-  }
-
   .nav {
     align-items: flex-start;
     gap: 12px;
