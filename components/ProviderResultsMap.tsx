@@ -17,6 +17,7 @@ export function ProviderResultsMap({
   const mapRef = useRef<LeafletMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
   const onSelectProviderRef = useRef(onSelectProvider);
+  const providerIdsRef = useRef("");
   const [isMapReady, setIsMapReady] = useState(false);
 
   useEffect(() => {
@@ -39,6 +40,8 @@ export function ProviderResultsMap({
         maxZoom: 18,
         minZoom: 10,
         scrollWheelZoom: false,
+        zoomDelta: 0.5,
+        zoomSnap: 0.5,
         zoomControl: true,
       }).setView(initialPosition, 14);
 
@@ -57,6 +60,7 @@ export function ProviderResultsMap({
       mapRef.current?.remove();
       mapRef.current = null;
       markersRef.current = [];
+      providerIdsRef.current = "";
     };
     // Mount-only: the map is created once and `providers` is read solely for the
     // initial center. Marker updates are handled by the effect below.
@@ -74,6 +78,13 @@ export function ProviderResultsMap({
       if (cancelled) return;
 
       markersRef.current.forEach((marker) => marker.remove());
+      const providerIds = providers
+        .map((provider) => provider.providerId)
+        .sort((left, right) => left - right)
+        .join(",");
+      const shouldFitResults = providerIds !== providerIdsRef.current;
+      providerIdsRef.current = providerIds;
+
       markersRef.current = providers.map((provider, index) => {
         const isSelected = provider.providerId === selectedProviderId;
         const icon: DivIcon = L.divIcon({
@@ -98,13 +109,13 @@ export function ProviderResultsMap({
         return marker;
       });
 
-      if (providers.length > 1) {
+      if (shouldFitResults && providers.length > 1) {
         const bounds: LatLngBoundsExpression = providers.map((provider) => [
           provider.clinicLatitude,
           provider.clinicLongitude,
         ]);
         map.fitBounds(bounds, { maxZoom: 16, padding: [34, 34] });
-      } else if (providers[0]) {
+      } else if (shouldFitResults && providers[0]) {
         map.setView([providers[0].clinicLatitude, providers[0].clinicLongitude], 16);
       }
     }

@@ -2312,6 +2312,10 @@ details p {
   border-bottom: 1px solid var(--green);
   border-radius: 0;
   color: var(--green);
+  font-size: 22px;
+  height: 34px;
+  line-height: 32px;
+  width: 34px;
 }
 
 .provider-results-map .leaflet-control-zoom a:last-child {
