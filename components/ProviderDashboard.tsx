@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Activity,
   Apple,
@@ -256,6 +256,24 @@ export function ProviderDashboard() {
   const [sortBy, setSortBy] = useState("match");
   const [displayLimit, setDisplayLimit] = useState(DEFAULT_PROVIDER_RESULT_LIMIT);
   const [loadError, setLoadError] = useState("");
+  const providerCardRefs = useRef(new Map<number, HTMLElement>());
+
+  const scrollProviderCardIntoView = useCallback((providerId: number) => {
+    window.requestAnimationFrame(() => {
+      providerCardRefs.current.get(providerId)?.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    });
+  }, []);
+
+  const selectProviderFromMap = useCallback(
+    (providerId: number) => {
+      setSelectedProviderId(providerId);
+      scrollProviderCardIntoView(providerId);
+    },
+    [scrollProviderCardIntoView],
+  );
 
   useEffect(() => {
     if (!detailProvider && !cardProvider) return;
@@ -489,7 +507,7 @@ export function ProviderDashboard() {
             <ProviderResultsMap
               providers={displayedProviders}
               selectedProviderId={selectedProvider.providerId}
-              onSelectProvider={setSelectedProviderId}
+              onSelectProvider={selectProviderFromMap}
             />
             <a
               className="map-coordinate-card"
@@ -514,7 +532,17 @@ export function ProviderDashboard() {
               const conditionTags = provider.searchableConditions.slice(0, 3);
 
               return (
-                <article key={provider.providerId} className={isSelected ? "provider-card selected" : "provider-card"}>
+                <article
+                  key={provider.providerId}
+                  ref={(node) => {
+                    if (node) {
+                      providerCardRefs.current.set(provider.providerId, node);
+                    } else {
+                      providerCardRefs.current.delete(provider.providerId);
+                    }
+                  }}
+                  className={isSelected ? "provider-card selected" : "provider-card"}
+                >
                   <button
                     type="button"
                     className="provider-card-select"

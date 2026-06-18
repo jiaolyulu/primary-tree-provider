@@ -39,11 +39,13 @@ export function ProviderResultsMap({
         attributionControl: false,
         maxZoom: 18,
         minZoom: 10,
-        scrollWheelZoom: false,
+        scrollWheelZoom: "center",
+        wheelPxPerZoomLevel: 140,
         zoomDelta: 0.5,
         zoomSnap: 0.5,
         zoomControl: true,
       }).setView(initialPosition, 14);
+      L.DomEvent.disableScrollPropagation(containerRef.current);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
