@@ -51,6 +51,8 @@ type ProviderSearchPayload = {
   providers?: ProviderMatch[];
 };
 
+export const DEFAULT_PROVIDER_RESULT_LIMIT = 50;
+
 export const providerNetworkStats = {
   totalProviders: 96950,
   zipCount: 183,
@@ -97,9 +99,11 @@ function providerSearchUrl(
   zipcode: string,
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
+  limit = DEFAULT_PROVIDER_RESULT_LIMIT,
 ) {
   const url = new URL(`${apiBaseUrl.replace(/\/$/, "")}/api/providers/search`);
   url.searchParams.set("zip", zipcode);
+  url.searchParams.set("limit", String(limit));
   if (symptom.trim()) url.searchParams.set("symptom", symptom.trim());
   if (coordinates) {
     url.searchParams.set("lat", coordinates.latitude.toFixed(5));
@@ -129,6 +133,7 @@ export async function rankProviders(
   zipcode: string,
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
+  limit = DEFAULT_PROVIDER_RESULT_LIMIT,
 ): Promise<ProviderMatch[]> {
   const apiBaseUrls = providerApiBaseUrls();
 
@@ -139,7 +144,7 @@ export async function rankProviders(
   let lastError = "Could not reach the provider database API.";
 
   for (const apiBaseUrl of apiBaseUrls) {
-    const url = providerSearchUrl(apiBaseUrl, zipcode, symptom, coordinates);
+    const url = providerSearchUrl(apiBaseUrl, zipcode, symptom, coordinates, limit);
 
     let response: Response;
     try {

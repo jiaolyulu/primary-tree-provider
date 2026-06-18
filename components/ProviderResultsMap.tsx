@@ -88,6 +88,12 @@ export function ProviderResultsMap({
           title: `${index + 1}. ${provider.speciesCommon}`,
         }).addTo(map);
 
+        marker.bindTooltip(provider.speciesCommon, {
+          className: "pct-provider-map-tooltip",
+          direction: "top",
+          offset: [0, -18],
+          opacity: 0.96,
+        });
         marker.on("click", () => onSelectProviderRef.current(provider.providerId));
         return marker;
       });
@@ -110,5 +116,5 @@ export function ProviderResultsMap({
     };
   }, [isMapReady, providers, selectedProviderId]);
 
-  return <div ref={containerRef} className="provider-results-map" aria-label="Top five provider tree map" />;
+  return <div ref={containerRef} className="provider-results-map" aria-label="Provider tree results map" />;
 }

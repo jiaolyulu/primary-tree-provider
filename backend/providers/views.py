@@ -26,9 +26,9 @@ def provider_search(request: HttpRequest) -> HttpResponse:
     zipcode = request.GET.get("zip", "11215")
     symptom = request.GET.get("symptom", "")
     try:
-        limit = min(300, max(5, int(request.GET.get("limit", "200"))))
+        limit = min(300, max(5, int(request.GET.get("limit", "50"))))
     except ValueError:
-        limit = 200
+        limit = 50
     lat = request.GET.get("lat")
     lng = request.GET.get("lng")
     coordinates = None

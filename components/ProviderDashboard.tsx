@@ -37,7 +37,7 @@ import {
 import { IntakeForm } from "@/components/IntakeForm";
 import { downloadProviderCardPdf, printProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
-import { fetchProviderById, ProviderMatch, rankProviders } from "@/lib/providers";
+import { DEFAULT_PROVIDER_RESULT_LIMIT, fetchProviderById, ProviderMatch, rankProviders } from "@/lib/providers";
 import { getTreeImageForProvider } from "@/lib/treeImageSources";
 
 function titleCaseAddress(value: string) {
@@ -254,7 +254,7 @@ export function ProviderDashboard() {
   const [isPrintingCard, setIsPrintingCard] = useState(false);
   const [cardDownloadError, setCardDownloadError] = useState("");
   const [sortBy, setSortBy] = useState("match");
-  const [displayLimit, setDisplayLimit] = useState(8);
+  const [displayLimit, setDisplayLimit] = useState(DEFAULT_PROVIDER_RESULT_LIMIT);
   const [loadError, setLoadError] = useState("");
 
   useEffect(() => {
@@ -289,7 +289,7 @@ export function ProviderDashboard() {
   useEffect(() => {
     let isCurrent = true;
     setRankedProviders(null);
-    setDisplayLimit(8);
+    setDisplayLimit(DEFAULT_PROVIDER_RESULT_LIMIT);
     setLoadError("");
 
     rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined)
@@ -598,7 +598,7 @@ export function ProviderDashboard() {
             <button
               type="button"
               className="provider-load-more"
-              onClick={() => setDisplayLimit((n) => n + 8)}
+              onClick={() => setDisplayLimit((n) => n + DEFAULT_PROVIDER_RESULT_LIMIT)}
             >
               Load more providers in this area
             </button>

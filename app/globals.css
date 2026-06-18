@@ -2354,6 +2354,23 @@ details p {
   width: 36px;
 }
 
+.provider-results-map .pct-provider-map-tooltip {
+  background: rgba(0, 122, 52, 0.96);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 0;
+  box-shadow: 0 8px 18px rgba(6, 61, 34, 0.24);
+  color: #fff;
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  padding: 6px 9px;
+}
+
+.provider-results-map .pct-provider-map-tooltip::before {
+  border-top-color: rgba(0, 122, 52, 0.96);
+}
+
 .map-coordinate-card {
   align-items: center;
   background: rgba(244, 246, 239, 0.92);
