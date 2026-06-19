@@ -13,7 +13,7 @@ const TITLE_OVERRIDES: Record<string, string> = {
 
 // Lazily resolves a real photo for a tree species (by common name) from Wikipedia,
 // caching per name and falling back to the house tree image.
-export function TreeThumb({ name }: { name: string }) {
+export function TreeThumb({ name, className = "pct-card-img" }: { name: string; className?: string }) {
   const fallback = getTreeImageForSpecies(name);
   const [src, setSrc] = useState(() => cache.get(name) ?? fallback);
 
@@ -65,5 +65,5 @@ export function TreeThumb({ name }: { name: string }) {
     };
   }, [fallback, name]);
 
-  return <img className="pct-card-img" src={src} alt={`${name} tree`} loading="lazy" />;
+  return <img className={className} src={src} alt={`${name} tree`} loading="lazy" />;
 }

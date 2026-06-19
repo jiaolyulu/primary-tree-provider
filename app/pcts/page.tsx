@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
-import { AllProvidersMap } from "@/components/AllProvidersMap";
+import { PctDirectorySearch } from "@/components/PctDirectorySearch";
 import { SiteNav } from "@/components/SiteNav";
 import { TreeThumb } from "@/components/TreeThumb";
 import { careTaxonomy } from "@/lib/careTaxonomy";
@@ -27,7 +27,7 @@ export default function BrowseAllPcts() {
           <h1>Every Provider is Rooted in <em> your Neighborhood</em>.</h1>
           <p>Trees currently active in the PCT network across New York City.</p>
         </div>
-        <AllProvidersMap />
+        <PctDirectorySearch />
       </section>
 
       <section className="pct-directory-intro">

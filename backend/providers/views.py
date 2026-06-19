@@ -2,7 +2,13 @@ from __future__ import annotations
 
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
-from providers.service import all_provider_coords, get_provider_by_id, provider_network_stats, rank_providers
+from providers.service import (
+    all_provider_coords,
+    browse_provider_search,
+    get_provider_by_id,
+    provider_network_stats,
+    rank_providers,
+)
 
 
 def with_public_api_headers(response: HttpResponse) -> HttpResponse:
@@ -58,6 +64,19 @@ def provider_coords(request: HttpRequest) -> HttpResponse:
         return with_public_api_headers(HttpResponse(status=204))
     coords = all_provider_coords()
     return with_public_api_headers(JsonResponse({"coords": coords}))
+
+
+def provider_browse_search(request: HttpRequest) -> HttpResponse:
+    if request.method == "OPTIONS":
+        return with_public_api_headers(HttpResponse(status=204))
+
+    query = request.GET.get("q", "")
+    try:
+        limit = int(request.GET.get("limit", "18"))
+    except ValueError:
+        limit = 18
+
+    return with_public_api_headers(JsonResponse(browse_provider_search(query, limit)))
 
 
 def provider_detail(request: HttpRequest, provider_id: int) -> HttpResponse:

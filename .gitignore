@@ -9,6 +9,7 @@ tsconfig.tsbuildinfo
 __pycache__/
 *.py[cod]
 db.sqlite3
+.venv/
 
 # Local Netlify folder
 .netlify

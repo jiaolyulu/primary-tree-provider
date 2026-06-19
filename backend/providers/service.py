@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from functools import lru_cache
 import math
+import re
 import sqlite3
+import unicodedata
 from pathlib import Path
 from typing import Any, TypedDict
 
@@ -310,6 +312,382 @@ def row_to_provider(row: sqlite3.Row) -> dict[str, Any]:
         "clinicLatitude": clinic_latitude,
         "clinicLongitude": clinic_longitude,
     }
+
+
+STREET_TOKEN_ALIASES = {
+    "av": "avenue",
+    "ave": "avenue",
+    "aven": "avenue",
+    "blvd": "boulevard",
+    "ct": "court",
+    "dr": "drive",
+    "e": "east",
+    "hwy": "highway",
+    "ln": "lane",
+    "n": "north",
+    "pkwy": "parkway",
+    "pl": "place",
+    "rd": "road",
+    "s": "south",
+    "st": "street",
+    "str": "street",
+    "ter": "terrace",
+    "w": "west",
+}
+
+STREET_SUFFIX_WORDS = {
+    "avenue",
+    "boulevard",
+    "court",
+    "drive",
+    "highway",
+    "lane",
+    "parkway",
+    "place",
+    "road",
+    "street",
+    "terrace",
+}
+
+LOCATION_SEARCH_FIELDS = {"clinic_address", "clinic_neighborhood", "clinic_city"}
+
+
+def normalize_search_text(value: Any) -> str:
+    text = unicodedata.normalize("NFKD", str(value or "")).encode("ascii", "ignore").decode("ascii")
+    text = text.casefold().replace("&", " and ")
+    text = re.sub(r"(?<=\d)(st|nd|rd|th)\b", "", text)
+    text = re.sub(r"[^a-z0-9]+", " ", text)
+    tokens = [STREET_TOKEN_ALIASES.get(token, token) for token in text.split()]
+    return " ".join(tokens)
+
+
+def compact_search_text(value: str) -> str:
+    return re.sub(r"[^a-z0-9]", "", value)
+
+
+def street_name_from_address(address: str) -> str:
+    return re.sub(r"^\s*\d+[a-z]?\s+", "", address, flags=re.IGNORECASE)
+
+
+BROWSE_SEARCH_VALUE_FIELDS = [
+    ("species_common", "Common name", 120, None),
+    ("species_scientific", "Scientific name", 120, None),
+    ("clinic_zipcode", "ZIP code", 130, None),
+    ("searchable_conditions", "Symptom", 118, None),
+    ("clinic_address", "Address", 105, None),
+    ("clinic_address", "Street", 98, street_name_from_address),
+    ("clinic_neighborhood", "Neighborhood", 95, None),
+    ("clinic_city", "City", 46, None),
+    ("medical_specialty", "Specialty", 34, None),
+]
+
+BROWSE_SEARCH_RESULT_FIELDS = [
+    "species_common",
+    "species_scientific",
+    "medical_specialty",
+    "searchable_conditions",
+    "clinic_address",
+    "clinic_zipcode",
+    "clinic_city",
+    "clinic_neighborhood",
+    "clinic_state",
+    "clinic_latitude",
+    "clinic_longitude",
+    "care_rating",
+    "review_count",
+    "star_doctor",
+]
+
+
+def matched_query_tokens(query_tokens: list[str], field_value: str) -> set[str]:
+    field_tokens = field_value.split()
+    matched = set()
+    for token in query_tokens:
+        if token.isdigit():
+            if any(field_token == token or (len(token) >= 3 and field_token.startswith(token)) for field_token in field_tokens):
+                matched.add(token)
+            continue
+
+        if any(field_token.startswith(token) for field_token in field_tokens):
+            matched.add(token)
+    return matched
+
+
+def has_street_query_intent(query_tokens: list[str]) -> bool:
+    return any(token in STREET_SUFFIX_WORDS for token in query_tokens)
+
+
+def optimized_search_value_score(
+    search_value: dict[str, Any],
+    normalized_query: str,
+    compact_query: str,
+    query_tokens: list[str],
+) -> tuple[float, set[str]]:
+    field_value = search_value["normalized"]
+    compact_value = search_value["compact"]
+    weight = search_value["weight"]
+    field_score = 0.0
+    covered_tokens = matched_query_tokens(query_tokens, field_value)
+
+    if search_value["field"] == "clinic_zipcode":
+        zip_tokens = [token for token in query_tokens if token.isdigit() and len(token) >= 3]
+        zip_score = 0.0
+        zip_coverage: set[str] = set()
+        for token in zip_tokens:
+            if field_value == token:
+                zip_score = max(zip_score, weight + 90)
+                zip_coverage.add(token)
+            elif field_value.startswith(token):
+                zip_score = max(zip_score, weight + 45)
+                zip_coverage.add(token)
+            elif token in field_value:
+                zip_score = max(zip_score, weight + 22)
+                zip_coverage.add(token)
+        return zip_score, zip_coverage
+
+    if search_value["field"] == "clinic_address" and query_tokens and len(covered_tokens) < len(query_tokens):
+        return 0.0, set()
+
+    if field_value == normalized_query:
+        field_score = weight + 90
+        covered_tokens = set(query_tokens)
+    elif field_value.startswith(normalized_query):
+        field_score = weight + 45
+        covered_tokens = set(query_tokens)
+    elif normalized_query in field_value:
+        field_score = weight + 22
+        covered_tokens = set(query_tokens)
+    elif len(compact_query) >= 3 and compact_query in compact_value:
+        field_score = weight * 0.72
+        covered_tokens = set(query_tokens)
+    elif query_tokens and len(covered_tokens) == len(query_tokens):
+        field_score = weight * 0.58
+    elif query_tokens and covered_tokens:
+        field_score = weight * (0.18 + 0.24 * (len(covered_tokens) / len(query_tokens)))
+
+    return field_score, covered_tokens
+
+
+def chunked(values: list[Any], size: int = 850):
+    for index in range(0, len(values), size):
+        yield values[index : index + size]
+
+
+@lru_cache(maxsize=1)
+def browse_search_values() -> list[dict[str, Any]]:
+    dictionary_values = dictionaries()
+    fields = sorted({field for field, _label, _weight, _transform in BROWSE_SEARCH_VALUE_FIELDS})
+    columns = {field: storage_column(field) for field in fields}
+    raw_values_by_field: dict[str, list[tuple[Any, Any]]] = {}
+
+    with connection() as database:
+        for field in fields:
+            if field in dictionary_values:
+                raw_values_by_field[field] = list(dictionary_values[field].items())
+            else:
+                column = columns[field]
+                rows = database.execute(f"SELECT DISTINCT {column} FROM providers").fetchall()
+                raw_values_by_field[field] = [(row[0], row[0]) for row in rows]
+
+    search_values = []
+    for field, label, weight, transform in BROWSE_SEARCH_VALUE_FIELDS:
+        for raw_value, display_value in raw_values_by_field.get(field, []):
+            value = zipcode_label(display_value) if field == "clinic_zipcode" else str(display_value)
+            if transform is not None:
+                value = transform(value)
+            normalized = normalize_search_text(value)
+            if not normalized:
+                continue
+            search_values.append(
+                {
+                    "field": field,
+                    "rawValue": raw_value,
+                    "label": label,
+                    "weight": weight,
+                    "normalized": normalized,
+                    "compact": compact_search_text(normalized),
+                }
+            )
+
+    return search_values
+
+
+def browse_row_value(
+    row: sqlite3.Row,
+    columns: dict[str, str],
+    dictionary_values: dict[str, dict[int, str]],
+    field: str,
+) -> Any:
+    raw_value = row[columns[field]]
+    values = dictionary_values.get(field)
+    if values is not None and isinstance(raw_value, int):
+        return values[raw_value]
+    return raw_value
+
+
+def browse_result_from_row(
+    row: sqlite3.Row,
+    columns: dict[str, str],
+    dictionary_values: dict[str, dict[int, str]],
+    match_reasons: list[str],
+) -> dict[str, Any]:
+    return {
+        "providerId": row["provider_id"],
+        "speciesCommon": str(browse_row_value(row, columns, dictionary_values, "species_common")),
+        "speciesScientific": str(browse_row_value(row, columns, dictionary_values, "species_scientific")),
+        "medicalSpecialty": str(browse_row_value(row, columns, dictionary_values, "medical_specialty")),
+        "clinicAddress": str(browse_row_value(row, columns, dictionary_values, "clinic_address")),
+        "clinicZipcode": zipcode_label(browse_row_value(row, columns, dictionary_values, "clinic_zipcode")),
+        "clinicCity": str(browse_row_value(row, columns, dictionary_values, "clinic_city")),
+        "clinicNeighborhood": str(browse_row_value(row, columns, dictionary_values, "clinic_neighborhood")),
+        "clinicState": str(browse_row_value(row, columns, dictionary_values, "clinic_state")),
+        "clinicLatitude": browse_row_value(row, columns, dictionary_values, "clinic_latitude"),
+        "clinicLongitude": browse_row_value(row, columns, dictionary_values, "clinic_longitude"),
+        "careRating": browse_row_value(row, columns, dictionary_values, "care_rating"),
+        "reviewCount": int(browse_row_value(row, columns, dictionary_values, "review_count")),
+        "starDoctor": bool(browse_row_value(row, columns, dictionary_values, "star_doctor")),
+        "matchReasons": match_reasons,
+    }
+
+
+def value_matches_for_query(
+    normalized_query: str,
+    compact_query: str,
+    query_tokens: list[str],
+) -> dict[str, dict[Any, list[dict[str, Any]]]]:
+    matches_by_field: dict[str, dict[Any, list[dict[str, Any]]]] = {}
+
+    for value in browse_search_values():
+        score, covered_tokens = optimized_search_value_score(value, normalized_query, compact_query, query_tokens)
+        if score <= 0:
+            continue
+        matches_by_field.setdefault(value["field"], {}).setdefault(value["rawValue"], []).append(
+            {"score": score, "field": value["field"], "label": value["label"], "tokens": covered_tokens}
+        )
+
+    return matches_by_field
+
+
+def candidate_rows_for_matches(
+    matches_by_field: dict[str, dict[Any, list[dict[str, Any]]]],
+    columns: dict[str, str],
+) -> dict[int, sqlite3.Row]:
+    selected_columns = ", ".join(dict.fromkeys(columns.values()))
+    candidate_rows: dict[int, sqlite3.Row] = {}
+
+    with connection() as database:
+        for field, field_matches in matches_by_field.items():
+            provider_column = storage_column(field)
+            raw_values = list(field_matches.keys())
+            for raw_value_chunk in chunked(raw_values):
+                placeholders = ", ".join("?" for _ in raw_value_chunk)
+                rows = database.execute(
+                    f"SELECT provider_id, {selected_columns} FROM providers WHERE {provider_column} IN ({placeholders})",
+                    raw_value_chunk,
+                ).fetchall()
+                for row in rows:
+                    candidate_rows[row["provider_id"]] = row
+
+    return candidate_rows
+
+
+def scored_browse_result(
+    row: sqlite3.Row,
+    columns: dict[str, str],
+    dictionary_values: dict[str, dict[int, str]],
+    matches_by_field: dict[str, dict[Any, list[dict[str, Any]]]],
+    query_tokens: list[str],
+) -> tuple[float, bool, bool, bool, float, int, dict[str, Any]] | None:
+    score = 0.0
+    covered_tokens: set[str] = set()
+    address_covered_tokens: set[str] = set()
+    reasons: list[str] = []
+    row_matches: list[dict[str, Any]] = []
+
+    for field, field_matches in matches_by_field.items():
+        raw_value = row[columns[field]]
+        row_matches.extend(field_matches.get(raw_value, []))
+
+    has_full_non_location_match = any(
+        query_tokens
+        and len(match["tokens"]) == len(query_tokens)
+        and match["field"] not in LOCATION_SEARCH_FIELDS
+        for match in row_matches
+    )
+
+    for match in row_matches:
+        is_partial_location_match = (
+            query_tokens
+            and has_full_non_location_match
+            and match["field"] in LOCATION_SEARCH_FIELDS
+            and len(match["tokens"]) < len(query_tokens)
+        )
+        if is_partial_location_match:
+            continue
+
+        score += match["score"]
+        covered_tokens.update(match["tokens"])
+        if match["field"] == "clinic_address":
+            address_covered_tokens.update(match["tokens"])
+        if match["label"] not in reasons:
+            reasons.append(match["label"])
+
+    if score <= 0:
+        return None
+
+    has_full_token_coverage = not query_tokens or set(query_tokens).issubset(covered_tokens)
+    has_address_token_coverage = not query_tokens or set(query_tokens).issubset(address_covered_tokens)
+    if has_full_token_coverage:
+        score += 40
+    if has_address_token_coverage:
+        score += 36
+
+    result = browse_result_from_row(row, columns, dictionary_values, reasons[:4])
+    return (
+        score,
+        has_full_token_coverage,
+        has_address_token_coverage,
+        result["starDoctor"],
+        result["careRating"],
+        result["reviewCount"],
+        result,
+    )
+
+
+def browse_provider_search(query: str, limit: int = 18) -> dict[str, Any]:
+    normalized_query = normalize_search_text(query)
+    compact_query = compact_search_text(normalized_query)
+    query_tokens = [token for token in normalized_query.split() if len(token) > 1 or token.isdigit()]
+    result_limit = min(10000, max(1, limit))
+
+    if len(compact_query) < 2:
+        return {"query": query, "totalMatches": 0, "results": []}
+
+    matches_by_field = value_matches_for_query(normalized_query, compact_query, query_tokens)
+    if not matches_by_field:
+        return {"query": query, "totalMatches": 0, "results": []}
+
+    street_query = has_street_query_intent(query_tokens)
+    columns = {field: storage_column(field) for field in BROWSE_SEARCH_RESULT_FIELDS}
+    dictionary_values = dictionaries()
+    candidate_rows = candidate_rows_for_matches(matches_by_field, columns)
+    scored_results = [
+        result
+        for row in candidate_rows.values()
+        if (result := scored_browse_result(row, columns, dictionary_values, matches_by_field, query_tokens)) is not None
+    ]
+
+    full_coverage_results = [result for result in scored_results if (result[2] if street_query else result[1])]
+    if full_coverage_results:
+        scored_results = full_coverage_results
+
+    scored_results.sort(key=lambda result: (-result[0], -int(result[3]), -result[4], -result[5]))
+    return {
+        "query": query,
+        "totalMatches": len(scored_results),
+        "results": [result[-1] for result in scored_results[:result_limit]],
+    }
+
 
 def all_provider_coords() -> list[tuple[int, float, float, str, str]]:
     """Return (provider_id, lat, lng, zipcode, species_common) for every provider — used by the network map."""

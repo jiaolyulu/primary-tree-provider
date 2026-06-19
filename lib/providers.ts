@@ -47,8 +47,34 @@ export type ProviderMatch = Provider & {
   matchScore: number;
 };
 
+export type ProviderBrowseSearchResult = Pick<
+  Provider,
+  | "providerId"
+  | "speciesCommon"
+  | "speciesScientific"
+  | "medicalSpecialty"
+  | "careRating"
+  | "reviewCount"
+  | "starDoctor"
+  | "clinicAddress"
+  | "clinicZipcode"
+  | "clinicCity"
+  | "clinicNeighborhood"
+  | "clinicState"
+  | "clinicLatitude"
+  | "clinicLongitude"
+> & {
+  matchReasons: string[];
+};
+
 type ProviderSearchPayload = {
   providers?: ProviderMatch[];
+};
+
+type ProviderBrowseSearchPayload = {
+  query?: string;
+  totalMatches?: number;
+  results?: ProviderBrowseSearchResult[];
 };
 
 export const DEFAULT_PROVIDER_RESULT_LIMIT = 50;
@@ -127,6 +153,47 @@ export async function fetchProviderById(providerId: number): Promise<ProviderMat
     return payload.provider ?? null;
   }
   return null;
+}
+
+export async function browseProviderSearch(
+  query: string,
+  limit = 18,
+  signal?: AbortSignal,
+): Promise<{ query: string; totalMatches: number; results: ProviderBrowseSearchResult[] }> {
+  const apiBaseUrls = providerApiBaseUrls();
+  let lastError = "Could not reach the provider database API.";
+
+  for (const apiBaseUrl of apiBaseUrls) {
+    const url = new URL(`${apiBaseUrl.replace(/\/$/, "")}/api/providers/browse-search`);
+    url.searchParams.set("q", query);
+    url.searchParams.set("limit", String(limit));
+
+    let response: Response;
+    try {
+      response = await fetch(url.toString(), { cache: "no-store", signal });
+    } catch (error) {
+      if (signal?.aborted) throw error;
+      continue;
+    }
+
+    if (!response.ok) {
+      lastError = `Provider database API returned ${response.status}.`;
+      continue;
+    }
+
+    const payload = (await response.json()) as ProviderBrowseSearchPayload;
+    if (!Array.isArray(payload.results)) {
+      throw new ProviderApiError("Provider database API returned an unexpected response.");
+    }
+
+    return {
+      query: payload.query ?? query,
+      totalMatches: payload.totalMatches ?? payload.results.length,
+      results: payload.results,
+    };
+  }
+
+  throw new ProviderApiError(lastError);
 }
 
 export async function rankProviders(
