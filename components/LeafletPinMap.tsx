@@ -25,15 +25,18 @@ function clampPin(pin: Pin) {
 export function LeafletPinMap({
   pin,
   onChange,
+  showMarker = true,
 }: {
   pin: Pin;
   onChange: (pin: Pin) => void;
+  showMarker?: boolean;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markerRef = useRef<Marker | null>(null);
   const onChangeRef = useRef(onChange);
   const initialPinRef = useRef(pin);
+  const initialShowMarkerRef = useRef(showMarker);
 
   useEffect(() => {
     onChangeRef.current = onChange;
@@ -71,6 +74,7 @@ export function LeafletPinMap({
           iconAnchor: [17, 17],
           iconSize: [34, 34],
         }),
+        opacity: initialShowMarkerRef.current ? 1 : 0,
       }).addTo(map);
 
       map.on("click", (event) => {
@@ -95,6 +99,10 @@ export function LeafletPinMap({
     const position: LatLngExpression = [pin.latitude, pin.longitude];
     markerRef.current?.setLatLng(position);
   }, [pin.latitude, pin.longitude]);
+
+  useEffect(() => {
+    markerRef.current?.setOpacity(showMarker ? 1 : 0);
+  }, [showMarker]);
 
   return <div ref={containerRef} className="leaflet-pin-map" aria-label="NYC map pin picker" />;
 }

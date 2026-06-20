@@ -4,7 +4,7 @@ import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { ArrowRight, ChevronDown, LoaderCircle, MapPin, Stethoscope } from "lucide-react";
+import { ArrowRight, ChevronDown, LoaderCircle, MapPin, Stethoscope, X } from "lucide-react";
 import { LeafletPinMap } from "@/components/LeafletPinMap";
 
 const symptomGroups = [
@@ -78,6 +78,8 @@ export function IntakeForm({
   const [symptom, setSymptom] = useState(initialSymptom);
   const [formMessage, setFormMessage] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false);
+  const [mobileStep, setMobileStep] = useState<"location" | "symptom">("location");
   const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
   const [isClient, setIsClient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -93,6 +95,21 @@ export function IntakeForm({
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  useEffect(() => {
+    if (!isMobileDialogOpen) return;
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsMobileDialogOpen(false);
+    };
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.removeEventListener("keydown", onKeyDown);
+    };
+  }, [isMobileDialogOpen]);
 
   useEffect(() => {
     function handlePointerDown(event: PointerEvent) {
@@ -136,6 +153,8 @@ export function IntakeForm({
     setHasChosenPin(hasInitialPin);
     setFormMessage("");
     setIsSubmitting(false);
+    setIsMobileDialogOpen(false);
+    setMobileStep("location");
   }, [initialZip, initialSymptom, initialLat, initialLng, initialLocationMode, hasInitialPin]);
 
   useEffect(() => {
@@ -144,13 +163,17 @@ export function IntakeForm({
     }
   }, [formMessage, hasLocation]);
 
-  function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function runSearch({ requireSymptom = false } = {}) {
     if (!hasLocation) {
       setIsPickerOpen(false);
       setFormMessage(
         locationMode === "pin" ? "Drop a pin in NYC to find your PCT." : "Enter a 5-digit ZIP code to find your PCT.",
       );
+      return;
+    }
+    if (requireSymptom && !symptom.trim()) {
+      setMobileStep("symptom");
+      setFormMessage("Select one symptom to find your Primary Care Tree.");
       return;
     }
 
@@ -170,12 +193,20 @@ export function IntakeForm({
 
     const targetUrl = `/providers?${params.toString()}`;
     if (typeof window !== "undefined" && `${window.location.pathname}${window.location.search}` === targetUrl) {
+      setIsPickerOpen(false);
+      setIsMobileDialogOpen(false);
       return;
     }
 
     setIsPickerOpen(false);
+    setIsMobileDialogOpen(false);
     setIsSubmitting(true);
     router.push(targetUrl);
+  }
+
+  function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    runSearch();
   }
 
   function selectSymptom(nextSymptom: string) {
@@ -184,6 +215,23 @@ export function IntakeForm({
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+  }
+
+  function openMobileDialog() {
+    setLocationMode("pin");
+    setMobileStep("location");
+    setIsPickerOpen(false);
+    setFormMessage("");
+    setIsMobileDialogOpen(true);
+  }
+
+  function continueToMobileSymptoms() {
+    if (!hasChosenPin) {
+      setFormMessage("Tap the map to select your location first.");
+      return;
+    }
+    setFormMessage("");
+    setMobileStep("symptom");
   }
 
   const symptomMenu =
@@ -232,14 +280,143 @@ export function IntakeForm({
         )
       : null;
 
+  const mobileDialog =
+    isMobileDialogOpen && isClient && !compact
+      ? createPortal(
+          <div className="mobile-intake-overlay" role="dialog" aria-modal="true" aria-label="Find a Primary Care Tree">
+            <div className="mobile-intake-dialog">
+              <header className="mobile-intake-header">
+                <div>
+                  <span>{mobileStep === "location" ? "Step 1 of 2" : "Step 2 of 2"}</span>
+                  <h2>{mobileStep === "location" ? "Select your location" : "Select one symptom"}</h2>
+                </div>
+                <button
+                  type="button"
+                  className="mobile-intake-close"
+                  onClick={() => setIsMobileDialogOpen(false)}
+                  aria-label="Close"
+                >
+                  <X aria-hidden="true" size={20} />
+                </button>
+              </header>
+
+              <div className="mobile-intake-content">
+                {mobileStep === "location" ? (
+                  <section className="mobile-intake-step" aria-label="Select location">
+                    <p>Tap the NYC map to set the location where you want care to begin.</p>
+                    <LeafletPinMap
+                      pin={pin}
+                      showMarker={hasChosenPin}
+                      onChange={(nextPin) => {
+                        setPin(nextPin);
+                        setHasChosenPin(true);
+                        setFormMessage("");
+                      }}
+                    />
+                    <p className="mobile-intake-status">
+                      {hasChosenPin
+                        ? `Location selected at ${pin.latitude.toFixed(4)}, ${pin.longitude.toFixed(4)}.`
+                        : "No location selected yet."}
+                    </p>
+                  </section>
+                ) : (
+                  <section className="mobile-intake-step" aria-label="Select symptom">
+                    <p>Choose one symptom so the network can match the right provider tree specialty.</p>
+                    <div className="mobile-symptom-list" role="radiogroup" aria-label="Symptoms">
+                      {symptomGroups.map((group) => (
+                        <div className="mobile-symptom-group" key={group.label}>
+                          <span>{group.label}</span>
+                          <div>
+                            {group.options.map((option) => (
+                              <button
+                                key={option}
+                                type="button"
+                                role="radio"
+                                aria-checked={symptom === option}
+                                onClick={() => {
+                                  setSymptom(option);
+                                  setFormMessage("");
+                                }}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                )}
+              </div>
+
+              <footer className="mobile-intake-actions">
+                {formMessage ? (
+                  <p className="mobile-intake-message" id={messageId} role="status" aria-live="polite">
+                    {formMessage}
+                  </p>
+                ) : null}
+                <div>
+                  {mobileStep === "symptom" ? (
+                    <button type="button" className="secondary-button" onClick={() => setMobileStep("location")}>
+                      Back
+                    </button>
+                  ) : null}
+                  {mobileStep === "location" ? (
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={!hasChosenPin}
+                      onClick={continueToMobileSymptoms}
+                    >
+                      Select this location
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      className="primary-button"
+                      disabled={!symptom.trim() || isSubmitting}
+                      onClick={() => runSearch({ requireSymptom: true })}
+                    >
+                      <span>{isSubmitting ? "Finding PCT" : "Find a PCT"}</span>
+                      {isSubmitting ? (
+                        <LoaderCircle className="button-spinner" aria-hidden="true" size={18} />
+                      ) : (
+                        <ArrowRight aria-hidden="true" size={18} />
+                      )}
+                    </button>
+                  )}
+                </div>
+              </footer>
+            </div>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <form
-      className={compact ? "intake-form compact" : "intake-form"}
-      onSubmit={handleSubmit}
-      aria-busy={isSubmitting}
-      aria-describedby={formMessage ? messageId : undefined}
-      noValidate
-    >
+    <>
+      {!compact ? (
+        <button type="button" className="mobile-intake-launcher" onClick={openMobileDialog}>
+          <span>
+            <MapPin aria-hidden="true" size={17} />
+            Location
+          </span>
+          <strong>{hasChosenPin ? "Pin selected" : "Tap to choose"}</strong>
+          <span>
+            <Stethoscope aria-hidden="true" size={17} />
+            Symptom
+          </span>
+          <strong>{symptom || "Required"}</strong>
+        </button>
+      ) : null}
+      {mobileDialog}
+      <form
+        className={compact ? "intake-form compact" : "intake-form intake-form-desktop"}
+        onSubmit={handleSubmit}
+        aria-busy={isSubmitting}
+        aria-describedby={formMessage ? messageId : undefined}
+        noValidate
+      >
       <div className="location-mode-toggle" aria-label="Location input mode">
         <button
           type="button"
@@ -288,6 +465,7 @@ export function IntakeForm({
           <span>Drop a pin in NYC</span>
           <LeafletPinMap
             pin={pin}
+            showMarker={hasChosenPin}
             onChange={(nextPin) => {
               setPin(nextPin);
               setHasChosenPin(true);
@@ -332,6 +510,7 @@ export function IntakeForm({
           {formMessage}
         </p>
       ) : null}
-    </form>
+      </form>
+    </>
   );
 }
