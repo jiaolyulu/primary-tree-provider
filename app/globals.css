@@ -2306,6 +2306,7 @@ details p {
   background: var(--paper-2);
   height: 100%;
   min-height: 340px;
+  overscroll-behavior: contain;
   width: 100%;
 }
 

@@ -36,27 +36,48 @@ export function ProviderResultsMap({
 
   useEffect(() => {
     let cancelled = false;
+    let cleanupWheelZoom: (() => void) | null = null;
     const markersByProviderId = markersByProviderIdRef.current;
 
     async function initMap() {
       const L = await import("leaflet");
       if (cancelled || !containerRef.current || mapRef.current) return;
+      const mapContainer = containerRef.current;
 
       const firstProvider = providers[0];
       const initialPosition: LatLngExpression = firstProvider
         ? [firstProvider.clinicLatitude, firstProvider.clinicLongitude]
         : [40.7128, -74.006];
-      const map = L.map(containerRef.current, {
+      const map = L.map(mapContainer, {
         attributionControl: false,
         maxZoom: 18,
         minZoom: 10,
-        scrollWheelZoom: "center",
-        wheelPxPerZoomLevel: 140,
+        scrollWheelZoom: false,
         zoomDelta: 0.5,
         zoomSnap: 0.5,
         zoomControl: true,
       }).setView(initialPosition, 14);
-      L.DomEvent.disableScrollPropagation(containerRef.current);
+      L.DomEvent.disableScrollPropagation(mapContainer);
+
+      let lastWheelZoomAt = 0;
+      const onWheelZoom = (event: WheelEvent) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const now = performance.now();
+        if (now - lastWheelZoomAt < 70) return;
+        lastWheelZoomAt = now;
+
+        const direction = event.deltaY < 0 ? 1 : -1;
+        const currentZoom = map.getZoom();
+        const nextZoom = Math.max(map.getMinZoom(), Math.min(map.getMaxZoom(), currentZoom + direction * 0.5));
+        if (nextZoom === currentZoom) return;
+
+        const point = map.mouseEventToContainerPoint(event as unknown as MouseEvent);
+        map.setZoomAround(point, nextZoom);
+      };
+      mapContainer.addEventListener("wheel", onWheelZoom, { passive: false });
+      cleanupWheelZoom = () => mapContainer.removeEventListener("wheel", onWheelZoom);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
@@ -70,6 +91,7 @@ export function ProviderResultsMap({
 
     return () => {
       cancelled = true;
+      cleanupWheelZoom?.();
       mapRef.current?.remove();
       mapRef.current = null;
       markersRef.current = [];
