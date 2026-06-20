@@ -10,7 +10,6 @@ import {
   Bone,
   Brain,
   ClipboardCheck,
-  Download,
   Droplet,
   Ear,
   ExternalLink,
@@ -21,7 +20,6 @@ import {
   MapPin,
   Microscope,
   Moon,
-  Printer,
   Search,
   ShieldCheck,
   Smile,
@@ -31,11 +29,10 @@ import {
   Thermometer,
   Utensils,
   Wind,
-  X,
   Zap,
 } from "lucide-react";
 import { IntakeForm } from "@/components/IntakeForm";
-import { downloadProviderCardPdf, printProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
+import { ProviderCardDialog } from "@/components/ProviderCardDialog";
 import { ProviderLearnMoreDialog } from "@/components/ProviderLearnMoreDialog";
 import { ProviderResultsMap } from "@/components/ProviderResultsMap";
 import { DEFAULT_PROVIDER_RESULT_LIMIT, fetchProviderById, ProviderMatch, rankProviders } from "@/lib/providers";
@@ -138,9 +135,6 @@ export function ProviderDashboard() {
   const [selectedProviderId, setSelectedProviderId] = useState<number | null>(null);
   const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
   const [cardProvider, setCardProvider] = useState<ProviderMatch | null>(null);
-  const [isDownloadingCard, setIsDownloadingCard] = useState(false);
-  const [isPrintingCard, setIsPrintingCard] = useState(false);
-  const [cardDownloadError, setCardDownloadError] = useState("");
   const [sortBy, setSortBy] = useState("match");
   const [displayLimit, setDisplayLimit] = useState(DEFAULT_PROVIDER_RESULT_LIMIT);
   const [loadError, setLoadError] = useState("");
@@ -171,21 +165,6 @@ export function ProviderDashboard() {
       requestId: (request?.requestId ?? 0) + 1,
     }));
   };
-
-  useEffect(() => {
-    if (!cardProvider) return;
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setCardProvider(null);
-    };
-    document.addEventListener("keydown", onKeyDown);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [cardProvider]);
 
   // Fetch the directly-clicked provider by ID so it always appears regardless of search ranking.
   useEffect(() => {
@@ -235,35 +214,6 @@ export function ProviderDashboard() {
   const openCardDialog = (provider: ProviderMatch) => {
     setDetailProvider(null);
     setCardProvider(provider);
-    setIsDownloadingCard(false);
-    setIsPrintingCard(false);
-    setCardDownloadError("");
-  };
-
-  const downloadCardPdf = async () => {
-    if (!cardProvider) return;
-    setIsDownloadingCard(true);
-    setCardDownloadError("");
-    try {
-      await downloadProviderCardPdf(`pct-provider-card-dialog-${cardProvider.providerId}`, cardProvider);
-    } catch {
-      setCardDownloadError("We could not prepare the PDF. Please try again.");
-    } finally {
-      setIsDownloadingCard(false);
-    }
-  };
-
-  const printCardPdf = async () => {
-    if (!cardProvider) return;
-    setIsPrintingCard(true);
-    setCardDownloadError("");
-    try {
-      await printProviderCardPdf(`pct-provider-card-dialog-${cardProvider.providerId}`);
-    } catch {
-      setCardDownloadError("We could not prepare the card for printing. Please try again.");
-    } finally {
-      setIsPrintingCard(false);
-    }
   };
 
   if (loadError) {
@@ -538,65 +488,7 @@ export function ProviderDashboard() {
       ) : null}
 
       {cardProvider ? (
-        <div
-          className="tree-detail-overlay card-dialog-overlay"
-          role="dialog"
-          aria-modal="true"
-          aria-label={`${cardProvider.speciesCommon} PCT provider card`}
-          onClick={() => setCardProvider(null)}
-        >
-          <div className="card-dialog-modal" onClick={(event) => event.stopPropagation()}>
-            <div className="card-dialog-header">
-              <div>
-                <span className="provider-card-eyebrow">
-                  Primary PCT · {cardProvider.clinicNeighborhood}
-                </span>
-                <h2>{cardProvider.speciesCommon} provider card</h2>
-              </div>
-              <button
-                type="button"
-                className="tree-detail-close"
-                onClick={() => setCardProvider(null)}
-                aria-label="Close card"
-              >
-                <X aria-hidden="true" size={18} />
-              </button>
-            </div>
-
-            <div className="card-dialog-body">
-              <PctProviderCardSvgPair
-                cardIdPrefix={`pct-provider-card-dialog-${cardProvider.providerId}`}
-                provider={cardProvider}
-                zipcode={zipcode}
-              />
-            </div>
-
-            <div className="card-dialog-actions">
-              {cardDownloadError ? <p role="alert">{cardDownloadError}</p> : null}
-              <button type="button" className="tree-learn-more" onClick={() => setCardProvider(null)}>
-                Keep browsing
-              </button>
-              <button
-                type="button"
-                className="provider-choose-btn"
-                onClick={downloadCardPdf}
-                disabled={isDownloadingCard}
-              >
-                <Download aria-hidden="true" size={16} />
-                {isDownloadingCard ? "Preparing PDF..." : "Download"}
-              </button>
-              <button
-                type="button"
-                className="provider-choose-btn"
-                onClick={printCardPdf}
-                disabled={isPrintingCard}
-              >
-                <Printer aria-hidden="true" size={16} />
-                {isPrintingCard ? "Preparing print..." : "Print"}
-              </button>
-            </div>
-          </div>
-        </div>
+        <ProviderCardDialog provider={cardProvider} zipcode={zipcode} onClose={() => setCardProvider(null)} />
       ) : null}
     </main>
   );

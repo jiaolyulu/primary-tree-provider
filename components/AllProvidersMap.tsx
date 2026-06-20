@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { X } from "lucide-react";
+import { ProviderCardDialog } from "@/components/ProviderCardDialog";
 import { ProviderLearnMoreDialog } from "@/components/ProviderLearnMoreDialog";
 import { fetchProviderById, type ProviderMatch } from "@/lib/providers";
 
@@ -50,6 +51,7 @@ export function AllProvidersMap({
   const [visibleCount, setVisibleCount] = useState(0);
   const [markerTotal, setMarkerTotal] = useState(0);
   const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
+  const [cardProvider, setCardProvider] = useState<ProviderMatch | null>(null);
   const [detailLoadingId, setDetailLoadingId] = useState<number | null>(null);
   const [detailLoadError, setDetailLoadError] = useState("");
   const hasActiveFilter = filterQuery.trim().length >= 2;
@@ -83,6 +85,11 @@ export function AllProvidersMap({
         setDetailLoadingId(null);
         setDetailLoadError("We could not load this provider's learn more card. Please try again.");
       });
+  }, []);
+
+  const openCardDialog = useCallback((provider: ProviderMatch) => {
+    setDetailProvider(null);
+    setCardProvider(provider);
   }, []);
 
   useEffect(() => {
@@ -292,7 +299,18 @@ export function AllProvidersMap({
         </div>
       ) : null}
       {detailProvider ? (
-        <ProviderLearnMoreDialog provider={detailProvider} onClose={closeProviderDetails} />
+        <ProviderLearnMoreDialog
+          provider={detailProvider}
+          onClose={closeProviderDetails}
+          onChoose={openCardDialog}
+        />
+      ) : null}
+      {cardProvider ? (
+        <ProviderCardDialog
+          provider={cardProvider}
+          zipcode={cardProvider.clinicZipcode}
+          onClose={() => setCardProvider(null)}
+        />
       ) : null}
     </div>
   );
