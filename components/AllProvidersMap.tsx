@@ -1,6 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
+import { ProviderLearnMoreDialog } from "@/components/ProviderLearnMoreDialog";
+import { fetchProviderById, type ProviderMatch } from "@/lib/providers";
 
 export type MapProviderTree = {
   id: number;
@@ -42,10 +45,51 @@ export function AllProvidersMap({
   const activeTreesRef = useRef<MapProviderTree[]>([]);
   const updateMarkersRef = useRef<(() => void) | null>(null);
   const previousFilterSignatureRef = useRef("");
+  const detailRequestRef = useRef(0);
   const [loadStatus, setLoadStatus] = useState<"loading" | "ready" | "error">("loading");
   const [visibleCount, setVisibleCount] = useState(0);
   const [markerTotal, setMarkerTotal] = useState(0);
+  const [detailProvider, setDetailProvider] = useState<ProviderMatch | null>(null);
+  const [detailLoadingId, setDetailLoadingId] = useState<number | null>(null);
+  const [detailLoadError, setDetailLoadError] = useState("");
   const hasActiveFilter = filterQuery.trim().length >= 2;
+
+  const closeProviderDetails = useCallback(() => {
+    detailRequestRef.current += 1;
+    setDetailProvider(null);
+    setDetailLoadingId(null);
+    setDetailLoadError("");
+  }, []);
+
+  const openProviderDetails = useCallback((providerId: number) => {
+    const requestId = detailRequestRef.current + 1;
+    detailRequestRef.current = requestId;
+    setDetailProvider(null);
+    setDetailLoadError("");
+    setDetailLoadingId(providerId);
+
+    fetchProviderById(providerId)
+      .then((provider) => {
+        if (detailRequestRef.current !== requestId) return;
+        setDetailLoadingId(null);
+        if (provider) {
+          setDetailProvider(provider);
+        } else {
+          setDetailLoadError("We could not find details for this provider.");
+        }
+      })
+      .catch(() => {
+        if (detailRequestRef.current !== requestId) return;
+        setDetailLoadingId(null);
+        setDetailLoadError("We could not load this provider's learn more card. Please try again.");
+      });
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      detailRequestRef.current += 1;
+    };
+  }, []);
 
   // Load all provider coordinates from the backend (guaranteed to have profiles)
   useEffect(() => {
@@ -118,9 +162,9 @@ export function AllProvidersMap({
             .bindTooltip(tooltip, { direction: "top", opacity: 0.95 })
             .addTo(layer);
 
-          const { id, zip, lat, lng } = tree;
+          const { id } = tree;
           marker.on("click", () => {
-            window.location.href = `/providers?zip=${zip}&lat=${lat}&lng=${lng}&location=pin&id=${id}`;
+            openProviderDetails(id);
           });
           marker.on("mouseover", () => marker.setStyle({ radius: 7, fillColor: "#007a34" }));
           marker.on("mouseout", () => marker.setStyle({ radius: 5, fillColor: "#00471f" }));
@@ -144,7 +188,7 @@ export function AllProvidersMap({
       layerRef.current = null;
       updateMarkersRef.current = null;
     };
-  }, [loadStatus]);
+  }, [loadStatus, openProviderDetails]);
 
   useEffect(() => {
     if (loadStatus !== "ready") return;
@@ -213,6 +257,43 @@ export function AllProvidersMap({
           {hasActiveFilter && filterTotal > markerTotal ? ` · ${markerTotal.toLocaleString()} of ${filterTotal.toLocaleString()} loaded` : ""}
         </div>
       )}
+      {detailLoadingId ? (
+        <div
+          className="tree-detail-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Loading provider details"
+          onClick={closeProviderDetails}
+        >
+          <div className="tree-detail-modal all-providers-map-dialog" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className="tree-detail-close" onClick={closeProviderDetails} aria-label="Close">
+              <X aria-hidden="true" size={18} />
+            </button>
+            <p className="all-providers-map-dialog-status">Loading provider details...</p>
+          </div>
+        </div>
+      ) : null}
+      {detailLoadError ? (
+        <div
+          className="tree-detail-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Provider details unavailable"
+          onClick={closeProviderDetails}
+        >
+          <div className="tree-detail-modal all-providers-map-dialog" onClick={(event) => event.stopPropagation()}>
+            <button type="button" className="tree-detail-close" onClick={closeProviderDetails} aria-label="Close">
+              <X aria-hidden="true" size={18} />
+            </button>
+            <p className="all-providers-map-dialog-status" role="alert">
+              {detailLoadError}
+            </p>
+          </div>
+        </div>
+      ) : null}
+      {detailProvider ? (
+        <ProviderLearnMoreDialog provider={detailProvider} onClose={closeProviderDetails} />
+      ) : null}
     </div>
   );
 }

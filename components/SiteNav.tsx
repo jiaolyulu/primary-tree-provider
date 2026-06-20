@@ -13,8 +13,8 @@ const navLinks = [
 ];
 
 type SiteNavProps = {
-  // The right-hand call to action; defaults to the "Browse all PCTs" directory link.
-  cta?: { href: string; label: string };
+  // The right-hand call to action; pass `null` to omit it.
+  cta?: { href: string; label: string } | null;
   // "overlay" sits transparently over the hero; "solid" is a standalone green bar.
   variant?: "overlay" | "solid";
 };
@@ -76,9 +76,11 @@ export function SiteNav({
             </a>
           ))}
         </div>
-        <Link href={cta.href} className="nav-cta" onClick={() => setOpen(false)}>
-          {cta.label}
-        </Link>
+        {cta ? (
+          <Link href={cta.href} className="nav-cta" onClick={(event) => handleNavClick(event, cta.href)}>
+            {cta.label}
+          </Link>
+        ) : null}
       </div>
     </nav>
   );

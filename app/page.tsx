@@ -171,7 +171,7 @@ export default function Home() {
     <main>
       <HashScroll />
       <section className="hero-section">
-        <SiteNav />
+        <SiteNav cta={null} />
 
         <HeroVideo />
         <div className="hero-image" aria-hidden="true" />
@@ -205,12 +205,22 @@ export default function Home() {
             <p className="hero-proof-note">Source-authored profiles</p>
           </div>
 
-          <div className="hero-demo" aria-label="Find a Primary Care Tree">
+          <div className="hero-demo" id="care-intake" aria-label="Find a Primary Care Tree">
             <div className="demo-header">
               <h2>Care intake</h2>
             </div>
             <div className="demo-body">
               <IntakeForm initialZip="11215" />
+              <div className="intake-alternative">
+                <span>Alternative path</span>
+                <p>
+                  Want to explore first? Search by ZIP, neighborhood, or street, or browse every PCT in the network.
+                </p>
+                <Link href="/pcts" className="intake-browse-link">
+                  Browse all PCTs
+                  <ArrowRight aria-hidden="true" size={16} />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
