@@ -164,8 +164,9 @@ const testimonials = [
   },
 ];
 
+const displayTeam = [team[1], team[3], team[4], team[0], team[2]];
+
 export default function Home() {
-  const shuffledTeam = [...team].sort(() => Math.random() - 0.5);
   return (
     <main>
       <HashScroll />
@@ -271,10 +272,10 @@ export default function Home() {
                 <p>A team of care specialists facilitating relationships between people and tree providers.</p>
                 <p className="poster-see-also">
                   See also:{" "}
-                  {shuffledTeam.map((member, i) => (
+                  {displayTeam.map((member, i) => (
                     <span key={member.name}>
                       <a href={member.href} target="_blank" rel="noopener noreferrer">{member.name}</a>
-                      {i < shuffledTeam.length - 1 ? ", " : ""}
+                      {i < displayTeam.length - 1 ? ", " : ""}
                     </span>
                   ))}
                 </p>
@@ -481,7 +482,7 @@ export default function Home() {
           </div>
           <div className="footer-nav">
             <span>Team</span>
-            {shuffledTeam.map((member) => (
+            {displayTeam.map((member) => (
               <a key={member.name} href={member.href} target="_blank" rel="noopener noreferrer">
                 {member.name}
               </a>

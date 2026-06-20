@@ -7,16 +7,22 @@ import type { ProviderMatch } from "@/lib/providers";
 export function ProviderResultsMap({
   providers,
   selectedProviderId,
+  focusProviderId,
+  focusRequestId = 0,
   onSelectProvider,
 }: {
   providers: ProviderMatch[];
   selectedProviderId: number;
+  focusProviderId?: number | null;
+  focusRequestId?: number;
   onSelectProvider: (providerId: number) => void;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<LeafletMap | null>(null);
   const markersRef = useRef<Marker[]>([]);
+  const markersByProviderIdRef = useRef(new Map<number, Marker>());
   const onSelectProviderRef = useRef(onSelectProvider);
+  const providersRef = useRef(providers);
   const providerIdsRef = useRef("");
   const [isMapReady, setIsMapReady] = useState(false);
 
@@ -25,7 +31,12 @@ export function ProviderResultsMap({
   }, [onSelectProvider]);
 
   useEffect(() => {
+    providersRef.current = providers;
+  }, [providers]);
+
+  useEffect(() => {
     let cancelled = false;
+    const markersByProviderId = markersByProviderIdRef.current;
 
     async function initMap() {
       const L = await import("leaflet");
@@ -62,6 +73,7 @@ export function ProviderResultsMap({
       mapRef.current?.remove();
       mapRef.current = null;
       markersRef.current = [];
+      markersByProviderId.clear();
       providerIdsRef.current = "";
     };
     // Mount-only: the map is created once and `providers` is read solely for the
@@ -80,6 +92,7 @@ export function ProviderResultsMap({
       if (cancelled) return;
 
       markersRef.current.forEach((marker) => marker.remove());
+      markersByProviderIdRef.current.clear();
       const providerIds = providers
         .map((provider) => provider.providerId)
         .sort((left, right) => left - right)
@@ -108,6 +121,7 @@ export function ProviderResultsMap({
           opacity: 0.96,
         });
         marker.on("click", () => onSelectProviderRef.current(provider.providerId));
+        markersByProviderIdRef.current.set(provider.providerId, marker);
         return marker;
       });
 
@@ -128,6 +142,22 @@ export function ProviderResultsMap({
       cancelled = true;
     };
   }, [isMapReady, providers, selectedProviderId]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !isMapReady || focusProviderId == null) return;
+
+    const provider = providersRef.current.find((entry) => entry.providerId === focusProviderId);
+    if (!provider) return;
+
+    const position: LatLngExpression = [provider.clinicLatitude, provider.clinicLongitude];
+    const targetZoom = Math.max(map.getZoom(), 17);
+    map.flyTo(position, targetZoom, { animate: true, duration: 0.75 });
+    const tooltipTimer = window.setTimeout(() => {
+      markersByProviderIdRef.current.get(provider.providerId)?.openTooltip();
+    }, 120);
+    return () => window.clearTimeout(tooltipTimer);
+  }, [focusProviderId, focusRequestId, isMapReady]);
 
   return <div ref={containerRef} className="provider-results-map" aria-label="Provider tree results map" />;
 }

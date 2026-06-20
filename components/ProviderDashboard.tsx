@@ -256,6 +256,7 @@ export function ProviderDashboard() {
   const [sortBy, setSortBy] = useState("match");
   const [displayLimit, setDisplayLimit] = useState(DEFAULT_PROVIDER_RESULT_LIMIT);
   const [loadError, setLoadError] = useState("");
+  const [mapFocusRequest, setMapFocusRequest] = useState<{ providerId: number; requestId: number } | null>(null);
   const providerCardRefs = useRef(new Map<number, HTMLElement>());
 
   const scrollProviderCardIntoView = useCallback((providerId: number) => {
@@ -274,6 +275,14 @@ export function ProviderDashboard() {
     },
     [scrollProviderCardIntoView],
   );
+
+  const selectProviderFromCard = (providerId: number) => {
+    setSelectedProviderId(providerId);
+    setMapFocusRequest((request) => ({
+      providerId,
+      requestId: (request?.requestId ?? 0) + 1,
+    }));
+  };
 
   useEffect(() => {
     if (!detailProvider && !cardProvider) return;
@@ -507,6 +516,8 @@ export function ProviderDashboard() {
             <ProviderResultsMap
               providers={displayedProviders}
               selectedProviderId={selectedProvider.providerId}
+              focusProviderId={mapFocusRequest?.providerId ?? null}
+              focusRequestId={mapFocusRequest?.requestId ?? 0}
               onSelectProvider={selectProviderFromMap}
             />
             <a
@@ -547,7 +558,7 @@ export function ProviderDashboard() {
                     type="button"
                     className="provider-card-select"
                     aria-pressed={isSelected}
-                    onClick={() => setSelectedProviderId(provider.providerId)}
+                    onClick={() => selectProviderFromCard(provider.providerId)}
                   >
                     <div className="provider-card-media">
                       <TreeImage provider={provider} className="provider-tree-avatar" />
