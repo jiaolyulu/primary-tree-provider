@@ -1205,6 +1205,26 @@ input {
   gap: 14px;
 }
 
+.mobile-symptom-any {
+  background: rgba(244, 246, 239, 0.7);
+  border: 1px solid var(--line-dark);
+  color: var(--green);
+  cursor: pointer;
+  font: inherit;
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  min-height: 54px;
+  padding: 14px 16px;
+  text-align: left;
+}
+
+.mobile-symptom-any[aria-checked="true"] {
+  background: var(--green);
+  border-color: var(--green);
+  color: #fff;
+}
+
 .mobile-symptom-group {
   border: 1px solid var(--line-dark);
   background: rgba(244, 246, 239, 0.7);

@@ -482,6 +482,15 @@ export function IntakeForm({
                   <section className="mobile-intake-step" aria-label="Select symptom">
                     <p>Choose symptoms for a more specific match, or continue with any symptom.</p>
                     <div className="mobile-symptom-list" role="group" aria-label="Symptoms">
+                      <button
+                        type="button"
+                        className="mobile-symptom-any"
+                        role="checkbox"
+                        aria-checked={!hasSelectedSymptoms}
+                        onClick={clearSymptoms}
+                      >
+                        Any symptom / closest tree
+                      </button>
                       {symptomGroups.map((group) => (
                         <div className="mobile-symptom-group" key={group.label}>
                           <span>{group.label}</span>
