@@ -335,6 +335,29 @@ STREET_TOKEN_ALIASES = {
     "w": "west",
 }
 
+ORDINAL_TOKEN_ALIASES = {
+    "first": "1",
+    "second": "2",
+    "third": "3",
+    "fourth": "4",
+    "fifth": "5",
+    "sixth": "6",
+    "seventh": "7",
+    "eighth": "8",
+    "ninth": "9",
+    "tenth": "10",
+    "eleventh": "11",
+    "twelfth": "12",
+    "thirteenth": "13",
+    "fourteenth": "14",
+    "fifteenth": "15",
+    "sixteenth": "16",
+    "seventeenth": "17",
+    "eighteenth": "18",
+    "nineteenth": "19",
+    "twentieth": "20",
+}
+
 STREET_SUFFIX_WORDS = {
     "avenue",
     "boulevard",
@@ -357,7 +380,10 @@ def normalize_search_text(value: Any) -> str:
     text = text.casefold().replace("&", " and ")
     text = re.sub(r"(?<=\d)(st|nd|rd|th)\b", "", text)
     text = re.sub(r"[^a-z0-9]+", " ", text)
-    tokens = [STREET_TOKEN_ALIASES.get(token, token) for token in text.split()]
+    tokens = []
+    for token in text.split():
+        aliased_token = STREET_TOKEN_ALIASES.get(token, token)
+        tokens.append(ORDINAL_TOKEN_ALIASES.get(aliased_token, aliased_token))
     return " ".join(tokens)
 
 
@@ -366,7 +392,44 @@ def compact_search_text(value: str) -> str:
 
 
 def street_name_from_address(address: str) -> str:
-    return re.sub(r"^\s*\d+[a-z]?\s+", "", address, flags=re.IGNORECASE)
+    return re.sub(r"^\s*\d+(?:-\d+)?[a-z]?\s+", "", address, flags=re.IGNORECASE)
+
+
+def address_number_from_address(address: str) -> int | None:
+    match = re.match(r"^\s*(\d+)(?:-\d+)?[a-z]?\b", address, flags=re.IGNORECASE)
+    return int(match.group(1)) if match else None
+
+
+def street_stem_from_normalized(normalized_street: str) -> str:
+    tokens = normalized_street.split()
+    while tokens and tokens[-1] in STREET_SUFFIX_WORDS:
+        tokens.pop()
+    return " ".join(tokens)
+
+
+def parsed_street_query(query: str, normalized_query: str) -> dict[str, Any] | None:
+    address_match = re.match(r"^\s*(\d+)(?:-\d+)?[a-z]?\b[\s,.-]*", query, flags=re.IGNORECASE)
+    house_number = int(address_match.group(1)) if address_match else None
+    street_source = query[address_match.end() :] if address_match else query
+    normalized_street_source = normalize_search_text(street_source) if address_match else normalized_query
+    tokens = normalized_street_source.split()
+    if not tokens:
+        return None
+
+    suffix_index = next((index for index, token in enumerate(tokens) if token in STREET_SUFFIX_WORDS), None)
+    has_suffix = suffix_index is not None
+    street_tokens = tokens[: suffix_index + 1] if has_suffix else tokens
+    street_tokens = [token for token in street_tokens if not (token.isdigit() and len(token) == 5)]
+    normalized_street = " ".join(street_tokens)
+    if not normalized_street:
+        return None
+
+    return {
+        "houseNumber": house_number,
+        "street": normalized_street,
+        "streetStem": street_stem_from_normalized(normalized_street),
+        "hasSuffix": has_suffix,
+    }
 
 
 BROWSE_SEARCH_VALUE_FIELDS = [
@@ -512,6 +575,49 @@ def browse_search_values() -> list[dict[str, Any]]:
     return search_values
 
 
+@lru_cache(maxsize=1)
+def street_address_value_indexes() -> tuple[dict[str, list[Any]], dict[str, list[Any]]]:
+    dictionary_values = dictionaries()
+    address_values = dictionary_values.get("clinic_address")
+
+    if address_values is not None:
+        raw_address_values = list(address_values.items())
+    else:
+        address_column = storage_column("clinic_address")
+        with connection() as database:
+            rows = database.execute(f"SELECT DISTINCT {address_column} FROM providers").fetchall()
+        raw_address_values = [(row[0], row[0]) for row in rows]
+
+    exact_index: dict[str, list[Any]] = {}
+    stem_index: dict[str, list[Any]] = {}
+
+    for raw_value, display_value in raw_address_values:
+        normalized_street = normalize_search_text(street_name_from_address(str(display_value)))
+        if not normalized_street:
+            continue
+
+        exact_index.setdefault(normalized_street, []).append(raw_value)
+        street_stem = street_stem_from_normalized(normalized_street)
+        if street_stem and street_stem != normalized_street:
+            stem_index.setdefault(street_stem, []).append(raw_value)
+
+    return exact_index, stem_index
+
+
+def address_values_for_street_query(street_query: dict[str, Any]) -> list[Any]:
+    exact_index, stem_index = street_address_value_indexes()
+    exact_values = exact_index.get(street_query["street"], [])
+    if exact_values:
+        return exact_values
+
+    can_use_stem = street_query["houseNumber"] is not None or not street_query["hasSuffix"]
+    if not can_use_stem:
+        return []
+
+    stem = street_query["streetStem"] or street_query["street"]
+    return stem_index.get(stem, [])
+
+
 def browse_row_value(
     row: sqlite3.Row,
     columns: dict[str, str],
@@ -547,6 +653,67 @@ def browse_result_from_row(
         "reviewCount": int(browse_row_value(row, columns, dictionary_values, "review_count")),
         "starDoctor": bool(browse_row_value(row, columns, dictionary_values, "star_doctor")),
         "matchReasons": match_reasons,
+    }
+
+
+def nearby_street_browse_payload(
+    query: str,
+    street_query: dict[str, Any],
+    result_limit: int,
+    columns: dict[str, str],
+    dictionary_values: dict[str, dict[int, str]],
+) -> dict[str, Any] | None:
+    address_values = address_values_for_street_query(street_query)
+    if not address_values:
+        return None
+
+    address_column = storage_column("clinic_address")
+    selected_columns = ", ".join(dict.fromkeys(columns.values()))
+    candidate_rows: dict[int, sqlite3.Row] = {}
+
+    with connection() as database:
+        for address_value_chunk in chunked(address_values):
+            placeholders = ", ".join("?" for _ in address_value_chunk)
+            rows = database.execute(
+                f"SELECT provider_id, {selected_columns} FROM providers WHERE {address_column} IN ({placeholders})",
+                address_value_chunk,
+            ).fetchall()
+            for row in rows:
+                candidate_rows[row["provider_id"]] = row
+
+    if not candidate_rows:
+        return None
+
+    house_number = street_query["houseNumber"]
+    match_reasons = ["Nearby address"] if house_number is not None else ["Street"]
+    scored_results = []
+
+    for row in candidate_rows.values():
+        result = browse_result_from_row(row, columns, dictionary_values, match_reasons)
+        row_house_number = address_number_from_address(result["clinicAddress"])
+        if house_number is not None and row_house_number is not None:
+            number_gap = abs(row_house_number - house_number)
+            side_gap = 0 if row_house_number % 2 == house_number % 2 else 1
+        else:
+            number_gap = 0 if house_number is None else 1_000_000
+            side_gap = 0
+
+        scored_results.append(
+            (
+                number_gap,
+                side_gap,
+                -int(result["starDoctor"]),
+                -float(result["careRating"]),
+                -int(result["reviewCount"]),
+                result,
+            )
+        )
+
+    scored_results.sort(key=lambda result: result[:-1])
+    return {
+        "query": query,
+        "totalMatches": len(scored_results),
+        "results": [result[-1] for result in scored_results[:result_limit]],
     }
 
 
@@ -663,13 +830,28 @@ def browse_provider_search(query: str, limit: int = 18) -> dict[str, Any]:
     if len(compact_query) < 2:
         return {"query": query, "totalMatches": 0, "results": []}
 
-    matches_by_field = value_matches_for_query(normalized_query, compact_query, query_tokens)
-    if not matches_by_field:
-        return {"query": query, "totalMatches": 0, "results": []}
-
-    street_query = has_street_query_intent(query_tokens)
+    has_street_intent = has_street_query_intent(query_tokens)
+    street_address_query = parsed_street_query(query, normalized_query)
+    has_street_address_intent = bool(
+        street_address_query
+        and (street_address_query["houseNumber"] is not None or street_address_query["hasSuffix"])
+    )
     columns = {field: storage_column(field) for field in BROWSE_SEARCH_RESULT_FIELDS}
     dictionary_values = dictionaries()
+    matches_by_field = value_matches_for_query(normalized_query, compact_query, query_tokens)
+    if not matches_by_field:
+        if has_street_address_intent and street_address_query is not None:
+            nearby_payload = nearby_street_browse_payload(
+                query,
+                street_address_query,
+                result_limit,
+                columns,
+                dictionary_values,
+            )
+            if nearby_payload is not None:
+                return nearby_payload
+        return {"query": query, "totalMatches": 0, "results": []}
+
     candidate_rows = candidate_rows_for_matches(matches_by_field, columns)
     scored_results = [
         result
@@ -677,9 +859,19 @@ def browse_provider_search(query: str, limit: int = 18) -> dict[str, Any]:
         if (result := scored_browse_result(row, columns, dictionary_values, matches_by_field, query_tokens)) is not None
     ]
 
-    full_coverage_results = [result for result in scored_results if (result[2] if street_query else result[1])]
+    full_coverage_results = [result for result in scored_results if (result[2] if has_street_intent else result[1])]
     if full_coverage_results:
         scored_results = full_coverage_results
+    elif has_street_address_intent and street_address_query is not None:
+        nearby_payload = nearby_street_browse_payload(
+            query,
+            street_address_query,
+            result_limit,
+            columns,
+            dictionary_values,
+        )
+        if nearby_payload is not None:
+            return nearby_payload
 
     scored_results.sort(key=lambda result: (-result[0], -int(result[3]), -result[4], -result[5]))
     return {
