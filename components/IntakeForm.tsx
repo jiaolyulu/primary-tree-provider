@@ -168,7 +168,7 @@ export function IntakeForm({
   const hasLocation = locationMode === "pin" ? hasChosenPin : zipcode.trim().length === 5;
   const hasSelectedSymptoms = selectedSymptoms.length > 0;
   const triggerSymptomLabel = selectedSymptomLabel(selectedSymptoms, "Any symptom");
-  const mobileSymptomLabel = selectedSymptomLabel(selectedSymptoms, "Required");
+  const mobileSymptomLabel = selectedSymptomLabel(selectedSymptoms, "Any symptom");
 
   useEffect(() => {
     setIsClient(true);
@@ -480,7 +480,7 @@ export function IntakeForm({
                   </section>
                 ) : (
                   <section className="mobile-intake-step" aria-label="Select symptom">
-                    <p>Choose one or more symptoms so the network can match the right provider tree specialty.</p>
+                    <p>Choose symptoms for a more specific match, or continue with any symptom.</p>
                     <div className="mobile-symptom-list" role="group" aria-label="Symptoms">
                       {symptomGroups.map((group) => (
                         <div className="mobile-symptom-group" key={group.label}>
@@ -532,8 +532,8 @@ export function IntakeForm({
                     <button
                       type="button"
                       className="primary-button"
-                      disabled={!hasSelectedSymptoms || isSubmitting}
-                      onClick={() => runSearch({ requireSymptom: true })}
+                      disabled={isSubmitting}
+                      onClick={() => runSearch()}
                     >
                       <span>{isSubmitting ? "Finding PCT" : "Find a PCT"}</span>
                       {isSubmitting ? (
