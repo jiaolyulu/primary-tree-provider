@@ -77,6 +77,13 @@ type ProviderBrowseSearchPayload = {
   results?: ProviderBrowseSearchResult[];
 };
 
+type SearchParamValue = string | string[];
+
+function cleanSearchValues(value: SearchParamValue) {
+  const values = Array.isArray(value) ? value : [value];
+  return values.map((item) => item.trim()).filter(Boolean);
+}
+
 export const DEFAULT_PROVIDER_RESULT_LIMIT = 50;
 
 export const providerNetworkStats = {
@@ -123,16 +130,16 @@ function providerApiBaseUrls() {
 function providerSearchUrl(
   apiBaseUrl: string,
   zipcode: string,
-  symptom: string,
+  symptom: SearchParamValue,
   coordinates?: { latitude: number; longitude: number },
   limit = DEFAULT_PROVIDER_RESULT_LIMIT,
-  specialty = "",
+  specialty: SearchParamValue = "",
 ) {
   const url = new URL(`${apiBaseUrl.replace(/\/$/, "")}/api/providers/search`);
   url.searchParams.set("zip", zipcode);
   url.searchParams.set("limit", String(limit));
-  if (symptom.trim()) url.searchParams.set("symptom", symptom.trim());
-  if (specialty.trim()) url.searchParams.set("specialty", specialty.trim());
+  cleanSearchValues(symptom).forEach((value) => url.searchParams.append("symptom", value));
+  cleanSearchValues(specialty).forEach((value) => url.searchParams.append("specialty", value));
   if (coordinates) {
     url.searchParams.set("lat", coordinates.latitude.toFixed(5));
     url.searchParams.set("lng", coordinates.longitude.toFixed(5));
@@ -200,10 +207,10 @@ export async function browseProviderSearch(
 
 export async function rankProviders(
   zipcode: string,
-  symptom: string,
+  symptom: SearchParamValue,
   coordinates?: { latitude: number; longitude: number },
   limit = DEFAULT_PROVIDER_RESULT_LIMIT,
-  specialty = "",
+  specialty: SearchParamValue = "",
 ): Promise<ProviderMatch[]> {
   const apiBaseUrls = providerApiBaseUrls();
 

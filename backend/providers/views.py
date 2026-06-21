@@ -25,13 +25,36 @@ def status(request: HttpRequest) -> HttpResponse:
     return with_public_api_headers(JsonResponse({"ok": True, "service": "primary-care-trees-django"}))
 
 
+def clean_query_values(values: list[str]) -> list[str]:
+    cleaned_values: list[str] = []
+    seen: set[str] = set()
+    for value in values:
+        cleaned = value.strip()
+        if not cleaned:
+            continue
+        key = cleaned.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned_values.append(cleaned)
+    return cleaned_values
+
+
+def query_label(values: list[str]) -> str:
+    if len(values) <= 1:
+        return values[0] if values else ""
+    return ", ".join(values)
+
+
 def provider_search(request: HttpRequest) -> HttpResponse:
     if request.method == "OPTIONS":
         return with_public_api_headers(HttpResponse(status=204))
 
     zipcode = request.GET.get("zip", "11215")
-    symptom = request.GET.get("symptom", "")
-    specialty = request.GET.get("specialty", "")
+    symptoms = clean_query_values(request.GET.getlist("symptom"))
+    specialties = clean_query_values(request.GET.getlist("specialty"))
+    symptom = query_label(symptoms)
+    specialty = query_label(specialties)
     try:
         limit = min(300, max(5, int(request.GET.get("limit", "50"))))
     except ValueError:
@@ -46,7 +69,7 @@ def provider_search(request: HttpRequest) -> HttpResponse:
         except ValueError:
             return with_public_api_headers(JsonResponse({"error": "lat and lng must be numeric"}, status=400))
 
-    providers = rank_providers(zipcode, symptom, coordinates, specialty)[:limit]
+    providers = rank_providers(zipcode, symptoms, coordinates, specialties)[:limit]
     payload = {
         "providers": providers,
         "stats": provider_network_stats(),
@@ -54,6 +77,8 @@ def provider_search(request: HttpRequest) -> HttpResponse:
             "zip": zipcode,
             "symptom": symptom,
             "specialty": specialty,
+            "symptoms": symptoms,
+            "specialties": specialties,
             "location": "pin" if coordinates else "zip",
         },
     }

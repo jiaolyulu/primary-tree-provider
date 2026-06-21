@@ -13,6 +13,12 @@ type SymptomOption = {
   specialty: string;
 };
 
+const emptyInitialValues: string[] = [];
+
+function symptomKey(option: SymptomOption) {
+  return `${option.specialty}::${option.condition}`.toLowerCase();
+}
+
 const displayedConditionsBySpecialty: Record<string, string[]> = {
   "Allergy and Immunology": ["seasonal allergies", "food allergies"],
   Pulmonology: ["asthma", "chronic cough", "shortness of breath"],
@@ -75,6 +81,21 @@ function findSymptomOption(condition: string, specialty: string): SymptomOption 
   );
 }
 
+function initialSelections(symptoms: string[], specialties: string[]) {
+  const selected = new Map<string, SymptomOption>();
+  symptoms.forEach((condition, index) => {
+    const option = findSymptomOption(condition, specialties[index] ?? specialties[0] ?? "");
+    if (option) selected.set(symptomKey(option), option);
+  });
+  return [...selected.values()];
+}
+
+function selectedSymptomLabel(selectedSymptoms: SymptomOption[], emptyLabel: string) {
+  if (!selectedSymptoms.length) return emptyLabel;
+  if (selectedSymptoms.length === 1) return selectedSymptoms[0].condition;
+  return `${selectedSymptoms[0].condition} + ${selectedSymptoms.length - 1} more`;
+}
+
 const nycMapBounds = {
   west: -74.065,
   south: 40.575,
@@ -102,6 +123,8 @@ export function IntakeForm({
   initialLng,
   initialLocationMode,
   initialSpecialty = "",
+  initialSymptoms = emptyInitialValues,
+  initialSpecialties = emptyInitialValues,
 }: {
   compact?: boolean;
   initialZip?: string;
@@ -110,6 +133,8 @@ export function IntakeForm({
   initialLng?: number;
   initialLocationMode?: "zip" | "pin";
   initialSpecialty?: string;
+  initialSymptoms?: string[];
+  initialSpecialties?: string[];
 }) {
   const router = useRouter();
   const messageId = useId();
@@ -117,10 +142,15 @@ export function IntakeForm({
   const pickerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
   const hasInitialPin = Number.isFinite(initialLat) && Number.isFinite(initialLng);
-  const initialSymptomOption = findSymptomOption(initialSymptom, initialSpecialty);
+  const initialSymptomValues = initialSymptoms.length ? initialSymptoms : initialSymptom ? [initialSymptom] : [];
+  const initialSpecialtyValues = initialSpecialties.length
+    ? initialSpecialties
+    : initialSpecialty
+    ? [initialSpecialty]
+    : [];
+  const initialSelectedSymptoms = initialSelections(initialSymptomValues, initialSpecialtyValues);
   const [zipcode, setZipcode] = useState(initialZip);
-  const [symptom, setSymptom] = useState(initialSymptom);
-  const [selectedSpecialty, setSelectedSpecialty] = useState(initialSymptomOption?.specialty ?? initialSpecialty);
+  const [selectedSymptoms, setSelectedSymptoms] = useState<SymptomOption[]>(initialSelectedSymptoms);
   const [formMessage, setFormMessage] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false);
@@ -136,6 +166,9 @@ export function IntakeForm({
   );
   const [hasChosenPin, setHasChosenPin] = useState(hasInitialPin);
   const hasLocation = locationMode === "pin" ? hasChosenPin : zipcode.trim().length === 5;
+  const hasSelectedSymptoms = selectedSymptoms.length > 0;
+  const triggerSymptomLabel = selectedSymptomLabel(selectedSymptoms, "Any symptom");
+  const mobileSymptomLabel = selectedSymptomLabel(selectedSymptoms, "Required");
 
   useEffect(() => {
     setIsClient(true);
@@ -172,6 +205,27 @@ export function IntakeForm({
     if (!isPickerOpen) return;
 
     function updateMenuPosition() {
+      if (compact) {
+        const anchor = pickerRef.current;
+        if (!anchor) return;
+
+        const rect = anchor.getBoundingClientRect();
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const width = Math.min(Math.max(rect.width, 360), viewportWidth - 24);
+        const top = rect.bottom + 6;
+        const left = Math.max(12, Math.min(rect.left, viewportWidth - width - 12));
+
+        setMenuStyle({
+          left,
+          maxHeight: Math.max(220, Math.min(460, viewportHeight - top - 12)),
+          top,
+          visibility: "visible",
+          width,
+        });
+        return;
+      }
+
       const anchor =
         (pickerRef.current?.closest(".intake-search-panel") as HTMLElement | null) ?? formRef.current;
       if (!anchor) return;
@@ -199,7 +253,9 @@ export function IntakeForm({
       if (event.key === "Escape") setIsPickerOpen(false);
     };
     const resizeObserver = new ResizeObserver(updateMenuPosition);
-    const anchor = (pickerRef.current?.closest(".intake-search-panel") as HTMLElement | null) ?? formRef.current;
+    const anchor = compact
+      ? pickerRef.current
+      : (pickerRef.current?.closest(".intake-search-panel") as HTMLElement | null) ?? formRef.current;
 
     updateMenuPosition();
     if (anchor) resizeObserver.observe(anchor);
@@ -212,12 +268,13 @@ export function IntakeForm({
       window.removeEventListener("resize", updateMenuPosition);
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
-  }, [isPickerOpen, locationMode]);
+  }, [compact, isPickerOpen, locationMode]);
 
   useEffect(() => {
     setZipcode(initialZip);
-    setSymptom(initialSymptom);
-    setSelectedSpecialty(findSymptomOption(initialSymptom, initialSpecialty)?.specialty ?? initialSpecialty);
+    const symptomValues = initialSymptoms.length ? initialSymptoms : initialSymptom ? [initialSymptom] : [];
+    const specialtyValues = initialSpecialties.length ? initialSpecialties : initialSpecialty ? [initialSpecialty] : [];
+    setSelectedSymptoms(initialSelections(symptomValues, specialtyValues));
     setLocationMode(initialLocationMode || (hasInitialPin ? "pin" : "zip"));
     setPin(hasInitialPin ? getPinFromCoordinates(initialLat as number, initialLng as number) : defaultPin);
     setHasChosenPin(hasInitialPin);
@@ -225,7 +282,17 @@ export function IntakeForm({
     setIsSubmitting(false);
     setIsMobileDialogOpen(false);
     setMobileStep("location");
-  }, [initialZip, initialSymptom, initialLat, initialLng, initialLocationMode, initialSpecialty, hasInitialPin]);
+  }, [
+    initialZip,
+    initialSymptom,
+    initialLat,
+    initialLng,
+    initialLocationMode,
+    initialSpecialty,
+    initialSymptoms,
+    initialSpecialties,
+    hasInitialPin,
+  ]);
 
   useEffect(() => {
     if (formMessage && hasLocation) {
@@ -241,16 +308,18 @@ export function IntakeForm({
       );
       return;
     }
-    if (requireSymptom && !symptom.trim()) {
+    if (requireSymptom && !hasSelectedSymptoms) {
       setMobileStep("symptom");
-      setFormMessage("Select one symptom to find your Primary Care Tree.");
+      setFormMessage("Select at least one symptom to find your Primary Care Tree.");
       return;
     }
 
     setFormMessage("");
     const params = new URLSearchParams();
-    if (symptom.trim()) params.set("symptom", symptom.trim());
-    if (symptom.trim() && selectedSpecialty.trim()) params.set("specialty", selectedSpecialty.trim());
+    selectedSymptoms.forEach((option) => {
+      params.append("symptom", option.condition);
+      params.append("specialty", option.specialty);
+    });
 
     if (locationMode === "pin") {
       params.set("location", "pin");
@@ -280,13 +349,23 @@ export function IntakeForm({
     runSearch();
   }
 
-  function selectSymptom(option: SymptomOption | null) {
-    setSymptom(option?.condition ?? "");
-    setSelectedSpecialty(option?.specialty ?? "");
+  function clearSymptoms() {
+    setSelectedSymptoms([]);
     setIsPickerOpen(false);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
+  }
+
+  function toggleSymptom(option: SymptomOption) {
+    setSelectedSymptoms((current) => {
+      const key = symptomKey(option);
+      if (current.some((selected) => symptomKey(selected) === key)) {
+        return current.filter((selected) => symptomKey(selected) !== key);
+      }
+      return [...current, option];
+    });
+    setFormMessage("");
   }
 
   function openMobileDialog() {
@@ -309,25 +388,29 @@ export function IntakeForm({
   const symptomMenu =
     isPickerOpen && isClient
       ? createPortal(
-          <div ref={menuRef} className="symptom-menu" role="dialog" aria-label="Symptom choices" style={menuStyle}>
+          <div
+            ref={menuRef}
+            className={compact ? "symptom-menu compact-symptom-menu" : "symptom-menu"}
+            role="dialog"
+            aria-label="Symptom choices"
+            style={menuStyle}
+          >
             <div className="symptom-menu-header">
               <span>Symptoms</span>
               <button type="button" onClick={() => setIsPickerOpen(false)} aria-label="Close symptom choices">
                 <X aria-hidden="true" size={17} />
               </button>
             </div>
-            <div role="listbox" aria-label="Symptoms">
+            <div role="listbox" aria-label="Symptoms" aria-multiselectable="true">
               <button
                 type="button"
                 className="symptom-any-button"
                 role="option"
-                aria-selected={!symptom}
+                aria-selected={!hasSelectedSymptoms}
                 onPointerDown={(event) => {
-                  event.preventDefault();
                   event.stopPropagation();
-                  selectSymptom(null);
                 }}
-                onClick={() => selectSymptom(null)}
+                onClick={clearSymptoms}
               >
                 Any symptom / closest tree
               </button>
@@ -340,13 +423,11 @@ export function IntakeForm({
                         key={`${option.specialty}-${option.condition}`}
                         type="button"
                         role="option"
-                        aria-selected={symptom === option.condition && selectedSpecialty === option.specialty}
+                        aria-selected={selectedSymptoms.some((selected) => symptomKey(selected) === symptomKey(option))}
                         onPointerDown={(event) => {
-                          event.preventDefault();
                           event.stopPropagation();
-                          selectSymptom(option);
                         }}
-                        onClick={() => selectSymptom(option)}
+                        onClick={() => toggleSymptom(option)}
                       >
                         {option.condition}
                       </button>
@@ -368,7 +449,7 @@ export function IntakeForm({
               <header className="mobile-intake-header">
                 <div>
                   <span>{mobileStep === "location" ? "Step 1 of 2" : "Step 2 of 2"}</span>
-                  <h2>{mobileStep === "location" ? "Select your location" : "Select one symptom"}</h2>
+                  <h2>{mobileStep === "location" ? "Select your location" : "Select symptoms"}</h2>
                 </div>
                 <button
                   type="button"
@@ -399,8 +480,8 @@ export function IntakeForm({
                   </section>
                 ) : (
                   <section className="mobile-intake-step" aria-label="Select symptom">
-                    <p>Choose one symptom so the network can match the right provider tree specialty.</p>
-                    <div className="mobile-symptom-list" role="radiogroup" aria-label="Symptoms">
+                    <p>Choose one or more symptoms so the network can match the right provider tree specialty.</p>
+                    <div className="mobile-symptom-list" role="group" aria-label="Symptoms">
                       {symptomGroups.map((group) => (
                         <div className="mobile-symptom-group" key={group.label}>
                           <span>{group.label}</span>
@@ -409,13 +490,11 @@ export function IntakeForm({
                               <button
                                 key={`${option.specialty}-${option.condition}`}
                                 type="button"
-                                role="radio"
-                                aria-checked={symptom === option.condition && selectedSpecialty === option.specialty}
-                                onClick={() => {
-                                  setSymptom(option.condition);
-                                  setSelectedSpecialty(option.specialty);
-                                  setFormMessage("");
-                                }}
+                                role="checkbox"
+                                aria-checked={selectedSymptoms.some(
+                                  (selected) => symptomKey(selected) === symptomKey(option),
+                                )}
+                                onClick={() => toggleSymptom(option)}
                               >
                                 {option.condition}
                               </button>
@@ -453,7 +532,7 @@ export function IntakeForm({
                     <button
                       type="button"
                       className="primary-button"
-                      disabled={!symptom.trim() || isSubmitting}
+                      disabled={!hasSelectedSymptoms || isSubmitting}
                       onClick={() => runSearch({ requireSymptom: true })}
                     >
                       <span>{isSubmitting ? "Finding PCT" : "Find a PCT"}</span>
@@ -483,9 +562,9 @@ export function IntakeForm({
           <strong>{hasChosenPin ? "Pin selected" : "Tap to choose"}</strong>
           <span>
             <Stethoscope aria-hidden="true" size={17} />
-            Symptom
+            Symptoms
           </span>
-          <strong>{symptom || "Required"}</strong>
+          <strong>{mobileSymptomLabel}</strong>
         </button>
       ) : null}
       {mobileDialog}
@@ -560,7 +639,7 @@ export function IntakeForm({
       )}
 
       <div className="intake-field">
-        <span>Symptom</span>
+        <span>Symptoms</span>
         <div className="symptom-picker" ref={pickerRef}>
           <button
             type="button"
@@ -570,7 +649,7 @@ export function IntakeForm({
             onClick={() => setIsPickerOpen((open) => !open)}
           >
             <Stethoscope aria-hidden="true" size={18} />
-            <span className={symptom ? "" : "placeholder"}>{symptom || "Any symptom"}</span>
+            <span className={hasSelectedSymptoms ? "" : "placeholder"}>{triggerSymptomLabel}</span>
             <ChevronDown aria-hidden="true" size={17} />
           </button>
           {symptomMenu}

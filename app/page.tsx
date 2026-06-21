@@ -223,8 +223,8 @@ export default function Home() {
               <div className="intake-search-panel">
                 <span>Alternative path</span>
                 <p>
-                  Already know what you need? Search by ZIP code or drop a pin, then choose a symptom to see your
-                  provider.
+                  Already know what you need? Search by ZIP code or drop a pin, then choose one or more symptoms to
+                  see your provider.
                 </p>
                 <IntakeForm initialZip="11215" />
               </div>

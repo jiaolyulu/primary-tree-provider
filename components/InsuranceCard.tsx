@@ -7,13 +7,20 @@ import { ArrowLeft, Download, Printer, ShieldCheck } from "lucide-react";
 import { downloadProviderCardPdf, printProviderCardPdf, PctProviderCardSvgPair } from "@/components/PctProviderCard";
 import { ProviderMatch, rankProviders } from "@/lib/providers";
 
+function queryValues(params: URLSearchParams, name: string) {
+  return params
+    .getAll(name)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
 export function InsuranceCard() {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
   const params = useMemo(() => new URLSearchParams(queryString), [queryString]);
   const zipcode = params.get("zip") || "11215";
-  const symptom = params.get("symptom")?.trim() || "";
-  const specialty = params.get("specialty")?.trim() || "";
+  const symptoms = useMemo(() => queryValues(params, "symptom"), [params]);
+  const specialties = useMemo(() => queryValues(params, "specialty"), [params]);
   const providerId = Number(params.get("providerId"));
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lng"));
@@ -29,7 +36,7 @@ export function InsuranceCard() {
     setProvider(null);
     setLoadError("");
 
-    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined, undefined, specialty)
+    rankProviders(zipcode, symptoms, hasPinnedLocation ? { latitude, longitude } : undefined, undefined, specialties)
       .then((matches) => {
         if (!isCurrent) return;
         setProvider(matches.find((match) => match.providerId === providerId) || matches[0] || null);
@@ -44,12 +51,12 @@ export function InsuranceCard() {
     return () => {
       isCurrent = false;
     };
-  }, [zipcode, symptom, specialty, providerId, hasPinnedLocation, latitude, longitude]);
+  }, [zipcode, symptoms, specialties, providerId, hasPinnedLocation, latitude, longitude]);
 
   const dashboardParams = new URLSearchParams();
   dashboardParams.set("zip", zipcode);
-  if (symptom) dashboardParams.set("symptom", symptom);
-  if (specialty) dashboardParams.set("specialty", specialty);
+  symptoms.forEach((symptom) => dashboardParams.append("symptom", symptom));
+  specialties.forEach((specialty) => dashboardParams.append("specialty", specialty));
   if (hasPinnedLocation) {
     dashboardParams.set("location", "pin");
     dashboardParams.set("lat", latitude.toFixed(5));

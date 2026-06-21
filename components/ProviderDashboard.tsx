@@ -117,15 +117,27 @@ function reviewCountLabel(count: number) {
   return `${count} ${count === 1 ? "review" : "reviews"}`;
 }
 
+function queryValues(params: URLSearchParams, name: string) {
+  return params
+    .getAll(name)
+    .map((value) => value.trim())
+    .filter(Boolean);
+}
+
+function searchSummaryLabel(values: string[]) {
+  if (!values.length) return "general care";
+  if (values.length === 1) return values[0];
+  return `${values[0]} + ${values.length - 1} more`;
+}
+
 export function ProviderDashboard() {
   const searchParams = useSearchParams();
   const queryString = searchParams.toString();
   const params = useMemo(() => new URLSearchParams(queryString), [queryString]);
   const zipcode = params.get("zip") || "11215";
-  const symptom = params.get("symptom")?.trim() || "";
-  const specialty = params.get("specialty")?.trim() || "";
-  const symptomLabel = symptom || "general care";
-  const hasSymptom = symptom.length > 0;
+  const symptoms = useMemo(() => queryValues(params, "symptom"), [params]);
+  const specialties = useMemo(() => queryValues(params, "specialty"), [params]);
+  const symptomLabel = searchSummaryLabel(symptoms);
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lng"));
   const hasPinnedLocation = params.get("location") === "pin" && Number.isFinite(latitude) && Number.isFinite(longitude);
@@ -183,7 +195,13 @@ export function ProviderDashboard() {
     setDisplayLimit(DEFAULT_PROVIDER_RESULT_LIMIT);
     setLoadError("");
 
-    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined, DEFAULT_PROVIDER_RESULT_LIMIT, specialty)
+    rankProviders(
+      zipcode,
+      symptoms,
+      hasPinnedLocation ? { latitude, longitude } : undefined,
+      DEFAULT_PROVIDER_RESULT_LIMIT,
+      specialties,
+    )
       .then((matches) => {
         if (!isCurrent) return;
         setRankedProviders(matches);
@@ -199,14 +217,14 @@ export function ProviderDashboard() {
     return () => {
       isCurrent = false;
     };
-  }, [zipcode, symptom, specialty, hasPinnedLocation, latitude, longitude, preferredId]);
+  }, [zipcode, symptoms, specialties, hasPinnedLocation, latitude, longitude, preferredId]);
 
   const searchForm = (
     <IntakeForm
       compact
       initialZip={zipcode}
-      initialSymptom={symptom}
-      initialSpecialty={specialty}
+      initialSymptoms={symptoms}
+      initialSpecialties={specialties}
       initialLat={hasPinnedLocation ? latitude : undefined}
       initialLng={hasPinnedLocation ? longitude : undefined}
       initialLocationMode={hasPinnedLocation ? "pin" : "zip"}

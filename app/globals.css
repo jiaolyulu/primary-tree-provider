@@ -943,6 +943,33 @@ input {
   z-index: 2147483000;
 }
 
+.compact-symptom-menu {
+  height: auto;
+  padding: 10px;
+}
+
+.compact-symptom-menu .symptom-menu-header {
+  background:
+    linear-gradient(rgba(0, 122, 52, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 122, 52, 0.08) 1px, transparent 1px),
+    var(--paper-2);
+  background-size: 24px 24px;
+  position: sticky;
+  top: -10px;
+  z-index: 1;
+}
+
+.compact-symptom-menu .symptom-group > div {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.compact-symptom-menu .symptom-any-button,
+.compact-symptom-menu .symptom-group button {
+  min-height: 38px;
+  text-align: left;
+}
+
 .symptom-menu-header {
   align-items: center;
   border-bottom: 1px solid var(--line);

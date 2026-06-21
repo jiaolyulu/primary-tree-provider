@@ -6,7 +6,7 @@ import re
 import sqlite3
 import unicodedata
 from pathlib import Path
-from typing import Any, TypedDict
+from typing import Any, Sequence, TypedDict
 
 
 BACKEND_ROOT = Path(__file__).resolve().parents[1]
@@ -980,22 +980,41 @@ def get_provider_by_id(provider_id: int) -> dict[str, Any] | None:
     }
 
 
+def clean_search_values(value: str | Sequence[str]) -> list[str]:
+    values = [value] if isinstance(value, str) else list(value)
+    cleaned_values: list[str] = []
+    seen: set[str] = set()
+    for item in values:
+        cleaned = str(item).strip()
+        if not cleaned:
+            continue
+        key = cleaned.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        cleaned_values.append(cleaned)
+    return cleaned_values
+
+
 def rank_providers(
     zipcode: str,
-    symptom: str,
+    symptom: str | Sequence[str],
     coordinates: Coordinates | None = None,
-    specialty: str = "",
+    specialty: str | Sequence[str] = "",
 ) -> list[dict[str, Any]]:
-    normalized_symptom = symptom.strip().lower()
-    normalized_specialty = specialty.strip().lower()
-    has_symptom = bool(normalized_symptom)
-    has_specialty = bool(normalized_specialty)
+    symptoms = clean_search_values(symptom)
+    specialties = clean_search_values(specialty)
+    normalized_symptoms = [value.lower() for value in symptoms]
+    normalized_specialties = [value.lower() for value in specialties]
+    has_symptom = bool(normalized_symptoms)
+    has_specialty = bool(normalized_specialties)
     with connection() as database:
         location_rows = rows_for_coordinates(database, coordinates) if coordinates else rows_for_zip(database, zipcode)
         if has_specialty:
-            specialty_rows = rows_for_specialty(database, specialty, zipcode, coordinates)
             rows_by_id = {row["provider_id"]: row for row in location_rows}
-            rows_by_id.update({row["provider_id"]: row for row in specialty_rows})
+            for selected_specialty in specialties:
+                specialty_rows = rows_for_specialty(database, selected_specialty, zipcode, coordinates)
+                rows_by_id.update({row["provider_id"]: row for row in specialty_rows})
             rows = list(rows_by_id.values())
         else:
             rows = location_rows
@@ -1005,11 +1024,12 @@ def rank_providers(
     for row in rows:
         provider = row_to_provider(row)
         conditions = provider_conditions.get(provider["providerId"], set())
-        condition_match = has_symptom and normalized_symptom in conditions
+        condition_match_count = sum(1 for selected_symptom in normalized_symptoms if selected_symptom in conditions)
+        condition_match = condition_match_count > 0
         provider_specialty = provider["medicalSpecialty"].lower()
-        specialty_match = (
-            (has_specialty and normalized_specialty == provider_specialty)
-            or (has_symptom and normalized_symptom in provider_specialty)
+        exact_specialty_match = has_specialty and provider_specialty in normalized_specialties
+        specialty_match = exact_specialty_match or (
+            has_symptom and any(selected_symptom in provider_specialty for selected_symptom in normalized_symptoms)
         )
         if coordinates:
             distance = coordinate_distance_miles(
@@ -1034,8 +1054,8 @@ def rank_providers(
             location_match_label = "same ZIP" if distance == 0 else "nearby ZIP" if distance < 25 else "closest available"
 
         match_score = (
-            (12 if condition_match else 0)
-            + (16 if has_specialty and specialty_match else 0)
+            min(condition_match_count, 3) * 12
+            + (16 if exact_specialty_match else 0)
             + (4 if specialty_match else 0)
             + proximity_score
             + provider["careAccessibilityScore"] * 0.08
@@ -1058,7 +1078,10 @@ def rank_providers(
     return sorted(
         matches,
         key=lambda match: (
-            0 if prioritize_specialty and (match["conditionMatch"] or match["medicalSpecialty"].lower() == normalized_specialty) else 1,
+            0
+            if prioritize_specialty
+            and (match["conditionMatch"] or match["medicalSpecialty"].lower() in normalized_specialties)
+            else 1,
             math.floor(match["distance"] / meaningful_location_gap) if meaningful_location_gap else match["distance"],
             -match["matchScore"],
         ),
