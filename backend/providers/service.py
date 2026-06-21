@@ -427,6 +427,7 @@ STREET_SUFFIX_WORDS = {
 }
 
 LOCATION_SEARCH_FIELDS = {"clinic_address", "clinic_neighborhood", "clinic_city"}
+HEALTH_INTENT_SEARCH_FIELDS = {"searchable_conditions", "medical_specialty"}
 
 
 def normalize_search_text(value: Any) -> str:
@@ -443,6 +444,76 @@ def normalize_search_text(value: Any) -> str:
 
 def compact_search_text(value: str) -> str:
     return re.sub(r"[^a-z0-9]", "", value)
+
+
+BROWSE_HEALTH_SEARCH_INTENTS: list[dict[str, Any]] = [
+    {
+        "triggers": ["bi polar", "bipolar", "bipolar disorder", "manic depression", "mania", "mood swings"],
+        "aliases": ["anxiety", "depression", "Psychiatry"],
+    },
+    {
+        "triggers": ["panic attack", "panic attacks", "panic", "anxiety attack"],
+        "aliases": ["anxiety", "Psychiatry"],
+    },
+    {
+        "triggers": ["heart attack", "heart pain", "chest tightness", "chest pressure"],
+        "aliases": ["chest pain", "Cardiology"],
+    },
+    {
+        "triggers": ["trouble breathing", "cant breathe", "can't breathe", "breathing problem", "breathlessness"],
+        "aliases": ["shortness of breath", "asthma", "Pulmonology"],
+    },
+    {
+        "triggers": ["heartburn", "indigestion", "stomach burning"],
+        "aliases": ["acid reflux", "stomach pain", "Gastroenterology"],
+    },
+    {
+        "triggers": ["stomach bug", "tummy ache", "belly pain", "upset stomach"],
+        "aliases": ["stomach pain", "IBS", "Gastroenterology"],
+    },
+    {
+        "triggers": ["skin breakout", "breakouts", "itchy rash", "skin rash"],
+        "aliases": ["acne", "eczema", "Dermatology"],
+    },
+    {
+        "triggers": ["high blood sugar", "blood sugar", "sugar problem"],
+        "aliases": ["diabetes", "Endocrinology"],
+    },
+    {
+        "triggers": ["ear ache", "earache", "stuffy nose", "sinus pressure"],
+        "aliases": ["ear pain", "sinus infection", "ENT / Otolaryngology"],
+    },
+    {
+        "triggers": ["uti", "pee burning", "burning urination", "bladder infection"],
+        "aliases": ["urinary tract infection", "urinary frequency", "Urology"],
+    },
+    {
+        "triggers": ["period cramps", "period pain", "irregular period", "heavy period"],
+        "aliases": ["menstrual concerns", "Women's Health"],
+    },
+    {
+        "triggers": ["sprained ankle", "twisted ankle", "pulled muscle", "sports injury"],
+        "aliases": ["sprains", "running injuries", "Sports Medicine"],
+    },
+]
+
+
+def query_matches_health_intent(normalized_query: str, compact_query: str, trigger: str) -> bool:
+    normalized_trigger = normalize_search_text(trigger)
+    compact_trigger = compact_search_text(normalized_trigger)
+    if compact_query == compact_trigger:
+        return True
+    if len(normalized_trigger.split()) > 1 and normalized_trigger in normalized_query:
+        return True
+    return len(compact_trigger) >= 5 and compact_trigger in compact_query
+
+
+def health_search_intents_for_query(normalized_query: str, compact_query: str) -> list[dict[str, Any]]:
+    intents = []
+    for intent in BROWSE_HEALTH_SEARCH_INTENTS:
+        if any(query_matches_health_intent(normalized_query, compact_query, trigger) for trigger in intent["triggers"]):
+            intents.append(intent)
+    return intents
 
 
 def street_name_from_address(address: str) -> str:
@@ -777,14 +848,39 @@ def value_matches_for_query(
     query_tokens: list[str],
 ) -> dict[str, dict[Any, list[dict[str, Any]]]]:
     matches_by_field: dict[str, dict[Any, list[dict[str, Any]]]] = {}
+    health_intents = health_search_intents_for_query(normalized_query, compact_query)
+    search_values = browse_search_values()
 
-    for value in browse_search_values():
-        score, covered_tokens = optimized_search_value_score(value, normalized_query, compact_query, query_tokens)
-        if score <= 0:
-            continue
-        matches_by_field.setdefault(value["field"], {}).setdefault(value["rawValue"], []).append(
-            {"score": score, "field": value["field"], "label": value["label"], "tokens": covered_tokens}
-        )
+    if not health_intents:
+        for value in search_values:
+            score, covered_tokens = optimized_search_value_score(value, normalized_query, compact_query, query_tokens)
+            if score <= 0:
+                continue
+            matches_by_field.setdefault(value["field"], {}).setdefault(value["rawValue"], []).append(
+                {"score": score, "field": value["field"], "label": value["label"], "tokens": covered_tokens}
+            )
+        return matches_by_field
+
+    intent_coverage = set(query_tokens)
+    for intent in health_intents:
+        for alias in intent["aliases"]:
+            alias_query = normalize_search_text(alias)
+            alias_compact = compact_search_text(alias_query)
+            alias_tokens = [token for token in alias_query.split() if len(token) > 1 or token.isdigit()]
+            for value in search_values:
+                if value["field"] not in HEALTH_INTENT_SEARCH_FIELDS:
+                    continue
+                score, _covered_tokens = optimized_search_value_score(value, alias_query, alias_compact, alias_tokens)
+                if score <= 0:
+                    continue
+                matches_by_field.setdefault(value["field"], {}).setdefault(value["rawValue"], []).append(
+                    {
+                        "score": score + 75,
+                        "field": value["field"],
+                        "label": value["label"],
+                        "tokens": intent_coverage,
+                    }
+                )
 
     return matches_by_field
 
