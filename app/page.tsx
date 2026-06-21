@@ -485,7 +485,7 @@ export default function Home() {
           <div className="footer-brand">
             <img src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" />
             <p>A speculative medical network that allows New York City trees to provide care.</p>
-            <p>Powered by <a href="https://www.nyc.gov/site/opendata/index.page" target="_blank" rel="noopener noreferrer">NYC Open Data</a></p>
+            <p>Powered by <a href="https://opendata.cityofnewyork.us/" target="_blank" rel="noopener noreferrer">NYC Open Data</a></p>
             <p>© 2026 Primary Care Tree. No rights reserved. Feel free to use, share, and modify.</p>
           </div>
           <div className="footer-nav">
