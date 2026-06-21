@@ -210,9 +210,8 @@ export default function Home() {
               <h2>Care intake</h2>
             </div>
             <div className="demo-body">
-              <IntakeForm initialZip="11215" />
               <div className="intake-alternative">
-                <span>Alternative path</span>
+                <span>Browse first</span>
                 <p>
                   Want to explore first? Search by ZIP, neighborhood, or street, or browse every PCT in the network.
                 </p>
@@ -220,6 +219,14 @@ export default function Home() {
                   Browse all PCTs
                   <ArrowRight aria-hidden="true" size={16} />
                 </Link>
+              </div>
+              <div className="intake-search-panel">
+                <span>Alternative path</span>
+                <p>
+                  Already know what you need? Search by ZIP code or drop a pin, then choose a symptom to see your
+                  provider.
+                </p>
+                <IntakeForm initialZip="11215" />
               </div>
             </div>
           </div>

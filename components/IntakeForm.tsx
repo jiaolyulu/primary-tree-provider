@@ -6,33 +6,74 @@ import { FormEvent, useEffect, useId, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ArrowRight, ChevronDown, LoaderCircle, MapPin, Stethoscope, X } from "lucide-react";
 import { LeafletPinMap } from "@/components/LeafletPinMap";
+import { careTaxonomy } from "@/lib/careTaxonomy";
 
-const symptomGroups = [
-  {
-    label: "Primary care",
-    options: ["annual physical", "cold and flu", "preventive care", "fatigue", "high blood pressure"],
-  },
-  {
-    label: "Mind and sleep",
-    options: ["anxiety", "burnout", "insomnia", "stress management", "memory changes", "migraine"],
-  },
-  {
-    label: "Air and allergies",
-    options: ["asthma", "chronic cough", "seasonal allergies", "sinus congestion", "hives"],
-  },
-  {
-    label: "Skin and surface",
-    options: ["skin rash", "eczema", "dry skin", "sun damage", "mole checks"],
-  },
-  {
-    label: "Movement and aging",
-    options: ["fall risk", "mobility changes", "back pain", "joint pain", "knee pain"],
-  },
-  {
-    label: "Metabolic and digestive",
-    options: ["diabetes", "prediabetes", "weight changes", "acid reflux", "stomach pain"],
-  },
-];
+type SymptomOption = {
+  condition: string;
+  specialty: string;
+};
+
+const displayedConditionsBySpecialty: Record<string, string[]> = {
+  "Allergy and Immunology": ["seasonal allergies", "food allergies"],
+  Pulmonology: ["asthma", "chronic cough", "shortness of breath"],
+  "Infectious Disease": ["fever evaluation"],
+  "ENT / Otolaryngology": ["sinus infection", "sore throat"],
+  "Emergency Medicine": ["minor injuries", "urgent symptoms"],
+  Cardiology: ["high blood pressure", "chest pain"],
+  Hematology: ["anemia", "easy bruising"],
+  "Vascular Medicine": ["leg swelling", "varicose veins"],
+  Endocrinology: ["diabetes", "thyroid disorder"],
+  "Nutrition and Weight Management": ["weight changes", "prediabetes nutrition"],
+  Gastroenterology: ["acid reflux", "stomach pain"],
+  Neurology: ["migraine", "headache"],
+  Psychiatry: ["anxiety", "depression"],
+  "Sleep Medicine": ["insomnia", "sleep apnea"],
+  Orthopedics: ["back pain", "joint injury"],
+  Rheumatology: ["arthritis", "joint pain"],
+  "Pain Management": ["chronic pain", "neck pain"],
+  "Sports Medicine": ["knee pain", "sprains"],
+  "Occupational Medicine": ["work injury", "ergonomic strain"],
+  Geriatrics: ["fall risk", "memory concerns"],
+  "Family Medicine": ["cold and flu", "annual physical"],
+  "Internal Medicine": ["fatigue", "medication review"],
+  Pediatrics: ["childhood fever", "school physicals"],
+  "Preventive Medicine": ["annual screenings"],
+  "Women's Health": ["menstrual concerns", "menopause symptoms"],
+  Dermatology: ["eczema", "acne"],
+  Ophthalmology: ["vision changes", "dry eyes"],
+  Nephrology: ["kidney disease"],
+  Urology: ["urinary tract infection", "kidney stones"],
+  Oncology: ["lump evaluation", "cancer screening"],
+};
+
+const symptomGroups = careTaxonomy.map((group) => ({
+  label: group.category,
+  options: group.specialties.flatMap((entry) => {
+    const displayedConditions = displayedConditionsBySpecialty[entry.specialty] ?? [entry.conditions[0]];
+    const validConditions = displayedConditions.filter((condition) => entry.conditions.includes(condition));
+    const conditions = validConditions.length ? validConditions : [entry.conditions[0]];
+    return conditions.map((condition) => ({
+      condition,
+      specialty: entry.specialty,
+    }));
+  }),
+}));
+
+function findSymptomOption(condition: string, specialty: string): SymptomOption | null {
+  const normalizedCondition = condition.trim().toLowerCase();
+  const normalizedSpecialty = specialty.trim().toLowerCase();
+  if (!normalizedCondition) return null;
+
+  return (
+    symptomGroups
+      .flatMap((group) => group.options)
+      .find(
+        (option) =>
+          option.condition.toLowerCase() === normalizedCondition &&
+          (!normalizedSpecialty || option.specialty.toLowerCase() === normalizedSpecialty),
+      ) ?? null
+  );
+}
 
 const nycMapBounds = {
   west: -74.065,
@@ -60,6 +101,7 @@ export function IntakeForm({
   initialLat,
   initialLng,
   initialLocationMode,
+  initialSpecialty = "",
 }: {
   compact?: boolean;
   initialZip?: string;
@@ -67,20 +109,23 @@ export function IntakeForm({
   initialLat?: number;
   initialLng?: number;
   initialLocationMode?: "zip" | "pin";
+  initialSpecialty?: string;
 }) {
   const router = useRouter();
   const messageId = useId();
+  const formRef = useRef<HTMLFormElement>(null);
   const pickerRef = useRef<HTMLDivElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const hasInitialPin = Number.isFinite(initialLat) && Number.isFinite(initialLng);
+  const initialSymptomOption = findSymptomOption(initialSymptom, initialSpecialty);
   const [zipcode, setZipcode] = useState(initialZip);
   const [symptom, setSymptom] = useState(initialSymptom);
+  const [selectedSpecialty, setSelectedSpecialty] = useState(initialSymptomOption?.specialty ?? initialSpecialty);
   const [formMessage, setFormMessage] = useState("");
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [isMobileDialogOpen, setIsMobileDialogOpen] = useState(false);
   const [mobileStep, setMobileStep] = useState<"location" | "symptom">("location");
-  const [menuStyle, setMenuStyle] = useState<CSSProperties>({});
+  const [menuStyle, setMenuStyle] = useState<CSSProperties>({ visibility: "hidden" });
   const [isClient, setIsClient] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [locationMode, setLocationMode] = useState<"zip" | "pin">(
@@ -126,28 +171,53 @@ export function IntakeForm({
   useEffect(() => {
     if (!isPickerOpen) return;
 
-    const updateMenuPosition = () => {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (!rect) return;
+    function updateMenuPosition() {
+      const anchor =
+        (pickerRef.current?.closest(".intake-search-panel") as HTMLElement | null) ?? formRef.current;
+      if (!anchor) return;
+
+      const rect = anchor.getBoundingClientRect();
+      const panelWidth = rect.width;
+      const viewportWidth = window.innerWidth;
+      const spaceRight = viewportWidth - rect.right;
+      const spaceLeft = rect.left;
+      const opensRight = spaceRight >= panelWidth || spaceRight >= spaceLeft;
+      const left = opensRight
+        ? rect.right - 1
+        : Math.max(12, rect.left - panelWidth + 1);
+
       setMenuStyle({
-        left: rect.left,
-        top: rect.bottom + 8,
-        width: rect.width,
+        height: rect.height,
+        left,
+        top: rect.top,
+        visibility: "visible",
+        width: panelWidth,
       });
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsPickerOpen(false);
     };
+    const resizeObserver = new ResizeObserver(updateMenuPosition);
+    const anchor = (pickerRef.current?.closest(".intake-search-panel") as HTMLElement | null) ?? formRef.current;
 
     updateMenuPosition();
+    if (anchor) resizeObserver.observe(anchor);
+    document.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", updateMenuPosition);
     window.addEventListener("scroll", updateMenuPosition, true);
     return () => {
+      resizeObserver.disconnect();
+      document.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", updateMenuPosition);
       window.removeEventListener("scroll", updateMenuPosition, true);
     };
-  }, [isPickerOpen]);
+  }, [isPickerOpen, locationMode]);
 
   useEffect(() => {
     setZipcode(initialZip);
     setSymptom(initialSymptom);
+    setSelectedSpecialty(findSymptomOption(initialSymptom, initialSpecialty)?.specialty ?? initialSpecialty);
     setLocationMode(initialLocationMode || (hasInitialPin ? "pin" : "zip"));
     setPin(hasInitialPin ? getPinFromCoordinates(initialLat as number, initialLng as number) : defaultPin);
     setHasChosenPin(hasInitialPin);
@@ -155,7 +225,7 @@ export function IntakeForm({
     setIsSubmitting(false);
     setIsMobileDialogOpen(false);
     setMobileStep("location");
-  }, [initialZip, initialSymptom, initialLat, initialLng, initialLocationMode, hasInitialPin]);
+  }, [initialZip, initialSymptom, initialLat, initialLng, initialLocationMode, initialSpecialty, hasInitialPin]);
 
   useEffect(() => {
     if (formMessage && hasLocation) {
@@ -180,6 +250,7 @@ export function IntakeForm({
     setFormMessage("");
     const params = new URLSearchParams();
     if (symptom.trim()) params.set("symptom", symptom.trim());
+    if (symptom.trim() && selectedSpecialty.trim()) params.set("specialty", selectedSpecialty.trim());
 
     if (locationMode === "pin") {
       params.set("location", "pin");
@@ -209,8 +280,9 @@ export function IntakeForm({
     runSearch();
   }
 
-  function selectSymptom(nextSymptom: string) {
-    setSymptom(nextSymptom);
+  function selectSymptom(option: SymptomOption | null) {
+    setSymptom(option?.condition ?? "");
+    setSelectedSpecialty(option?.specialty ?? "");
     setIsPickerOpen(false);
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
@@ -237,44 +309,52 @@ export function IntakeForm({
   const symptomMenu =
     isPickerOpen && isClient
       ? createPortal(
-          <div ref={menuRef} className="symptom-menu" role="listbox" aria-label="Symptom" style={menuStyle}>
-            <button
-              type="button"
-              className="symptom-any-button"
-              role="option"
-              aria-selected={!symptom}
-              onPointerDown={(event) => {
-                event.preventDefault();
-                event.stopPropagation();
-                selectSymptom("");
-              }}
-              onClick={() => selectSymptom("")}
-            >
-              Any symptom / closest tree
-            </button>
-            {symptomGroups.map((group) => (
-              <div className="symptom-group" key={group.label}>
-                <span>{group.label}</span>
-                <div>
-                  {group.options.map((option) => (
-                    <button
-                      key={option}
-                      type="button"
-                      role="option"
-                      aria-selected={symptom === option}
-                      onPointerDown={(event) => {
-                        event.preventDefault();
-                        event.stopPropagation();
-                        selectSymptom(option);
-                      }}
-                      onClick={() => selectSymptom(option)}
-                    >
-                      {option}
-                    </button>
-                  ))}
+          <div ref={menuRef} className="symptom-menu" role="dialog" aria-label="Symptom choices" style={menuStyle}>
+            <div className="symptom-menu-header">
+              <span>Symptoms</span>
+              <button type="button" onClick={() => setIsPickerOpen(false)} aria-label="Close symptom choices">
+                <X aria-hidden="true" size={17} />
+              </button>
+            </div>
+            <div role="listbox" aria-label="Symptoms">
+              <button
+                type="button"
+                className="symptom-any-button"
+                role="option"
+                aria-selected={!symptom}
+                onPointerDown={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  selectSymptom(null);
+                }}
+                onClick={() => selectSymptom(null)}
+              >
+                Any symptom / closest tree
+              </button>
+              {symptomGroups.map((group) => (
+                <div className="symptom-group" key={group.label}>
+                  <span>{group.label}</span>
+                  <div>
+                    {group.options.map((option) => (
+                      <button
+                        key={`${option.specialty}-${option.condition}`}
+                        type="button"
+                        role="option"
+                        aria-selected={symptom === option.condition && selectedSpecialty === option.specialty}
+                        onPointerDown={(event) => {
+                          event.preventDefault();
+                          event.stopPropagation();
+                          selectSymptom(option);
+                        }}
+                        onClick={() => selectSymptom(option)}
+                      >
+                        {option.condition}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>,
           document.body,
         )
@@ -327,16 +407,17 @@ export function IntakeForm({
                           <div>
                             {group.options.map((option) => (
                               <button
-                                key={option}
+                                key={`${option.specialty}-${option.condition}`}
                                 type="button"
                                 role="radio"
-                                aria-checked={symptom === option}
+                                aria-checked={symptom === option.condition && selectedSpecialty === option.specialty}
                                 onClick={() => {
-                                  setSymptom(option);
+                                  setSymptom(option.condition);
+                                  setSelectedSpecialty(option.specialty);
                                   setFormMessage("");
                                 }}
                               >
-                                {option}
+                                {option.condition}
                               </button>
                             ))}
                           </div>
@@ -409,6 +490,7 @@ export function IntakeForm({
       ) : null}
       {mobileDialog}
       <form
+        ref={formRef}
         className={compact ? "intake-form compact" : "intake-form intake-form-desktop"}
         onSubmit={handleSubmit}
         aria-busy={isSubmitting}
@@ -481,11 +563,10 @@ export function IntakeForm({
         <span>Symptom</span>
         <div className="symptom-picker" ref={pickerRef}>
           <button
-            ref={triggerRef}
             type="button"
             className="field-wrap symptom-trigger"
             aria-expanded={isPickerOpen}
-            aria-haspopup="listbox"
+            aria-haspopup="dialog"
             onClick={() => setIsPickerOpen((open) => !open)}
           >
             <Stethoscope aria-hidden="true" size={18} />

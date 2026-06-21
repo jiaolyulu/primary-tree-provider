@@ -13,6 +13,7 @@ export function InsuranceCard() {
   const params = useMemo(() => new URLSearchParams(queryString), [queryString]);
   const zipcode = params.get("zip") || "11215";
   const symptom = params.get("symptom")?.trim() || "";
+  const specialty = params.get("specialty")?.trim() || "";
   const providerId = Number(params.get("providerId"));
   const latitude = Number(params.get("lat"));
   const longitude = Number(params.get("lng"));
@@ -28,7 +29,7 @@ export function InsuranceCard() {
     setProvider(null);
     setLoadError("");
 
-    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined)
+    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined, undefined, specialty)
       .then((matches) => {
         if (!isCurrent) return;
         setProvider(matches.find((match) => match.providerId === providerId) || matches[0] || null);
@@ -43,11 +44,12 @@ export function InsuranceCard() {
     return () => {
       isCurrent = false;
     };
-  }, [zipcode, symptom, providerId, hasPinnedLocation, latitude, longitude]);
+  }, [zipcode, symptom, specialty, providerId, hasPinnedLocation, latitude, longitude]);
 
   const dashboardParams = new URLSearchParams();
   dashboardParams.set("zip", zipcode);
   if (symptom) dashboardParams.set("symptom", symptom);
+  if (specialty) dashboardParams.set("specialty", specialty);
   if (hasPinnedLocation) {
     dashboardParams.set("location", "pin");
     dashboardParams.set("lat", latitude.toFixed(5));

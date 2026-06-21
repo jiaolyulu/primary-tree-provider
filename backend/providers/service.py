@@ -229,6 +229,60 @@ def rows_for_zip(database: sqlite3.Connection, zipcode: str) -> list[sqlite3.Row
     ).fetchall()
 
 
+def rows_for_specialty(
+    database: sqlite3.Connection,
+    specialty: str,
+    zipcode: str,
+    coordinates: Coordinates | None = None,
+) -> list[sqlite3.Row]:
+    specialty_column = storage_column("medical_specialty")
+    specialty_value: Any
+    if uses_dictionary_column("medical_specialty", specialty_column):
+        specialty_value = dictionary_ids().get("medical_specialty", {}).get(specialty)
+        if specialty_value is None:
+            return []
+    else:
+        specialty_value = specialty
+
+    rows = database.execute(
+        f"""
+        SELECT *
+        FROM providers
+        WHERE {specialty_column} = ?
+        """,
+        (specialty_value,),
+    ).fetchall()
+
+    if coordinates:
+        latitude_column = (
+            storage_column("clinic_latitude") if has_provider_field("clinic_latitude") else storage_column("lat")
+        )
+        longitude_column = (
+            storage_column("clinic_longitude") if has_provider_field("clinic_longitude") else storage_column("lng")
+        )
+        latitude = coordinates["latitude"]
+        longitude = coordinates["longitude"]
+        rows.sort(
+            key=lambda row: (
+                (row[latitude_column] - latitude) * (row[latitude_column] - latitude)
+                + (row[longitude_column] - longitude) * (row[longitude_column] - longitude),
+                -int(row["star_doctor"]),
+                -float(row["care_rating"]),
+            )
+        )
+    else:
+        rows.sort(
+            key=lambda row: (
+                zip_distance(zipcode_label(provider_value(row, "clinic_zipcode")), zipcode),
+                -int(provider_value(row, "star_doctor")),
+                -float(provider_value(row, "care_rating")),
+                -int(provider_value(row, "care_accessibility_score")),
+            )
+        )
+
+    return rows[:900]
+
+
 def condition_map(database: sqlite3.Connection, provider_ids: list[int]) -> dict[int, set[str]]:
     if not provider_ids:
         return {}
@@ -926,11 +980,25 @@ def get_provider_by_id(provider_id: int) -> dict[str, Any] | None:
     }
 
 
-def rank_providers(zipcode: str, symptom: str, coordinates: Coordinates | None = None) -> list[dict[str, Any]]:
+def rank_providers(
+    zipcode: str,
+    symptom: str,
+    coordinates: Coordinates | None = None,
+    specialty: str = "",
+) -> list[dict[str, Any]]:
     normalized_symptom = symptom.strip().lower()
+    normalized_specialty = specialty.strip().lower()
     has_symptom = bool(normalized_symptom)
+    has_specialty = bool(normalized_specialty)
     with connection() as database:
-        rows = rows_for_coordinates(database, coordinates) if coordinates else rows_for_zip(database, zipcode)
+        location_rows = rows_for_coordinates(database, coordinates) if coordinates else rows_for_zip(database, zipcode)
+        if has_specialty:
+            specialty_rows = rows_for_specialty(database, specialty, zipcode, coordinates)
+            rows_by_id = {row["provider_id"]: row for row in location_rows}
+            rows_by_id.update({row["provider_id"]: row for row in specialty_rows})
+            rows = list(rows_by_id.values())
+        else:
+            rows = location_rows
         provider_conditions = condition_map(database, [row["provider_id"] for row in rows])
 
     matches: list[dict[str, Any]] = []
@@ -938,7 +1006,11 @@ def rank_providers(zipcode: str, symptom: str, coordinates: Coordinates | None =
         provider = row_to_provider(row)
         conditions = provider_conditions.get(provider["providerId"], set())
         condition_match = has_symptom and normalized_symptom in conditions
-        specialty_match = has_symptom and normalized_symptom in provider["medicalSpecialty"].lower()
+        provider_specialty = provider["medicalSpecialty"].lower()
+        specialty_match = (
+            (has_specialty and normalized_specialty == provider_specialty)
+            or (has_symptom and normalized_symptom in provider_specialty)
+        )
         if coordinates:
             distance = coordinate_distance_miles(
                 coordinates,
@@ -963,6 +1035,7 @@ def rank_providers(zipcode: str, symptom: str, coordinates: Coordinates | None =
 
         match_score = (
             (12 if condition_match else 0)
+            + (16 if has_specialty and specialty_match else 0)
             + (4 if specialty_match else 0)
             + proximity_score
             + provider["careAccessibilityScore"] * 0.08
@@ -981,9 +1054,11 @@ def rank_providers(zipcode: str, symptom: str, coordinates: Coordinates | None =
         )
 
     meaningful_location_gap = 0.1 if coordinates else 0
+    prioritize_specialty = has_symptom or has_specialty
     return sorted(
         matches,
         key=lambda match: (
+            0 if prioritize_specialty and (match["conditionMatch"] or match["medicalSpecialty"].lower() == normalized_specialty) else 1,
             math.floor(match["distance"] / meaningful_location_gap) if meaningful_location_gap else match["distance"],
             -match["matchScore"],
         ),

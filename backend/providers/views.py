@@ -31,6 +31,7 @@ def provider_search(request: HttpRequest) -> HttpResponse:
 
     zipcode = request.GET.get("zip", "11215")
     symptom = request.GET.get("symptom", "")
+    specialty = request.GET.get("specialty", "")
     try:
         limit = min(300, max(5, int(request.GET.get("limit", "50"))))
     except ValueError:
@@ -45,13 +46,14 @@ def provider_search(request: HttpRequest) -> HttpResponse:
         except ValueError:
             return with_public_api_headers(JsonResponse({"error": "lat and lng must be numeric"}, status=400))
 
-    providers = rank_providers(zipcode, symptom, coordinates)[:limit]
+    providers = rank_providers(zipcode, symptom, coordinates, specialty)[:limit]
     payload = {
         "providers": providers,
         "stats": provider_network_stats(),
         "query": {
             "zip": zipcode,
             "symptom": symptom,
+            "specialty": specialty,
             "location": "pin" if coordinates else "zip",
         },
     }

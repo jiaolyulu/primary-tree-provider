@@ -123,6 +123,7 @@ export function ProviderDashboard() {
   const params = useMemo(() => new URLSearchParams(queryString), [queryString]);
   const zipcode = params.get("zip") || "11215";
   const symptom = params.get("symptom")?.trim() || "";
+  const specialty = params.get("specialty")?.trim() || "";
   const symptomLabel = symptom || "general care";
   const hasSymptom = symptom.length > 0;
   const latitude = Number(params.get("lat"));
@@ -182,7 +183,7 @@ export function ProviderDashboard() {
     setDisplayLimit(DEFAULT_PROVIDER_RESULT_LIMIT);
     setLoadError("");
 
-    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined)
+    rankProviders(zipcode, symptom, hasPinnedLocation ? { latitude, longitude } : undefined, DEFAULT_PROVIDER_RESULT_LIMIT, specialty)
       .then((matches) => {
         if (!isCurrent) return;
         setRankedProviders(matches);
@@ -198,13 +199,14 @@ export function ProviderDashboard() {
     return () => {
       isCurrent = false;
     };
-  }, [zipcode, symptom, hasPinnedLocation, latitude, longitude]);
+  }, [zipcode, symptom, specialty, hasPinnedLocation, latitude, longitude, preferredId]);
 
   const searchForm = (
     <IntakeForm
       compact
       initialZip={zipcode}
       initialSymptom={symptom}
+      initialSpecialty={specialty}
       initialLat={hasPinnedLocation ? latitude : undefined}
       initialLng={hasPinnedLocation ? longitude : undefined}
       initialLocationMode={hasPinnedLocation ? "pin" : "zip"}

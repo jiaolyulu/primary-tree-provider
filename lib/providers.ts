@@ -126,11 +126,13 @@ function providerSearchUrl(
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
   limit = DEFAULT_PROVIDER_RESULT_LIMIT,
+  specialty = "",
 ) {
   const url = new URL(`${apiBaseUrl.replace(/\/$/, "")}/api/providers/search`);
   url.searchParams.set("zip", zipcode);
   url.searchParams.set("limit", String(limit));
   if (symptom.trim()) url.searchParams.set("symptom", symptom.trim());
+  if (specialty.trim()) url.searchParams.set("specialty", specialty.trim());
   if (coordinates) {
     url.searchParams.set("lat", coordinates.latitude.toFixed(5));
     url.searchParams.set("lng", coordinates.longitude.toFixed(5));
@@ -201,6 +203,7 @@ export async function rankProviders(
   symptom: string,
   coordinates?: { latitude: number; longitude: number },
   limit = DEFAULT_PROVIDER_RESULT_LIMIT,
+  specialty = "",
 ): Promise<ProviderMatch[]> {
   const apiBaseUrls = providerApiBaseUrls();
 
@@ -211,7 +214,7 @@ export async function rankProviders(
   let lastError = "Could not reach the provider database API.";
 
   for (const apiBaseUrl of apiBaseUrls) {
-    const url = providerSearchUrl(apiBaseUrl, zipcode, symptom, coordinates, limit);
+    const url = providerSearchUrl(apiBaseUrl, zipcode, symptom, coordinates, limit, specialty);
 
     let response: Response;
     try {
