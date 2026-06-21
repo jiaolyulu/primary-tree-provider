@@ -682,8 +682,9 @@ input {
 
 .intake-browse-link {
   align-items: center;
+  background: var(--green);
   border: 1px solid var(--green);
-  color: var(--green);
+  color: #fff;
   display: inline-flex;
   font-size: 13px;
   font-weight: 700;
@@ -700,7 +701,7 @@ input {
 }
 
 .intake-browse-link:hover {
-  background: var(--green);
+  background: #005f2a;
   color: #fff;
   text-decoration: none;
 }

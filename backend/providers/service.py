@@ -996,6 +996,57 @@ def clean_search_values(value: str | Sequence[str]) -> list[str]:
     return cleaned_values
 
 
+def diversity_key(value: Any) -> str:
+    return str(value).strip().lower()
+
+
+def diversify_tree_results(matches: list[dict[str, Any]], selected_specialties: list[str]) -> list[dict[str, Any]]:
+    if len(matches) < 2:
+        return matches
+
+    selected_specialty_keys = {value.lower() for value in selected_specialties}
+    top_window_size = min(len(matches), 160)
+    remaining = list(enumerate(matches[:top_window_size]))
+    diversified: list[dict[str, Any]] = []
+    species_counts: dict[str, int] = {}
+    specialty_counts: dict[str, int] = {}
+
+    while remaining:
+        scan_size = min(len(remaining), 36)
+        best_position = 0
+        best_score = -math.inf
+
+        for position, (base_rank, match) in enumerate(remaining[:scan_size]):
+            species_key = diversity_key(match.get("speciesCommon"))
+            specialty_key = diversity_key(match.get("medicalSpecialty"))
+            species_seen = species_counts.get(species_key, 0)
+            specialty_seen = specialty_counts.get(specialty_key, 0)
+
+            adjusted_score = float(match["matchScore"]) - base_rank * 0.04
+            adjusted_score += 18 if species_seen == 0 else -9 * species_seen
+            if specialty_key in selected_specialty_keys:
+                adjusted_score += 8 if specialty_seen == 0 else -3 * specialty_seen
+            elif specialty_seen:
+                adjusted_score -= specialty_seen
+            if match.get("conditionMatch"):
+                adjusted_score += 16
+            else:
+                adjusted_score -= 8
+
+            if adjusted_score > best_score:
+                best_score = adjusted_score
+                best_position = position
+
+        _, selected = remaining.pop(best_position)
+        species_key = diversity_key(selected.get("speciesCommon"))
+        specialty_key = diversity_key(selected.get("medicalSpecialty"))
+        species_counts[species_key] = species_counts.get(species_key, 0) + 1
+        specialty_counts[specialty_key] = specialty_counts.get(specialty_key, 0) + 1
+        diversified.append(selected)
+
+    return diversified + matches[top_window_size:]
+
+
 def rank_providers(
     zipcode: str,
     symptom: str | Sequence[str],
@@ -1075,14 +1126,20 @@ def rank_providers(
 
     meaningful_location_gap = 0.1 if coordinates else 0
     prioritize_specialty = has_symptom or has_specialty
-    return sorted(
+    ranked_matches = sorted(
         matches,
         key=lambda match: (
             0
-            if prioritize_specialty
-            and (match["conditionMatch"] or match["medicalSpecialty"].lower() in normalized_specialties)
-            else 1,
+            if prioritize_specialty and match["conditionMatch"]
+            else 1
+            if prioritize_specialty and match["medicalSpecialty"].lower() in normalized_specialties
+            else 2,
             math.floor(match["distance"] / meaningful_location_gap) if meaningful_location_gap else match["distance"],
             -match["matchScore"],
         ),
     )
+
+    should_diversify = len(normalized_symptoms) > 1 or len(normalized_specialties) > 1
+    if should_diversify:
+        return diversify_tree_results(ranked_matches, normalized_specialties)
+    return ranked_matches
