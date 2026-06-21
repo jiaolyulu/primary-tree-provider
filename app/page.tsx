@@ -413,13 +413,13 @@ export default function Home() {
 
       <section id="featured-doctors" className="doctor-section">
         <div className="testimonial-copy">
-          <span>Tree-specialty map</span>
+          <span>Tree-specialty guide</span>
           <h2>
             Which tree treats which <em>symptom</em>?
           </h2>
           <p>
-            The all-fields index classifies tree species by clinical family, then turns symptoms into ecological
-            referrals: pollen-diplomatic Sophora, root-to-canopy Honeylocust, calm-canopy Linden, long-view Oak.
+            Think of it as a neighborhood guide: Sophora helps with pollen trouble, Honeylocust handles adult primary
+            care, Linden keeps nervous systems company, and Oak takes the long view.
           </p>
         </div>
         <div className="taxonomy-tree">
@@ -451,6 +451,7 @@ export default function Home() {
                       {item.conditions.map((condition) => (
                         <em key={condition}>{condition}</em>
                       ))}
+                      <p className="taxonomy-rationale">{item.rationale}</p>
                     </div>
                   </div>
                 ))}
@@ -486,7 +487,7 @@ export default function Home() {
             <a href="#how">How it works</a>
             <a href="#faq">Q&amp;A</a>
             <a href="#testimonials">Testimonials</a>
-            <a href="#featured-doctors">Specialty Map</a>
+            <a href="#featured-doctors">Specialty Guide</a>
             <a href="#pricing">Pricing</a>
             <Link href="/providers?zip=11215">Browse providers</Link>
           </div>
