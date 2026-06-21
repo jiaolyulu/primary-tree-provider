@@ -314,9 +314,7 @@ export function IntakeForm({
                       }}
                     />
                     <p className="mobile-intake-status">
-                      {hasChosenPin
-                        ? `Location selected at ${pin.latitude.toFixed(4)}, ${pin.longitude.toFixed(4)}.`
-                        : "No location selected yet."}
+                      {hasChosenPin ? "Location selected." : "No location selected yet."}
                     </p>
                   </section>
                 ) : (
@@ -474,7 +472,7 @@ export function IntakeForm({
           />
           <p>
             Scroll or use map controls to zoom. Click the map to set the required location.
-            {hasChosenPin ? ` Pin set at ${pin.latitude.toFixed(4)}, ${pin.longitude.toFixed(4)}` : ""}
+            {hasChosenPin ? " Pin selected." : ""}
           </p>
         </div>
       )}
