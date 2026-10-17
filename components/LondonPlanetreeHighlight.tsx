@@ -29,6 +29,11 @@ export function LondonPlanetreeHighlight() {
       <section className="th-section">
         <div className="th-side-label">ABOUT THE PROVIDER</div>
         <div><h2>City experience.<br /><em>A little room to breathe.</em></h2>
+          <dl className="th-care-stats" aria-label="Provider care record">
+            <div><dt>City residents served</dt><dd>1,200</dd><small>Fictional story estimate</small></div>
+            <div><dt>Years of experience</dt><dd>~12</dd><small>Provider record</small></div>
+            <div><dt>Patient reviews</dt><dd>21</dd><small>3.4 out of 5</small></div>
+          </dl>
           <div className="th-two-copy"><p>At 2 West 42 Street, London Planetree runs an adult primary care conversation bench. Its record lists approximately 12 years of experience, a 3.4 rating from 21 reviews, and a shade-side manner score of 3.2. Its philosophy: “Two minutes of shade, repeat when urban life gets loud.”</p><p>London plane trees have been part of Bryant Park’s design since its <a href="https://bryantpark.org/blog/history-of-bryant-park-the-middle-years" target="_blank" rel="noreferrer">1934 redesign during the Great Depression</a>. This provider carries on the neighborhood tradition: clear explanations, manageable next steps, and a little humor around complicated symptoms.</p></div>
         </div>
       </section>

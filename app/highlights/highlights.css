@@ -78,3 +78,10 @@
 .th-london .th-two-copy a{text-decoration:underline;text-underline-offset:3px}
 .th-london .th-rx-line strong{text-align:right;font-size:21px}
 @media(max-width:650px){.th-london-context{grid-template-columns:1fr}.th-london .th-hero-meta{flex-wrap:wrap}.th-london .th-prescription-copy h2{font-size:42px}}
+
+.th-care-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:0 0 32px;padding-block:24px;border-block:1px solid var(--line-dark);color:var(--green)}
+.th-care-stats>div{display:flex;flex-direction:column;gap:8px}
+.th-care-stats dt{font-size:11px;text-transform:uppercase;letter-spacing:.06em}
+.th-care-stats dd{margin:0;font-family:var(--font-display);font-size:clamp(36px,4vw,56px);line-height:1.1}
+.th-care-stats small{font-size:11px;color:var(--muted);line-height:1.5}
+@media(max-width:420px){.th-care-stats{gap:12px}.th-care-stats dt{font-size:10px}}
