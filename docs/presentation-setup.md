@@ -13,7 +13,7 @@ The wall generates a downloadable QR code pointing to the questionnaire on its o
 
 Run `db/participation.sql` once in the Neon SQL Editor. It creates separate live and rehearsal sessions without touching provider data or testimonials. Configure `DATABASE_URL` as a server-only secret in the hosting environment. Never commit credentials. For local development, use a git-ignored `.env.local`.
 
-Responses publish immediately and include explicit consent. Limits: tree/city 100 characters, place 160, story 500, name 80. Requests are bounded to 8 KB, and a shared database counter accepts up to 120 new attempts per session per minute. This is a basic event-level limit, not comprehensive anti-bot protection. Retry UUIDs prevent duplicate saves after interrupted responses. Public output excludes hidden entries.
+Only tree and city are required; story and name are optional. There is no place question. Responses publish immediately; the submit notice explains public display. Limits: tree/city 100 characters, place 160, story 500, name 80. Requests are bounded to 8 KB, and a shared database counter accepts up to 120 new attempts per session per minute. This is a basic event-level limit, not comprehensive anti-bot protection. Retry UUIDs prevent duplicate saves after interrupted responses. Public output excludes hidden entries.
 
 ## Presenter controls
 

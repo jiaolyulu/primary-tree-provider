@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS tree_responses (
   tree text NOT NULL CHECK (length(tree) BETWEEN 1 AND 100),
   city text NOT NULL CHECK (length(city) BETWEEN 1 AND 100),
   place text NOT NULL DEFAULT '' CHECK (length(place) <= 160),
-  story text NOT NULL CHECK (length(story) BETWEEN 1 AND 500),
+  story text NOT NULL CHECK (length(story) <= 500),
   name text NOT NULL DEFAULT '' CHECK (length(name) <= 80),
   consent boolean NOT NULL CHECK (consent = true),
   hidden boolean NOT NULL DEFAULT false,
@@ -27,3 +27,7 @@ CREATE TABLE IF NOT EXISTS participation_rate_limits (
 INSERT INTO participation_sessions (slug, title) VALUES
   ('tree-talk', 'Trees we know'), ('rehearsal', 'Rehearsal · Trees we know')
 ON CONFLICT DO NOTHING;
+
+-- Also upgrade an existing questionnaire that previously required a story.
+ALTER TABLE tree_responses DROP CONSTRAINT IF EXISTS tree_responses_story_check;
+ALTER TABLE tree_responses ADD CONSTRAINT tree_responses_story_check CHECK (length(story) <= 500);

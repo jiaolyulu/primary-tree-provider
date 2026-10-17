@@ -12,5 +12,5 @@ export function parseTreeSubmission(value: unknown): TreeSubmission {
   const id = read("id", 36, true);
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id)) throw new Error("Please refresh the page and try again.");
   if (body.consent !== true) throw new Error("Please give permission to display your response.");
-  return { id, tree: read("tree", 100, true), city: read("city", 100, true), place: read("place", 160), story: read("story", 500, true), name: read("name", 80), consent: true };
+  return { id, tree: read("tree", 100, true), city: read("city", 100, true), place: read("place", 160), story: read("story", 500), name: read("name", 80), consent: true };
 }

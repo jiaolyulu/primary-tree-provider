@@ -1,5 +1,7 @@
 # Presentation participation: Trees we know
 
+Original planning notes; the shipped first version is documented in `presentation-setup.md`. The final questionnaire requires only tree and city, makes story/name optional, removes the place question, and uses a public-display submit notice. Advanced presenter management remains future work.
+
 ## Audience experience
 
 The presenter opens `/participate/[session]/wall`. A persistent QR code and readable short link point to `/participate/[session]`. Audience members submit a phone-friendly form without an account. Each response becomes a tree-story card on the shared wall. A session isolates each presentation so rehearsals and previous events do not mix with the audience's responses.
@@ -80,4 +82,4 @@ Use a server-only presenter credential and a protected session cookie for manage
 
 ## Current state
 
-This is an implementation plan, not an implemented or deployed feature. The local project has been connected to `https://github.com/jiaolyulu/primary-tree-provider.git`, and `main` tracks `origin/main`.
+This document records the original plan; see `presentation-setup.md` for the implemented first version. The local project has been connected to `https://github.com/jiaolyulu/primary-tree-provider.git`, and `main` tracks `origin/main`.

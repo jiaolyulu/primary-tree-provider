@@ -30,7 +30,7 @@ export function TreeQuestionnaire({ session }: { session: string }) {
     try {
       const response = await fetch(endpoint(session), {
         method: "POST", headers: { "Content-Type": "application/json" }, signal: AbortSignal.timeout(15000),
-        body: JSON.stringify({ id: submissionId.current, tree: fields.get("tree"), city: fields.get("city"), place: fields.get("place"), story: fields.get("story"), name: fields.get("name"), consent: fields.get("consent") === "on" }),
+        body: JSON.stringify({ id: submissionId.current, tree: fields.get("tree"), city: fields.get("city"), place: "", story: fields.get("story"), name: fields.get("name"), consent: true }),
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error);
@@ -46,10 +46,9 @@ export function TreeQuestionnaire({ session }: { session: string }) {
     : <form onSubmit={submit} className="tree-form">
       <label>What tree is it? <span>Required · “I don’t know its name” is welcome.</span><input name="tree" required maxLength={100} placeholder="An oak, a ginkgo, the big tree outside…" /></label>
       <label>What city is it in? <span>Required · Include a country or state if helpful.</span><input name="city" required maxLength={100} placeholder="Brooklyn, New York" autoComplete="address-level2" /></label>
-      <label>Where would we find it? <span>Optional · A park, neighborhood, or landmark.</span><input name="place" maxLength={160} placeholder="Near the entrance to the park" /></label>
-      <label>What should we know about this tree? <span>Required · How do you recognize it? What makes it memorable?</span><textarea name="story" required maxLength={500} rows={4} placeholder="Every autumn, its leaves turn bright yellow…" /><span>Up to 500 characters.</span></label>
+      <label>What should we know about this tree? <span>Optional · How do you recognize it? What makes it memorable?</span><textarea name="story" maxLength={500} rows={4} placeholder="Every autumn, its leaves turn bright yellow…" /><span>Up to 500 characters.</span></label>
       <label>Your name or nickname <span>Optional · Leave blank to appear anonymously.</span><input name="name" maxLength={80} placeholder="Anonymous" autoComplete="nickname" /></label>
-      <label className="tree-consent"><input name="consent" type="checkbox" required /><span>I agree to show this response on the public presentation wall. I won’t include private contact details or someone’s home address.</span></label>
+      <p className="tree-small">By submitting, you agree to display your response on the public presentation wall. Please leave out private contact details and home addresses.</p>
       <button className="tree-button" disabled={busy}>{busy ? "Planting your story…" : "Add my tree ↗"}</button><p className="tree-small">Your answer will appear immediately. No account needed.</p>
     </form>}
     {error && <p className="tree-error" role="alert">{error}</p>}</>}
