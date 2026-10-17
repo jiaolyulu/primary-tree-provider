@@ -52,9 +52,10 @@ const speciesImageCache = new Map<string, string>();
 function TreeImage({ provider, className }: { provider: ProviderMatch; className: string }) {
   const fallback = getTreeImageForProvider(provider);
   const scientific = provider.speciesScientific?.trim() ?? "";
-  const [src, setSrc] = useState(() => speciesImageCache.get(scientific) ?? fallback);
+  const [src, setSrc] = useState(() => fallback.startsWith("/") ? fallback : speciesImageCache.get(scientific) ?? fallback);
 
   useEffect(() => {
+    if (fallback.startsWith("/")) { setSrc(fallback); return; }
     if (!scientific) return;
     const cached = speciesImageCache.get(scientific);
     if (cached) {
@@ -78,7 +79,7 @@ function TreeImage({ provider, className }: { provider: ProviderMatch; className
     };
   }, [scientific, fallback]);
 
-  return <img className={className} src={src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
+  return <img className={className} src={fallback.startsWith("/") ? fallback : src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
 }
 
 const conditionIconRules: Array<[RegExp, LucideIcon]> = [

@@ -84,5 +84,6 @@ export function getTreeImageForSpecies(speciesCommon: string, speciesScientific 
 }
 
 export function getTreeImageForProvider(provider: ProviderMatch) {
+  if (provider.providerId === 156484) return "/images/cherry-156484.png";
   return getTreeImageForSpecies(provider.speciesCommon, provider.speciesScientific);
 }

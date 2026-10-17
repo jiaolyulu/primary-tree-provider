@@ -113,14 +113,15 @@ const testimonials = [
       "The linden made burnout feel less like a personal failure and more like a pattern I could treat with shade, sleep, and fewer urgent emails.",
   },
   {
-    symptom: "Migraine pressure",
-    tree: "Ginkgo",
-    neighborhood: "West Village",
-    image:
-      "https://commons.wikimedia.org/wiki/Special:FilePath/Ginkgo-biloba-tree-in-fall.jpg?width=900",
-    imageAlt: "Ginkgo biloba tree in fall",
+    symptom: "Alopecia areata",
+    tree: "Cherry",
+    patient: "Staff’s pick",
+    neighborhood: "151 Front Street, DUMBO",
+    image: "/images/cherry-156484.png",
+    imageAlt: "Cherry at 151 Front Street in its planted sidewalk bed",
+    href: "/highlights",
     quote:
-      "The Ginkgo visit was reassuring, specific, and unusually good at making migraine care feel approachable from the sidewalk.",
+      "I wanted a doctor who understood the patchiness. This one had some of its own.",
   },
   {
     symptom: "Seasonal allergies",
@@ -379,13 +380,8 @@ export default function Home() {
           </h2>
         </div>
         <div className="testimonial-grid">
-          {testimonials.map((testimonial) => (
-            <article
-              key={`${testimonial.tree}-${testimonial.symptom}`}
-              className="testimonial-card"
-              tabIndex={0}
-              aria-label={`${testimonial.tree} patient note. Hover or focus to view the provider tree image.`}
-            >
+          {testimonials.map((testimonial) => {
+            const cardContent = (
               <div className="testimonial-card-inner">
                 <div className="testimonial-card-face testimonial-card-front">
                   <div className="testimonial-card-meta">
@@ -413,8 +409,27 @@ export default function Home() {
                   </div>
                 </div>
               </div>
-            </article>
-          ))}
+            );
+            return testimonial.href ? (
+              <Link
+                key={`${testimonial.tree}-${testimonial.symptom}`}
+                href={testimonial.href}
+                className="testimonial-card testimonial-card-linked"
+                aria-label={`Read ${testimonial.tree}’s story — Staff’s pick`}
+              >
+                {cardContent}
+              </Link>
+            ) : (
+              <article
+                key={`${testimonial.tree}-${testimonial.symptom}`}
+                className="testimonial-card"
+                tabIndex={0}
+                aria-label={`${testimonial.tree} patient note. Hover or focus to view the provider tree image.`}
+              >
+                {cardContent}
+              </article>
+            );
+          })}
         </div>
       </section>
 
@@ -494,6 +509,7 @@ export default function Home() {
             <a href="#how">How it works</a>
             <a href="#faq">Q&amp;A</a>
             <a href="#testimonials">Testimonials</a>
+            <Link href="/highlights">Tree Highlights</Link>
             <a href="#featured-doctors">Specialty Guide</a>
             <a href="#pricing">Pricing</a>
             <Link href="/providers?zip=11215">Browse providers</Link>

@@ -22,9 +22,10 @@ const speciesImageCache = new Map<string, string>();
 function TreeImage({ provider, className }: { provider: ProviderMatch; className: string }) {
   const fallback = getTreeImageForProvider(provider);
   const scientific = provider.speciesScientific?.trim() ?? "";
-  const [src, setSrc] = useState(() => speciesImageCache.get(scientific) ?? fallback);
+  const [src, setSrc] = useState(() => fallback.startsWith("/") ? fallback : speciesImageCache.get(scientific) ?? fallback);
 
   useEffect(() => {
+    if (fallback.startsWith("/")) { setSrc(fallback); return; }
     if (!scientific) return;
     const cached = speciesImageCache.get(scientific);
     if (cached) {
@@ -49,7 +50,7 @@ function TreeImage({ provider, className }: { provider: ProviderMatch; className
   }, [scientific, fallback]);
 
   // eslint-disable-next-line @next/next/no-img-element
-  return <img className={className} src={src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
+  return <img className={className} src={fallback.startsWith("/") ? fallback : src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
 }
 
 function estimatedTreeAge(provider: ProviderMatch) {
@@ -114,6 +115,12 @@ const reviewTemplates = [
 ];
 
 function generateReviews(provider: ProviderMatch) {
+  if (provider.providerId === 156484) return [
+    { id: 0, name: "A neighbor on Front Street", when: "a fictional patient story", stars: 4,
+      text: "I wanted a doctor who understood the patchiness. This Cherry had some of its own. I stop by on the walk home; we both get examined." },
+    { id: 1, name: "A returning patient", when: "a fictional follow-up", stars: 3,
+      text: "No new hair to report. But the small mirror, the sparse branches, and a reason to return have become part of my week. It is very easy to get a follow-up." },
+  ];
   const seed = String(provider.providerId);
   const count = Math.max(0, Math.min(provider.reviewCount, 4));
   const conditions = provider.searchableConditions.length ? provider.searchableConditions : ["the symptom"];
