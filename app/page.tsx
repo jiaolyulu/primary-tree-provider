@@ -108,9 +108,9 @@ const testimonials = [
     tree: "London Planetree",
     patient: "Lucy",
     neighborhood: "Bryant Park, Midtown",
-    image: "/images/lucy-burnout.jpg",
-    imageAlt: "Lucy resting her head on her hand beneath an illustrated empty battery",
-    href: "/highlights/london-planetree",
+    image: "/images/london-planetree-133645.webp",
+    imageAlt: "Lucy’s London Planetree in its planted sidewalk bed outside a stone building",
+    href: "/celebritree/london-planetree",
     quote: "The doctor spread its arms wide and let me rest in its shade. After seven days, I felt much less burned out.",
   },
   {
@@ -130,7 +130,7 @@ const testimonials = [
     neighborhood: "151 Front Street, DUMBO",
     image: "/images/cherry-156484.webp",
     imageAlt: "Cherry at 151 Front Street in its planted sidewalk bed",
-    href: "/highlights",
+    href: "/celebritree/cherry",
     quote:
       "I wanted a doctor who understood the patchiness. This one had some of its own.",
   },
@@ -163,16 +163,6 @@ const testimonials = [
     imageAlt: "Japanese Zelkova tree",
     quote:
       "The zelkova made exposure visible. Rashes, irritation, sun, construction dust: my skin had been keeping notes before I had words for them.",
-  },
-  {
-    symptom: "Afternoon fatigue",
-    tree: "Sweetgum",
-    neighborhood: "Forest Hills",
-    image:
-      "https://commons.wikimedia.org/wiki/Special:FilePath/E20151113-0001%E2%80%94Liquidambar%20styraciflua%E2%80%94Berkelely%20%2822378349813%29.jpg?width=900",
-    imageAlt: "Sweetgum tree",
-    quote:
-      "The Sweetgum care plan was practical: shade after lunch, one slower block, and noticing when heat changed my energy.",
   },
 ];
 
@@ -519,7 +509,7 @@ export default function Home() {
             <a href="#how">How it works</a>
             <a href="#faq">Q&amp;A</a>
             <a href="#testimonials">Testimonials</a>
-            <Link href="/highlights">Tree Highlights</Link>
+            <a href="/celebritree">Celebritree</a>
             <a href="#featured-doctors">Specialty Guide</a>
             <a href="#pricing">Pricing</a>
             <Link href="/providers?zip=11215">Browse providers</Link>

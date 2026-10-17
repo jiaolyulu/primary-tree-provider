@@ -4,6 +4,7 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "commons.wikimedia.org", pathname: "/wiki/**" },
       { protocol: "https", hostname: "upload.wikimedia.org", pathname: "/wikipedia/**" },
+      { protocol: "https", hostname: "thumb.wikimedia.org", pathname: "/wikipedia/**" },
     ],
   },
   outputFileTracingRoot: import.meta.dirname,

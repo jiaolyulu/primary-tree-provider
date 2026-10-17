@@ -3,13 +3,14 @@
 import Image from "next/image";
 import Link from "next/link";
 import { ArrowDown, ArrowRight, Printer, Trees } from "lucide-react";
+import { CelebritreeFooter, CelebritreeHeader, CelebritreeMore } from "@/components/CelebritreeNavigation";
 import { SiteNav } from "@/components/SiteNav";
 
 export function LondonPlanetreeHighlight() {
   return <>
     <SiteNav variant="solid" />
     <main className="th-page th-london">
-      <div className="th-issue"><Link href="/#testimonials">← Patient notes</Link><span>TREE HIGHLIGHTS / MIDTOWN, MANHATTAN</span></div>
+      <CelebritreeHeader current="london-planetree" />
       <section className="th-hero">
         <div className="th-hero-copy">
           <div className="th-eyebrow"><span className="th-dot" /> FEATURED PROVIDER / #133645</div>
@@ -20,9 +21,9 @@ export function LondonPlanetreeHighlight() {
           <div className="th-hero-meta"><span>PRIMARY CARE TREE</span><span>2 WEST 42 STREET · NEW YORK 10018</span></div>
         </div>
         <figure className="th-portrait">
-          <Image src="/images/lucy-bryant-park.jpg" width={554} height={313} sizes="(max-width: 650px) 90vw, 540px" priority alt="A tree-lined path with benches and visitors in Bryant Park" />
+          <Image src="/images/london-planetree-133645.webp" width={1216} height={1306} sizes="(max-width: 900px) 90vw, 540px" priority alt="Lucy’s London Planetree in a planted sidewalk bed outside a stone building with steps and columns" />
           <span className="th-photo-label">LONDON PLANETREE / BRYANT PARK</span>
-          <figcaption><span>A quieter kind of waiting room.</span><span>From the project presentation</span></figcaption>
+          <figcaption><span>A quieter kind of waiting room.</span><span>User-supplied Google Street View image</span></figcaption>
         </figure>
       </section>
       <div className="th-file-strip"><span><Trees size={20} /> PROVIDER #133645</span><span><small>Location</small> Midtown–Midtown South</span><span><small>Specialty</small> Internal medicine</span><span><small>Office hours</small> Dawn–dusk, weekends available</span></div>
@@ -59,8 +60,8 @@ export function LondonPlanetreeHighlight() {
         <div className="th-prescription-copy"><div className="th-eyebrow">THE DOCTOR’S ADVICE</div><h2>“If you can’t leave New York,<br /><em>at least leave Times Square.”</em></h2><p>The prescription was a little wordplay: leaf → leave. Each morning, the leaf becomes a reminder to leave Times Square and make room for a quieter moment. The medicine is the message.</p><button className="th-text-button" onClick={() => window.print()}><Printer size={16} /> Keep a copy of the prescription <ArrowRight size={16} /></button></div>
         <article className="th-prescription"><div className="th-rx-head"><span>PRIMARY CARE TREE<br /><small>LONDON PLANETREE · PROVIDER #133645</small></span><span className="th-rx">℞</span></div><div className="th-rx-line"><span>Patient</span><strong>Lucy</strong></div><div className="th-rx-line"><span>Seen for</span><strong>Urban burnout</strong></div><div className="th-rx-line"><span>Treatment</span><strong>Leaf → leave</strong></div><div className="th-rx-line"><span>Take home</span><strong>One leaf. A reminder to leave.</strong></div><div className="th-rx-line"><span>Dosage</span><strong>Look each morning for seven days</strong></div><div className="th-rx-line"><span>Directions</span><strong>Leave Times Square. Find some shade.</strong></div><div className="th-signature">Signed, the tree.</div><p>Part of a fictional care story. Not a medical prescription.</p></article>
       </section>
-      <section className="th-find-provider"><div><div className="th-eyebrow">MORE PATIENT NOTES</div><h2>A familiar kind <em>of patchy.</em></h2></div><Link className="th-primary" href="/highlights">Meet Cherry on Front Street <ArrowRight size={17} /></Link></section>
+      <CelebritreeMore current="london-planetree" />
     </main>
-    <footer className="site-footer"><div className="footer-main"><div className="footer-brand"><Image width={60} height={56} src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" /><p>A speculative medical network that allows New York City trees to provide care.</p></div><div className="footer-nav"><span>Network</span><Link href="/">Home</Link><Link href="/#testimonials">Patient notes</Link><Link href="/pcts">Browse providers</Link></div></div><div className="footer-disclaimer"><p>This provider profile and patient story are fiction. PCT is not a real medical service. The story’s environmental measurements and walking time are narrative context, not measurements taken during the visit.</p></div></footer>
+    <CelebritreeFooter disclaimer="This provider profile and patient story are fiction. PCT is not a real medical service. The story’s environmental measurements and walking time are narrative context, not measurements taken during the visit." />
   </>;
 }

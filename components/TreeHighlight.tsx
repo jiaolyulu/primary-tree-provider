@@ -4,6 +4,7 @@ import Image from "next/image";
 
 import Link from "next/link";
 import { ArrowDown, ArrowRight, Printer, Trees } from "lucide-react";
+import { CelebritreeFooter, CelebritreeHeader, CelebritreeMore } from "@/components/CelebritreeNavigation";
 import { SiteNav } from "@/components/SiteNav";
 
 export function TreeHighlight() {
@@ -11,7 +12,7 @@ export function TreeHighlight() {
     <>
       <SiteNav variant="solid" />
       <main className="th-page">
-      <div className="th-issue"><Link href="/#testimonials">← Patient notes</Link><Link href="/highlights/london-planetree">Next story: Lucy’s London Planetree →</Link></div>
+      <CelebritreeHeader current="cherry" />
       <section className="th-hero">
         <div className="th-hero-copy">
           <div className="th-eyebrow"><span className="th-dot" /> FEATURED PROVIDER / #156484</div>
@@ -21,7 +22,7 @@ export function TreeHighlight() {
           <div className="th-hero-meta"><span>PRIMARY CARE TREE</span><span>151 FRONT STREET · BROOKLYN 11201</span></div>
         </div>
         <figure className="th-portrait">
-          <Image width={1600} height={1481} sizes="(max-width: 650px) 90vw, (max-width: 1280px) 45vw, 540px" priority src="/images/cherry-156484.webp" alt="Cherry at 151 Front Street: sparse leafy branches in a planted sidewalk bed beside a brick building and food cart" />
+          <Image width={1600} height={1481} sizes="(max-width: 900px) 90vw, (max-width: 1280px) 45vw, 540px" priority src="/images/cherry-156484.webp" alt="Cherry at 151 Front Street: sparse leafy branches in a planted sidewalk bed beside a brick building and food cart" />
           <span className="th-photo-label">CHERRY / PRUNUS / #156484</span>
           <div className="th-annotation"><span />A little patchy.<br />Very understanding.</div>
           <figcaption><span>Now seeing neighbors.</span><span>User-supplied Google Street View image</span></figcaption>
@@ -55,12 +56,9 @@ export function TreeHighlight() {
         <div className="th-prescription-copy"><div className="th-eyebrow">FROM THE PROVIDER’S DESK</div><h2>“Come back<br /><em>in spring.”</em></h2><p>The consultation ended with a remarkably short prescription. The patient asked when they could expect results. The provider rustled.</p><p>“It’s not a very reassuring doctor,” the patient says. “But it is very easy to get a follow-up.”</p><button className="th-text-button" onClick={() => window.print()}><Printer size={16} /> Keep a copy of the prescription <ArrowRight size={16} /></button></div>
         <article className="th-prescription"><div className="th-rx-head"><span>PRIMARY CARE TREE<br /><small>CHERRY · PROVIDER #156484</small></span><span className="th-rx">℞</span></div><div className="th-rx-line"><span>Diagnosis</span><strong>Localized canopy loss</strong></div><div className="th-rx-line"><span>Treatment</span><strong>Wait.</strong></div><div className="th-rx-line"><span>Dosage</span><strong>One season</strong></div><div className="th-rx-line"><span>Follow-up</span><strong>Spring</strong></div><div className="th-signature">Signed, the tree.</div><p>Part of a fictional care story. Not a medical prescription.</p></article>
       </section>
-      <section className="th-find-provider"><div><div className="th-eyebrow">GOOD CARE MAY BE CLOSER THAN YOU THINK.</div><h2>Who’s growing <em>on your block?</em></h2></div><Link className="th-primary" href="/pcts">Find your primary care tree <ArrowRight size={17} /></Link></section>
+      <CelebritreeMore current="cherry" />
     </main>
-    <footer className="site-footer">
-      <div className="footer-main"><div className="footer-brand"><Image width={60} height={56} src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" /><p>A speculative medical network that allows New York City trees to provide care.</p></div><div className="footer-nav"><span>Network</span><Link href="/">Home</Link><Link href="/#testimonials">Patient notes</Link><Link href="/pcts">Browse providers</Link></div></div>
-      <div className="footer-disclaimer"><p>This provider profile and patient story are fiction. PCT is not a real medical service. Trees do not treat alopecia areata.</p></div>
-    </footer>
+    <CelebritreeFooter disclaimer="This provider profile and patient story are fiction. PCT is not a real medical service. Trees do not treat alopecia areata." />
     </>
   );
 }
