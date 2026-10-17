@@ -70,7 +70,7 @@ export function HeroVideo() {
       playsInline
       autoPlay
       preload="auto"
-      poster="/images/pct-tree-hero.jpg"
+      poster="/images/pct-tree-hero.webp"
       aria-hidden="true"
     >
       <source

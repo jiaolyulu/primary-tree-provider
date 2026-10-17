@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { ArrowRight, MapPin } from "lucide-react";
 import { BubbleCanvas } from "@/components/BubbleCanvas";
@@ -107,7 +108,7 @@ const testimonials = [
     tree: "Littleleaf Linden",
     patient: "Jon",
     neighborhood: "Midwood",
-    image: "/images/littleleaf-linden-testimonial.jpg",
+    image: "/images/littleleaf-linden-testimonial.webp",
     imageAlt: "Person resting under a Littleleaf Linden street tree",
     quote:
       "The linden made burnout feel less like a personal failure and more like a pattern I could treat with shade, sleep, and fewer urgent emails.",
@@ -117,7 +118,7 @@ const testimonials = [
     tree: "Cherry",
     patient: "Staff’s pick",
     neighborhood: "151 Front Street, DUMBO",
-    image: "/images/cherry-156484.png",
+    image: "/images/cherry-156484.webp",
     imageAlt: "Cherry at 151 Front Street in its planted sidewalk bed",
     href: "/highlights",
     quote:
@@ -282,7 +283,7 @@ export default function Home() {
         </div>
         <figure className="poster-reference">
           <div className="poster-body">
-            <img src="/images/arbocurists.png" alt="Arbocurists illustration — five people rendered as tree rings" />
+            <Image width={1080} height={888} sizes="(max-width: 650px) 90vw, 45vw" src="/images/arbocurists.webp" alt="Arbocurists illustration — five people rendered as tree rings" />
             <div className="poster-definition">
               <div className="poster-definition-entry">
                 <strong>Arbocurists (n.)</strong>
@@ -398,7 +399,7 @@ export default function Home() {
                   </div>
                 </div>
                 <div className="testimonial-card-face testimonial-card-back">
-                  <img src={testimonial.image} alt={testimonial.imageAlt} loading="lazy" />
+                  <Image fill sizes="(max-width: 700px) 90vw, (max-width: 1100px) 45vw, 30vw" src={testimonial.image} alt={testimonial.imageAlt} loading="lazy" />
                   <div className="testimonial-image-label">
                     <span>Provider tree</span>
                     <strong>{testimonial.tree}</strong>
@@ -498,7 +499,7 @@ export default function Home() {
       <footer className="site-footer">
         <div className="footer-main">
           <div className="footer-brand">
-            <img src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" />
+            <Image width={60} height={56} src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" />
             <p>A speculative medical network that allows New York City trees to provide care.</p>
             <p>Powered by <a href="https://opendata.cityofnewyork.us/" target="_blank" rel="noopener noreferrer">NYC Open Data</a></p>
             <p>© 2026 Primary Care Tree. No rights reserved. Feel free to use, share, and modify.</p>

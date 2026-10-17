@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import Link from "next/link";
 import QRCode from "qrcode";
 import { FormEvent, useEffect, useRef, useState } from "react";
@@ -87,7 +89,7 @@ export function TreeWall({ session }: { session: string }) {
     catch { setFullscreenError("Use your browser’s fullscreen option."); }
   }
   return <main className="tree-wall"><header className="tree-wall-header"><div><Brand /><p className="tree-eyebrow">A collective city forest</p><h1>{data?.title || "Trees we know"}</h1><p>Every tree has a place. Every place has a story.</p><div className="tree-tools"><span role="status">{paused ? "Updates paused" : error ? "Reconnecting" : data ? `${data.total} tree ${data.total === 1 ? "story" : "stories"} · Live` : "Connecting…"}</span><button onClick={() => setPaused(!paused)}>{paused ? "Resume" : "Pause"}</button><button onClick={fullscreen}>Fullscreen</button></div>{fullscreenError && <p role="status">{fullscreenError}</p>}</div>
-    <aside className="tree-join">{qr && <img src={qr} width={160} height={160} alt="QR code to share your tree" />}<div><strong>Know a tree?<br />Introduce us.</strong><p>Scan to add your story</p><a href={url}>{url.replace(/^https?:\/\//, "")}</a>{qr && <a className="tree-small" href={qr} download={`tree-${session}-qr.png`}>Download QR code ↓</a>}</div></aside></header>
+    <aside className="tree-join">{qr && <Image unoptimized src={qr} width={160} height={160} alt="QR code to share your tree" />}<div><strong>Know a tree?<br />Introduce us.</strong><p>Scan to add your story</p><a href={url}>{url.replace(/^https?:\/\//, "")}</a>{qr && <a className="tree-small" href={qr} download={`tree-${session}-qr.png`}>Download QR code ↓</a>}</div></aside></header>
     {error && <p className="tree-error" role="alert">{error}</p>}
     {data && !data.open && <p className="tree-notice">Submissions are closed. Our shared forest is still here to explore.</p>}
     {data && data.total === 0 ? <section className="tree-empty"><span className="tree-symbol">✳</span><h2>A forest starts with one tree.</h2><p>Scan the code and be the first to share.</p></section> : <section className="tree-grid" aria-label="Audience tree stories">{data?.answers.map(answer => <article className="tree-story" key={answer.id}><p className="tree-eyebrow">{answer.city}</p><h2>{answer.tree}</h2>{answer.place && <p className="tree-place">↳ {answer.place}</p>}<p className="tree-quote">{answer.story}</p><footer>Shared by {answer.name || "Anonymous"}</footer></article>)}</section>}

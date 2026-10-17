@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useEffect, useState } from "react";
 import { FALLBACK_TREE_IMAGE, getTreeImageForSpecies } from "@/lib/treeImageSources";
 
@@ -65,5 +67,5 @@ export function TreeThumb({ name, className = "pct-card-img" }: { name: string; 
     };
   }, [fallback, name]);
 
-  return <img className={className} src={src} alt={`${name} tree`} loading="lazy" />;
+  return <Image width={400} height={400} sizes="(max-width: 650px) 100px, 160px" className={className} src={src} alt={`${name} tree`} loading="lazy" />;
 }

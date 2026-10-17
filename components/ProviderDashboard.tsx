@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -79,7 +81,7 @@ function TreeImage({ provider, className }: { provider: ProviderMatch; className
     };
   }, [scientific, fallback]);
 
-  return <img className={className} src={fallback.startsWith("/") ? fallback : src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
+  return <Image width={400} height={400} sizes="(max-width: 650px) 100px, 160px" className={className} src={fallback.startsWith("/") ? fallback : src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
 }
 
 const conditionIconRules: Array<[RegExp, LucideIcon]> = [
@@ -242,7 +244,7 @@ export function ProviderDashboard() {
       <main className="provider-search-page">
         <header className="provider-search-topbar">
           <Link href="/" className="provider-logo" aria-label="Primary Care Tree — home">
-            <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
+            <Image width={60} height={56} src="/images/tree-logo.svg" alt="Primary Care Tree" />
           </Link>
           <div className="provider-search-form">{searchForm}</div>
         </header>
@@ -267,7 +269,7 @@ export function ProviderDashboard() {
       <main className="provider-search-page">
         <header className="provider-search-topbar">
           <Link href="/" className="provider-logo" aria-label="Primary Care Tree — home">
-            <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
+            <Image width={60} height={56} src="/images/tree-logo.svg" alt="Primary Care Tree" />
           </Link>
           <div className="provider-search-form">{searchForm}</div>
         </header>
@@ -333,7 +335,7 @@ export function ProviderDashboard() {
     <main className="provider-search-page">
       <header className="provider-search-topbar">
         <Link href="/" className="provider-logo" aria-label="Primary Care Tree — home">
-          <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
+          <Image width={60} height={56} src="/images/tree-logo.svg" alt="Primary Care Tree" />
         </Link>
         <div className="provider-search-form">{searchForm}</div>
       </header>

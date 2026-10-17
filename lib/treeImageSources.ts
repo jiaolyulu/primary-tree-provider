@@ -1,6 +1,6 @@
 import type { ProviderMatch } from "@/lib/providers";
 
-export const FALLBACK_TREE_IMAGE = "/images/pct-tree-hero.jpg";
+export const FALLBACK_TREE_IMAGE = "/images/pct-tree-hero.webp";
 
 type TreeImageSource = {
   credit: string;
@@ -84,6 +84,6 @@ export function getTreeImageForSpecies(speciesCommon: string, speciesScientific 
 }
 
 export function getTreeImageForProvider(provider: ProviderMatch) {
-  if (provider.providerId === 156484) return "/images/cherry-156484.png";
+  if (provider.providerId === 156484) return "/images/cherry-156484.webp";
   return getTreeImageForSpecies(provider.speciesCommon, provider.speciesScientific);
 }

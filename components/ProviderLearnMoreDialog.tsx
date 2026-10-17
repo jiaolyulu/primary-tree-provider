@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import { useEffect, useState } from "react";
 import { ExternalLink, MapPin, Star, X } from "lucide-react";
 import type { ProviderMatch } from "@/lib/providers";
@@ -50,7 +52,7 @@ function TreeImage({ provider, className }: { provider: ProviderMatch; className
   }, [scientific, fallback]);
 
   // eslint-disable-next-line @next/next/no-img-element
-  return <img className={className} src={fallback.startsWith("/") ? fallback : src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
+  return <Image width={400} height={400} sizes="(max-width: 650px) 100px, 160px" className={className} src={fallback.startsWith("/") ? fallback : src} alt={`${provider.speciesCommon} tree`} loading="lazy" />;
 }
 
 function estimatedTreeAge(provider: ProviderMatch) {

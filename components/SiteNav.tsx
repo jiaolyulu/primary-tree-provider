@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X } from "lucide-react";
@@ -56,7 +58,7 @@ export function SiteNav({
   return (
     <nav className={variant === "solid" ? "nav nav-solid" : "nav"}>
       <Link href="/" className="nav-logo" aria-label="Primary Care Tree — home">
-        <img src="/images/tree-logo.svg" alt="Primary Care Tree" />
+        <Image width={60} height={56} src="/images/tree-logo.svg" alt="Primary Care Tree" />
       </Link>
 
       <button

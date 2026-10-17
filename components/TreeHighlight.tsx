@@ -1,5 +1,7 @@
 "use client";
 
+import Image from "next/image";
+
 import Link from "next/link";
 import { ArrowDown, ArrowRight, Printer, Trees } from "lucide-react";
 import { SiteNav } from "@/components/SiteNav";
@@ -19,7 +21,7 @@ export function TreeHighlight() {
           <div className="th-hero-meta"><span>PRIMARY CARE TREE</span><span>151 FRONT STREET · BROOKLYN 11201</span></div>
         </div>
         <figure className="th-portrait">
-          <img src="/images/cherry-156484.png" alt="Cherry at 151 Front Street: sparse leafy branches in a planted sidewalk bed beside a brick building and food cart" />
+          <Image width={1600} height={1481} sizes="(max-width: 650px) 90vw, (max-width: 1280px) 45vw, 540px" priority src="/images/cherry-156484.webp" alt="Cherry at 151 Front Street: sparse leafy branches in a planted sidewalk bed beside a brick building and food cart" />
           <span className="th-photo-label">CHERRY / PRUNUS / #156484</span>
           <div className="th-annotation"><span />A little patchy.<br />Very understanding.</div>
           <figcaption><span>Now seeing neighbors.</span><span>User-supplied Google Street View image</span></figcaption>
@@ -56,7 +58,7 @@ export function TreeHighlight() {
       <section className="th-find-provider"><div><div className="th-eyebrow">GOOD CARE MAY BE CLOSER THAN YOU THINK.</div><h2>Who’s growing <em>on your block?</em></h2></div><Link className="th-primary" href="/pcts">Find your primary care tree <ArrowRight size={17} /></Link></section>
     </main>
     <footer className="site-footer">
-      <div className="footer-main"><div className="footer-brand"><img src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" /><p>A speculative medical network that allows New York City trees to provide care.</p></div><div className="footer-nav"><span>Network</span><Link href="/">Home</Link><Link href="/#testimonials">Patient notes</Link><Link href="/pcts">Browse providers</Link></div></div>
+      <div className="footer-main"><div className="footer-brand"><Image width={60} height={56} src="/images/tree-logo-white.svg" alt="Primary Care Tree" className="footer-logo" /><p>A speculative medical network that allows New York City trees to provide care.</p></div><div className="footer-nav"><span>Network</span><Link href="/">Home</Link><Link href="/#testimonials">Patient notes</Link><Link href="/pcts">Browse providers</Link></div></div>
       <div className="footer-disclaimer"><p>This provider profile and patient story are fiction. PCT is not a real medical service. Trees do not treat alopecia areata.</p></div>
     </footer>
     </>
