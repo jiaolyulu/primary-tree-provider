@@ -85,3 +85,9 @@
 .th-care-stats dd{margin:0;font-family:var(--font-display);font-size:clamp(36px,4vw,56px);line-height:1.1}
 .th-care-stats small{font-size:11px;color:var(--muted);line-height:1.5}
 @media(max-width:420px){.th-care-stats{gap:12px}.th-care-stats dt{font-size:10px}}
+
+.th-lucy-photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:30px 0}
+.th-lucy-photos figure{margin:0}
+.th-lucy-photos img{display:block;width:100%;height:auto;aspect-ratio:1/1;object-fit:cover;border:1px solid var(--line-dark)}
+.th-lucy-photos figcaption{font-size:12px;color:var(--muted);margin-top:10px;line-height:1.5}
+@media(max-width:650px){.th-lucy-photos{gap:10px}.th-lucy-photos figcaption{font-size:11px}}
