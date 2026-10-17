@@ -214,7 +214,6 @@ export default function Home() {
               <span>30 specialties</span>
               <span>183 ZIP codes</span>
             </div>
-            <p className="hero-proof-note">Source-authored profiles</p>
           </div>
 
           <div className="hero-demo" id="care-intake" aria-label="Find a Primary Care Tree">
