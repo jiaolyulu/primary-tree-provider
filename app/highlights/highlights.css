@@ -69,3 +69,12 @@
 .th-portrait figcaption{position:static;flex-wrap:wrap}
 .th-photo-label{top:12px;left:12px;max-width:calc(100% - 24px);font-size:10px}
 .th-annotation{display:none}
+.th-london .th-portrait{align-self:center}
+.th-london-context{display:grid;grid-template-columns:1fr 1fr;gap:30px;align-items:start}
+.th-london-context p{font-size:16px;line-height:1.7;color:var(--muted)}
+.th-london-context figure{margin:0}
+.th-london-context img{display:block;width:100%;height:auto;border:1px solid var(--line-dark)}
+.th-london-context figcaption{font-size:11px;color:var(--muted);margin-top:10px}
+.th-london .th-two-copy a{text-decoration:underline;text-underline-offset:3px}
+.th-london .th-rx-line strong{text-align:right;font-size:21px}
+@media(max-width:650px){.th-london-context{grid-template-columns:1fr}.th-london .th-hero-meta{flex-wrap:wrap}.th-london .th-prescription-copy h2{font-size:42px}}

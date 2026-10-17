@@ -104,6 +104,16 @@ const pricingItems = [
 
 const testimonials = [
   {
+    symptom: "Urban burnout",
+    tree: "London Planetree",
+    patient: "Lucy",
+    neighborhood: "Bryant Park, Midtown",
+    image: "/images/lucy-bryant-park.jpg",
+    imageAlt: "Tree-lined path and benches in Bryant Park",
+    href: "/highlights/london-planetree",
+    quote: "The doctor spread its arms wide and let me rest in its shade. After seven days, I felt much less burned out.",
+  },
+  {
     symptom: "Burnout + insomnia",
     tree: "Littleleaf Linden",
     patient: "Jon",
@@ -416,7 +426,7 @@ export default function Home() {
                 key={`${testimonial.tree}-${testimonial.symptom}`}
                 href={testimonial.href}
                 className="testimonial-card testimonial-card-linked"
-                aria-label={`Read ${testimonial.tree}’s story — Staff’s pick`}
+                aria-label={`Read ${testimonial.tree}’s story`}
               >
                 {cardContent}
               </Link>

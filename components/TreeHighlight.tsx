@@ -11,7 +11,7 @@ export function TreeHighlight() {
     <>
       <SiteNav variant="solid" />
       <main className="th-page">
-      <div className="th-issue"><Link href="/#testimonials">← Patient notes</Link><span>TREE HIGHLIGHTS / DUMBO, BROOKLYN</span></div>
+      <div className="th-issue"><Link href="/#testimonials">← Patient notes</Link><Link href="/highlights/london-planetree">Next story: Lucy’s London Planetree →</Link></div>
       <section className="th-hero">
         <div className="th-hero-copy">
           <div className="th-eyebrow"><span className="th-dot" /> FEATURED PROVIDER / #156484</div>
