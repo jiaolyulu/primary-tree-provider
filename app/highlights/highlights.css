@@ -104,3 +104,11 @@
 .celebritree-pending span{font-size:11px;letter-spacing:.08em}
 @media(max-width:650px){.celebritree-options{grid-template-columns:1fr}.celebritree-more{padding-block:45px}.celebritree-pending{min-height:270px}}
 @media print{.celebritree-more{display:none!important}}
+
+.th-linden .th-hero-meta{flex-wrap:wrap;gap:10px 22px}
+.th-linden .th-two-copy p:last-child{grid-column:1/-1}
+.th-linden .th-patient-heading>span:last-child{flex-shrink:0}
+.th-linden .th-patient-mark{width:64px;flex-shrink:0;font-size:20px}
+.th-linden .th-rx-line{display:grid;grid-template-columns:75px minmax(0,1fr)}
+.th-linden .th-rx-line strong{text-align:right;font-size:21px;line-height:1.25}
+@media(max-width:650px){.th-linden .th-patient-heading{flex-wrap:wrap}.th-linden .th-rx-line{gap:12px}.th-linden .th-rx-line strong{font-size:20px}}

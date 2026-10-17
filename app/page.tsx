@@ -114,14 +114,15 @@ const testimonials = [
     quote: "The doctor spread its arms wide and let me rest in its shade. After seven days, I felt much less burned out.",
   },
   {
-    symptom: "Burnout + insomnia",
+    symptom: "Anxiety, low mood + insomnia",
     tree: "Littleleaf Linden",
-    patient: "Jon",
-    neighborhood: "Midwood",
-    image: "/images/littleleaf-linden-testimonial.webp",
-    imageAlt: "Person resting under a Littleleaf Linden street tree",
+    patient: "C.B.P.",
+    neighborhood: "210 South End Avenue, Battery Park City",
+    image: "/images/linden-283429.jpg",
+    imageAlt: "Littleleaf Linden at 210 South End Avenue, with a broad green canopy above the Battery Park City sidewalk",
+    href: "/celebritree/wall-street",
     quote:
-      "The linden made burnout feel less like a personal failure and more like a pattern I could treat with shade, sleep, and fewer urgent emails.",
+      "I wanted a doctor who stayed calm during market volatility. This one had leaves.",
   },
   {
     symptom: "Alopecia areata",

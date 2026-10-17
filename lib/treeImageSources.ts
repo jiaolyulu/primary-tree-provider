@@ -86,5 +86,6 @@ export function getTreeImageForSpecies(speciesCommon: string, speciesScientific 
 export function getTreeImageForProvider(provider: ProviderMatch) {
   if (provider.providerId === 133645) return "/images/london-planetree-133645.webp";
   if (provider.providerId === 156484) return "/images/cherry-156484.webp";
+  if (provider.providerId === 283429) return "/images/linden-283429.jpg";
   return getTreeImageForSpecies(provider.speciesCommon, provider.speciesScientific);
 }
