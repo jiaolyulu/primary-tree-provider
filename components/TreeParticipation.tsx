@@ -43,13 +43,13 @@ export function TreeQuestionnaire({ session }: { session: string }) {
   }
   return <main className="tree-form-shell"><Brand /><p className="tree-eyebrow">{session === "rehearsal" ? "Rehearsal · " : ""}A collective city forest</p>
     {done ? <section className="tree-success" role="status"><span className="tree-symbol">✳</span><h1>Your tree is part of the forest.</h1><p>Thank you for sharing a little piece of your city.</p><Link className="tree-button" href={`/participate/${encodeURIComponent(session)}/wall`}>See the response wall ↗</Link><button className="tree-secondary" onClick={() => { submissionId.current = ""; setDone(false); }}>Add another tree</button></section>
-    : <><h1>What tree do you recognize in your city?</h1><p className="tree-intro">A familiar corner. A little shade. A tree with a story.<br />Introduce us to one you know.</p>
+    : <><h1>What tree do you recognize in your city?</h1>
     {info && !info.open ? <p role="status">This presentation is no longer accepting responses. <Link href={`/participate/${encodeURIComponent(session)}/wall`}>Explore the forest.</Link></p>
     : <form onSubmit={submit} className="tree-form">
-      <label>What tree is it? <span>Required · “I don’t know its name” is welcome.</span><input name="tree" required maxLength={100} placeholder="An oak, a ginkgo, the big tree outside…" /></label>
-      <label>What city is it in? <span>Required · Include a country or state if helpful.</span><input name="city" required maxLength={100} placeholder="Brooklyn, New York" autoComplete="address-level2" /></label>
-      <label>What should we know about this tree? <span>Optional · How do you recognize it? What makes it memorable?</span><textarea name="story" maxLength={500} rows={4} placeholder="Every autumn, its leaves turn bright yellow…" /><span>Up to 500 characters.</span></label>
-      <label>Your name or nickname <span>Optional · Leave blank to appear anonymously.</span><input name="name" maxLength={80} placeholder="Anonymous" autoComplete="nickname" /></label>
+      <label>What tree is it? *<input name="tree" required maxLength={100} placeholder="An oak, a ginkgo, the big tree outside…" /></label>
+      <label>What city is it in? *<input name="city" required maxLength={100} placeholder="Brooklyn, New York" autoComplete="address-level2" /></label>
+      <label>What should we know about this tree?<textarea name="story" maxLength={500} rows={4} placeholder="Every autumn, its leaves turn bright yellow…" /></label>
+      <label>Your name or nickname<input name="name" maxLength={80} placeholder="Anonymous" autoComplete="nickname" /></label>
       <p className="tree-small">By submitting, you agree to display your response on the public presentation wall. Please leave out private contact details and home addresses.</p>
       <button className="tree-button" disabled={busy}>{busy ? "Planting your story…" : "Add my tree ↗"}</button><p className="tree-small">Your answer will appear immediately. No account needed.</p>
     </form>}
