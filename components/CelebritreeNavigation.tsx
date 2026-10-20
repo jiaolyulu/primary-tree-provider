@@ -4,7 +4,7 @@ import { ArrowRight, Trees } from "lucide-react";
 
 const stories = [
   { id: "cherry", number: "01", title: "Cherry on Front Street", location: "DUMBO, Brooklyn", description: "A familiar kind of patchy. A neighbor finds an unlikely hair specialist.", href: "/celebritree/cherry", image: "/images/cherry-156484.webp" },
-  { id: "london-planetree", number: "02", title: "Lucy’s London Planetree", location: "Bryant Park, Manhattan", description: "Seven minutes from Times Square. A little shade and a reason to leave.", href: "/celebritree/london-planetree", image: "/images/london-planetree-133645.webp" },
+  { id: "london-planetree", number: "02", title: "Lucy’s London Planetree", location: "Bryant Park, Manhattan", description: "Seven minutes from Times Square. A little shade and a reason to leave.", href: "/celebritree/london-planetree", image: "/images/london-planetree-133647.webp" },
   { id: "wall-street", number: "03", title: "A finance bro under a linden", location: "Battery Park City, Manhattan", description: "A gentler kind of stress test. A finance bro finds a calmer provider on South End Avenue.", href: "/celebritree/wall-street", image: "/images/linden-283429.jpg" },
 ] as const;
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { celebritreeReviews } from "@/lib/celebritreeReviews";
 import Image from "next/image";
 
 import { useEffect, useState } from "react";
@@ -117,12 +118,7 @@ const reviewTemplates = [
 ];
 
 function generateReviews(provider: ProviderMatch) {
-  if (provider.providerId === 156484) return [
-    { id: 0, name: "A neighbor on Front Street", when: "a fictional patient story", stars: 4,
-      text: "I wanted a doctor who understood the patchiness. This Cherry had some of its own. I stop by on the walk home; we both get examined." },
-    { id: 1, name: "A returning patient", when: "a fictional follow-up", stars: 3,
-      text: "No new hair to report. But the small mirror, the sparse branches, and a reason to return have become part of my week. It is very easy to get a follow-up." },
-  ];
+  const featuredReview = celebritreeReviews[provider.providerId];
   const seed = String(provider.providerId);
   const count = Math.max(0, Math.min(provider.reviewCount, 4));
   const conditions = provider.searchableConditions.length ? provider.searchableConditions : ["the symptom"];
@@ -133,6 +129,10 @@ function generateReviews(provider: ProviderMatch) {
   const condStart = seededHash(`${seed}:cond`) % conditions.length;
 
   return Array.from({ length: count }, (_, index) => {
+    if (index === 0 && featuredReview) {
+      const { name, when, stars, text } = featuredReview;
+      return { id: index, name, when, stars, text };
+    }
     const condition = conditions[(condStart + index) % conditions.length];
     const condition2 = conditions[(condStart + index + 1) % conditions.length];
     const text = reviewTemplates[(templateStart + index) % reviewTemplates.length]
@@ -151,7 +151,7 @@ function generateReviews(provider: ProviderMatch) {
       id: index,
       name: reviewerNames[(nameStart + index) % reviewerNames.length],
       when: reviewDates[(dateStart + index * 2) % reviewDates.length],
-      stars: seededPick([5, 5, 5, 4, 4, 3], seed, index * 7 + 1),
+      stars: seededPick(featuredReview ? [5, 5, 5, 4] : [5, 5, 5, 4, 4, 3], seed, index * 7 + 1),
       text,
     };
   });
@@ -166,6 +166,14 @@ function reviewCountLabel(count: number) {
 }
 
 function ratingBreakdown(provider: ProviderMatch) {
+  const featured = celebritreeReviews[provider.providerId];
+  if (featured) {
+    const total = featured.fiveStarCount + featured.fourStarCount;
+    const fivePct = Math.round(featured.fiveStarCount / total * 100);
+    return [5, 4, 3, 2, 1].map((star) => ({
+      star, pct: star === 5 ? fivePct : star === 4 ? 100 - fivePct : 0,
+    }));
+  }
   const seed = String(provider.providerId);
   const weights = [
     55 + (seededHash(`${seed}:5`) % 25),

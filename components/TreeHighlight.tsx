@@ -28,7 +28,7 @@ export function TreeHighlight() {
           <figcaption><span>Now seeing neighbors.</span><span>User-supplied Google Street View image</span></figcaption>
         </figure>
       </section>
-      <div className="th-file-strip"><span><Trees size={20} /> PROVIDER #156484</span><span><small>Location</small> DUMBO, Brooklyn</span><span><small>Specialty</small> Dermatology / alopecia</span><span><small>Office hours</small> Dawn–dusk, weekdays</span></div>
+      <div className="th-file-strip"><span><Trees size={20} /> PROVIDER #156484</span><span><small>Location</small> DUMBO, Brooklyn</span><span><small>Specialty</small> Pediatrics</span><span><small>Office hours</small> Dawn–dusk, weekdays</span></div>
       <section className="th-intro th-section">
         <div className="th-side-label">ABOUT THE PROVIDER</div>
         <div><h2>Excellent bedside manner.<br /><em>No bedside required.</em></h2><div className="th-two-copy"><p>Cherry stands in a small planted bed outside 151 Front Street. In the photograph, leaves gather at some branch tips while other stretches remain bare. A food cart occupies the curb beside it; a brick storefront is its backdrop. This is the particular canopy that starts the story.</p><p>Its approach is unusually personal. The patient brings a concern about their hair; the tree brings a canopy that is hardly uniform. Together, they establish a practice built around short visits, long silences, and absolutely no before-and-after promises.</p></div></div>
