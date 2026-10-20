@@ -242,19 +242,8 @@ export default function Home() {
           </h2>
         </div>
         <div className="metric-card">
-          <span>01</span>
           <strong>Every provider is planted.</strong>
           <p>Each provider is a living tree with a documented ID, species, address, neighborhood, and coordinate.</p>
-        </div>
-        <div className="metric-card">
-          <span>02</span>
-          <strong>Every symptom starts a search.</strong>
-          <p>The network considers symptoms, location, & provider specialties to identify a Primary Tree</p>
-        </div>
-        <div className="metric-card">
-          <span>03</span>
-          <strong>Every act of care circulates.</strong>
-          <p>The network traces connections between providers, specialties, and places throughout the city.</p>
         </div>
       </section>
 
@@ -300,12 +289,6 @@ export default function Home() {
                 </p>
               </div>
             </div>
-          </div>
-          <div className="poster-disciplines">
-            <span>SPECULATIVE DESIGN</span>
-            <span>INTERACTION DESIGN</span>
-            <span>CREATIVE TECH</span>
-            <span>DATA-DRIVEN STORYTELLING</span>
           </div>
         </figure>
       </section>
